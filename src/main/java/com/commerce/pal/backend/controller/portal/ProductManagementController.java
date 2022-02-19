@@ -2,6 +2,7 @@ package com.commerce.pal.backend.controller.portal;
 
 import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.module.ProductService;
+import com.commerce.pal.backend.module.multi.MerchantService;
 import com.commerce.pal.backend.repo.product.ProductImageRepository;
 import com.commerce.pal.backend.repo.product.ProductRepository;
 import com.commerce.pal.backend.service.specification.SpecificationsDao;
@@ -26,16 +27,19 @@ import java.util.logging.Level;
 public class ProductManagementController {
 
     private final ProductService productService;
+    private final MerchantService merchantService;
     private final SpecificationsDao specificationsDao;
     private final ProductRepository productRepository;
     private final ProductImageRepository productImageRepository;
 
     @Autowired
     public ProductManagementController(ProductService productService,
+                                       MerchantService merchantService,
                                        SpecificationsDao specificationsDao,
                                        ProductRepository productRepository,
                                        ProductImageRepository productImageRepository) {
         this.productService = productService;
+        this.merchantService = merchantService;
         this.specificationsDao = specificationsDao;
         this.productRepository = productRepository;
         this.productImageRepository = productImageRepository;
@@ -174,6 +178,28 @@ public class ProductManagementController {
                     .put("statusDescription", "failed")
                     .put("statusMessage", "Request failed");
         }
+        return ResponseEntity.ok(responseMap.toString());
+    }
+
+    @RequestMapping(value = {"/get-merchant-products"}, method = {RequestMethod.GET}, produces = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<?> getMerchantProducts(@RequestParam("userId") String userId) {
+        JSONObject responseMap = new JSONObject();
+        List<SearchCriteria> params = new ArrayList<SearchCriteria>();
+        params.add(new SearchCriteria("merchantId", ":", userId));
+        List<JSONObject> details = new ArrayList<>();
+        JSONObject merchantInfo = new JSONObject();
+        merchantInfo = merchantService.getMerchantInfo(Long.valueOf(userId));
+        specificationsDao.getProducts(params)
+                .forEach(pro -> {
+                    JSONObject detail = productService.getProductDetail(pro.getProductId());
+                    details.add(detail);
+                });
+        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                .put("statusDescription", "success")
+                .put("data", details)
+                .put("merchantInfo", merchantInfo)
+                .put("statusMessage", "Request Successful");
         return ResponseEntity.ok(responseMap.toString());
     }
 
