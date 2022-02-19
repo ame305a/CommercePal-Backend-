@@ -133,6 +133,27 @@ public class MessengerService {
         return responseMap;
     }
 
+    public JSONObject getAllUsers(JSONObject req) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            List<JSONObject> messengers = new ArrayList<>();
+            messengerRepository.findAll()
+                    .forEach(messenger -> {
+                        JSONObject payload = getMessengerInfo(messenger.getMessengerId());
+                        messengers.add(payload);
+                    });
+            responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                    .put("list", messengers)
+                    .put("statusDescription", "success")
+                    .put("statusMessage", "Request Successful");
+        } catch (Exception e) {
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("statusMessage", "internal system error");
+        }
+        return responseMap;
+    }
+
     public JSONObject getUser(JSONObject req) {
         JSONObject responseMap = new JSONObject();
         try {

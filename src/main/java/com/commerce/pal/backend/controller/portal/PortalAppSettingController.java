@@ -9,6 +9,7 @@ import com.commerce.pal.backend.repo.app_settings.SchemaCatalogueRepository;
 import com.commerce.pal.backend.repo.app_settings.TargetBannerRepository;
 import com.commerce.pal.backend.repo.app_settings.TargetSchemaRepository;
 import com.commerce.pal.backend.repo.app_settings.TargetSettingRepository;
+import com.commerce.pal.backend.repo.product.ProductCategoryRepository;
 import com.commerce.pal.backend.repo.product.ProductSubCategoryRepository;
 import com.commerce.pal.backend.service.amazon.UploadService;
 import lombok.extern.java.Log;
@@ -37,6 +38,7 @@ public class PortalAppSettingController {
     private final TargetBannerRepository targetBannerRepository;
     private final TargetSettingRepository targetSettingRepository;
     private final SchemaCatalogueRepository schemaCatalogueRepository;
+    private final ProductCategoryRepository productCategoryRepository;
     private final ProductSubCategoryRepository productSubCategoryRepository;
 
     @Autowired
@@ -44,11 +46,13 @@ public class PortalAppSettingController {
                                       TargetBannerRepository targetBannerRepository,
                                       TargetSettingRepository targetSettingRepository,
                                       SchemaCatalogueRepository schemaCatalogueRepository,
+                                      ProductCategoryRepository productCategoryRepository,
                                       ProductSubCategoryRepository productSubCategoryRepository) {
         this.targetSchemaRepository = targetSchemaRepository;
         this.targetBannerRepository = targetBannerRepository;
         this.targetSettingRepository = targetSettingRepository;
         this.schemaCatalogueRepository = schemaCatalogueRepository;
+        this.productCategoryRepository = productCategoryRepository;
         this.productSubCategoryRepository = productSubCategoryRepository;
     }
 
@@ -253,7 +257,17 @@ public class PortalAppSettingController {
                                                 item.put("description", schemaCatalogue.getDescription());
                                                 items.add(item);
                                             });
-                                } else {
+                                } else if (schemaCatalogue.getCategoryType().equals("Category")) {
+                                    productCategoryRepository.findById(Long.valueOf(schemaCatalogue.getCategoryId()))
+                                            .ifPresent(sub -> {
+                                                item.put("type", schemaCatalogue.getCategoryType());
+                                                item.put("id", sub.getId());
+                                                item.put("name", sub.getCategoryName());
+                                                item.put("image_url", sub.getCategoryWebImage());
+                                                item.put("mobile_image_url", sub.getCategoryMobileImage());
+                                                item.put("description", schemaCatalogue.getDescription());
+                                                items.add(item);
+                                            });
 
                                 }
 
@@ -297,13 +311,23 @@ public class PortalAppSettingController {
                                                 item.put("description", schemaCatalogue.getDescription());
                                                 items.add(item);
                                             });
-                                } else {
+                                } else if (schemaCatalogue.getCategoryType().equals("Category")) {
+                                    productCategoryRepository.findById(Long.valueOf(schemaCatalogue.getCategoryId()))
+                                            .ifPresent(sub -> {
+                                                item.put("type", schemaCatalogue.getCategoryType());
+                                                item.put("id", sub.getId());
+                                                item.put("name", sub.getCategoryName());
+                                                item.put("image_url", sub.getCategoryWebImage());
+                                                item.put("mobile_image_url", sub.getCategoryMobileImage());
+                                                item.put("description", schemaCatalogue.getDescription());
+                                                items.add(item);
+                                            });
 
                                 }
 
                             });
                     insideCatalogue.put("items", items);
-                     catalogue.put(tarSchema.getTargetKey(), insideCatalogue);
+                    catalogue.put(tarSchema.getTargetKey(), insideCatalogue);
 //                    catalogues.add(insideCatalogue);
                 });
         catalogues.add(catalogue);

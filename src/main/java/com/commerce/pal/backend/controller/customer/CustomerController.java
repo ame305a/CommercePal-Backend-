@@ -6,11 +6,13 @@ import com.commerce.pal.backend.models.LoginValidation;
 import com.commerce.pal.backend.models.order.LoanOrder;
 import com.commerce.pal.backend.models.order.Order;
 import com.commerce.pal.backend.models.order.OrderItem;
+import com.commerce.pal.backend.models.user.CustomerAddress;
 import com.commerce.pal.backend.repo.order.LoanOrderRepository;
 import com.commerce.pal.backend.repo.order.OrderItemRepository;
 import com.commerce.pal.backend.repo.order.OrderRepository;
 import com.commerce.pal.backend.repo.order.ShipmentPricingRepository;
 import com.commerce.pal.backend.repo.product.ProductRepository;
+import com.commerce.pal.backend.repo.user.CustomerAddressRepository;
 import com.commerce.pal.backend.repo.user.CustomerRepository;
 import com.commerce.pal.backend.repo.user.MerchantRepository;
 import com.commerce.pal.backend.utils.GlobalMethods;
@@ -27,6 +29,8 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 
@@ -46,6 +50,7 @@ public class CustomerController {
     private final CustomerRepository customerRepository;
     private final MerchantRepository merchantRepository;
     private final OrderItemRepository orderItemRepository;
+    private final CustomerAddressRepository customerAddressRepository;
     private final ShipmentPricingRepository shipmentPricingRepository;
     @Value("${org.commerce.pal.loan.request.email}")
     private String loanRequestEmails;
@@ -61,6 +66,7 @@ public class CustomerController {
                               CustomerRepository customerRepository,
                               MerchantRepository merchantRepository,
                               OrderItemRepository orderItemRepository,
+                              CustomerAddressRepository customerAddressRepository,
                               ShipmentPricingRepository shipmentPricingRepository) {
         this.globalMethods = globalMethods;
         this.orderRepository = orderRepository;
@@ -69,6 +75,7 @@ public class CustomerController {
         this.customerRepository = customerRepository;
         this.merchantRepository = merchantRepository;
         this.orderItemRepository = orderItemRepository;
+        this.customerAddressRepository = customerAddressRepository;
         this.shipmentPricingRepository = shipmentPricingRepository;
     }
 
@@ -360,6 +367,81 @@ public class CustomerController {
                     rate.put("Rate", 0);
                 });
         return rate;
+    }
+
+    @RequestMapping(value = "/add-delivery-address", method = RequestMethod.POST)
+    public ResponseEntity<?> addDeliveryAddress(@RequestBody String checkOut) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            JSONObject reqBody = new JSONObject(checkOut);
+            LoginValidation user = globalMethods.fetchUserDetails();
+
+            customerRepository.findCustomerByEmailAddress(user.getEmailAddress())
+                    .ifPresentOrElse(customer -> {
+                        CustomerAddress customerAddress = new CustomerAddress();
+                        customerAddress.setCustomerId(customer.getCustomerId());
+                        customerAddress.setCountry(reqBody.getString("country"));
+                        customerAddress.setCity(reqBody.getString("city"));
+                        customerAddress.setSubCity(reqBody.getString("subCity"));
+                        customerAddress.setPhoneNumber(reqBody.getString("phoneNumber"));
+                        customerAddress.setPhysicalAddress(reqBody.getString("physicalAddress"));
+                        customerAddress.setLatitude(reqBody.getString("latitude"));
+                        customerAddress.setLongitude(reqBody.getString("longitude"));
+                        customerAddressRepository.save(customerAddress);
+                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                .put("statusDescription", "success")
+                                .put("statusMessage", "success");
+                    }, () -> {
+                        responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                                .put("statusDescription", "failed to process request")
+                                .put("statusMessage", "internal system error");
+                    });
+        } catch (Exception e) {
+            log.log(Level.WARNING, "CUSTOMER DELIVERY ADDRESS INFO : " + e.getMessage());
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("statusMessage", "internal system error");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
+    }
+
+    @RequestMapping(value = "/get-delivery-address", method = RequestMethod.POST)
+    public ResponseEntity<?> getDeliveryAddress() {
+        JSONObject responseMap = new JSONObject();
+        try {
+
+            LoginValidation user = globalMethods.fetchUserDetails();
+
+            customerRepository.findCustomerByEmailAddress(user.getEmailAddress())
+                    .ifPresentOrElse(customer -> {
+                        List<JSONObject> addresses = new ArrayList<>();
+                        customerAddressRepository.findCustomerAddressByCustomerId(customer.getCustomerId())
+                                .forEach(customerAddress -> {
+                                    JSONObject payload = new JSONObject();
+                                    payload.put("country", customerAddress.getCountry());
+                                    payload.put("city", customerAddress.getCity());
+                                    payload.put("subCity", customerAddress.getSubCity());
+                                    payload.put("physicalAddress", customerAddress.getPhysicalAddress());
+                                    payload.put("latitude", customerAddress.getLatitude());
+                                    payload.put("longitude", customerAddress.getLongitude());
+                                    addresses.add(payload);
+                                });
+                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                .put("data", addresses)
+                                .put("statusDescription", "success")
+                                .put("statusMessage", "Request Successful");
+                    }, () -> {
+                        responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                                .put("statusDescription", "failed to process request")
+                                .put("statusMessage", "internal system error");
+                    });
+        } catch (Exception e) {
+            log.log(Level.WARNING, "CUSTOMER DELIVERY ADDRESS INFO : " + e.getMessage());
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("statusMessage", "internal system error");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
     }
 
 }

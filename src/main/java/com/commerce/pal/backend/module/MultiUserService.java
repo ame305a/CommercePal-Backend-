@@ -254,6 +254,39 @@ public class MultiUserService {
         return responseMap;
     }
 
+    public JSONObject getAllUsers(JSONObject payload) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            switch (payload.getString("userType")) {
+                case "MERCHANT":
+                    responseMap = merchantService.getAllUsers(payload);
+                    break;
+                case "BUSINESS":
+                    responseMap = businessService.getAllUsers(payload);
+                    break;
+                case "AGENT":
+                    responseMap = agentService.getAllUsers(payload);
+                    break;
+                case "MESSENGER":
+                    responseMap = messengerService.getAllUsers(payload);
+                    break;
+                case "DISTRIBUTOR":
+                    responseMap = distributorService.getUsers(payload);
+                    break;
+                default:
+                    responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                            .put("statusDescription", "failed to process request")
+                            .put("statusMessage", "internal system error");
+                    break;
+            }
+        } catch (Exception e) {
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("statusMessage", "internal system error");
+        }
+        return responseMap;
+    }
+
     public JSONObject getUser(JSONObject payload) {
         JSONObject responseMap = new JSONObject();
         try {
@@ -269,6 +302,57 @@ public class MultiUserService {
                     break;
                 case "MESSENGER":
                     responseMap = messengerService.getUser(payload);
+                    break;
+                case "DISTRIBUTOR":
+                    responseMap = distributorService.getUser(payload);
+                    break;
+                default:
+                    responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                            .put("statusDescription", "failed to process request")
+                            .put("statusMessage", "internal system error");
+                    break;
+            }
+        } catch (Exception e) {
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("statusMessage", "internal system error");
+        }
+        return responseMap;
+    }
+
+    public JSONObject getAllUser(JSONObject payload) {
+        JSONObject responseMap = new JSONObject();
+
+        JSONObject info = new JSONObject();
+        try {
+            switch (payload.getString("userType")) {
+                case "MERCHANT":
+                    info = merchantService.getMerchantInfo(payload.getLong("userId"));
+                    responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                            .put("data", info)
+                            .put("statusDescription", "success")
+                            .put("statusMessage", "Request Successful");
+                    break;
+                case "BUSINESS":
+                    info = businessService.getBusinessInfo(payload.getLong("userId"));
+                    responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                            .put("data", info)
+                            .put("statusDescription", "success")
+                            .put("statusMessage", "Request Successful");
+                    break;
+                case "AGENT":
+                    info = agentService.getAgentInfo(payload.getLong("userId"));
+                    responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                            .put("data", info)
+                            .put("statusDescription", "success")
+                            .put("statusMessage", "Request Successful");
+                    break;
+                case "MESSENGER":
+                    info = messengerService.getMessengerInfo(payload.getLong("userId"));
+                    responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                            .put("data", info)
+                            .put("statusDescription", "success")
+                            .put("statusMessage", "Request Successful");
                     break;
                 case "DISTRIBUTOR":
                     responseMap = distributorService.getUser(payload);

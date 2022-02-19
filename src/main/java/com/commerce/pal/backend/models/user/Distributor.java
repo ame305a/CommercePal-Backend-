@@ -32,6 +32,9 @@ public class Distributor {
     @Column(name = "City")
     private String city;
     @Basic
+    @Column(name = "Branch")
+    private String branch;
+    @Basic
     @Column(name = "District")
     private String district;
     @Basic
@@ -46,6 +49,12 @@ public class Distributor {
     @Basic
     @Column(name = "PhotoImage")
     private String photoImage;
+    @Basic
+    @Column(name = "Longitude")
+    private String longitude;
+    @Basic
+    @Column(name = "Latitude")
+    private String latitude;
     @Basic
     @Column(name = "Status")
     private Integer status;

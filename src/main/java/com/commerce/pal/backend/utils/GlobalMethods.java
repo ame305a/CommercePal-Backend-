@@ -103,20 +103,36 @@ public class GlobalMethods {
                         city.set(1);
                     });
         } catch (Exception ex) {
-
+            log.log(Level.WARNING, ex.getMessage());
         }
         return city.get();
     }
+
+    public JSONObject getMultiUserCustomer(String email) {
+        JSONObject customerData = new JSONObject();
+        customerRepository.findCustomerByEmailAddress(email)
+                .ifPresent(customer -> {
+                    customerData.put("firstName", customer.getFirstName());
+                    customerData.put("lastName", customer.getLastName());
+                    customerData.put("language", customer.getLanguage());
+                    customerData.put("phoneNumber", customer.getPhoneNumber());
+                    customerData.put("email", customer.getEmailAddress());
+                });
+
+        return customerData;
+    }
+
+
 
     public String generatePassword() {
         String upperCaseLetters = RandomStringUtils.random(2, 65, 90, true, true);
         String lowerCaseLetters = RandomStringUtils.random(2, 97, 122, true, true);
         String numbers = RandomStringUtils.randomNumeric(2);
-        String specialChar = RandomStringUtils.random(2, 33, 47, false, false);
+        //String specialChar = RandomStringUtils.random(2, 33, 47, false, false);
         String totalChars = RandomStringUtils.randomAlphanumeric(2);
         String combinedChars = upperCaseLetters.concat(lowerCaseLetters)
                 .concat(numbers)
-                .concat(specialChar)
+                //.concat(specialChar)
                 .concat(totalChars);
         List<Character> pwdChars = combinedChars.chars()
                 .mapToObj(c -> (char) c)

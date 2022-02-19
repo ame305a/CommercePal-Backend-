@@ -125,6 +125,28 @@ public class BusinessService {
         return responseMap;
     }
 
+
+    public JSONObject getAllUsers(JSONObject req) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            List<JSONObject> businesss = new ArrayList<>();
+            businessRepository.findAll()
+                    .forEach(business -> {
+                        JSONObject payload = getBusinessInfo(business.getBusinessId());
+                        businesss.add(payload);
+                    });
+            responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                    .put("list", businesss)
+                    .put("statusDescription", "success")
+                    .put("statusMessage", "Request Successful");
+        } catch (Exception e) {
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("statusMessage", "internal system error");
+        }
+        return responseMap;
+    }
+
     public JSONObject getUser(JSONObject req) {
         JSONObject responseMap = new JSONObject();
         try {

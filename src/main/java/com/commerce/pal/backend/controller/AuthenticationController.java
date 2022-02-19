@@ -120,6 +120,7 @@ public class AuthenticationController {
         try {
             authenticate(authenticationRequest.getEmail(), authenticationRequest.getPassword());
         } catch (Exception e) {
+            log.log(Level.WARNING, "Login Error : " + e.getMessage());
             responseMap.put("statusCode", ResponseCodes.SYSTEM_LOGIN_NOT_SUCCESSFUL)
                     .put("statusDescription", "login failed invalid details")
                     .put("statusMessage", "login failed invalid details");

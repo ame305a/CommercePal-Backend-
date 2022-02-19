@@ -122,9 +122,41 @@ public class PortalController {
             JSONObject payload = new JSONObject();
             payload.put("userType", userType);
             payload.put("userId", userId);
-            payload.put("ownerType", "WAREHOUSE");
-            payload.put("ownerId", "0");
-            responseMap = multiUserService.getUser(payload);
+            responseMap = multiUserService.getAllUser(payload);
+        } catch (Exception e) {
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("statusMessage", "internal system error");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
+    }
+
+    @RequestMapping(value = "/get-distributor-users", method = RequestMethod.GET)
+    public ResponseEntity<?> getDistributorUsers(@RequestParam("userType") String userType,
+                                                 @RequestParam("userId") String userId) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            JSONObject payload = new JSONObject();
+            payload.put("userType", userType);
+            payload.put("ownerType", "DISTRIBUTOR");
+            payload.put("ownerId", userId);
+            responseMap = multiUserService.getUsers(payload);
+        } catch (Exception e) {
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("statusMessage", "internal system error");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
+    }
+
+
+    @RequestMapping(value = "/get-all-users", method = RequestMethod.GET)
+    public ResponseEntity<?> getAllUsers(@RequestParam("userType") String userType) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            JSONObject payload = new JSONObject();
+            payload.put("userType", userType);
+            responseMap = multiUserService.getAllUsers(payload);
         } catch (Exception e) {
             responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
                     .put("statusDescription", "failed to process request")

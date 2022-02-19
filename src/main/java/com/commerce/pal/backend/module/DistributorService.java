@@ -2,6 +2,7 @@ package com.commerce.pal.backend.module;
 
 import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.repo.user.DistributorRepository;
+import com.commerce.pal.backend.utils.GlobalMethods;
 import lombok.extern.java.Log;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,15 +10,20 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Log
 @Service
 @SuppressWarnings("Duplicates")
 public class DistributorService {
+
+    private final GlobalMethods globalMethods;
     private final DistributorRepository distributorRepository;
 
     @Autowired
-    public DistributorService(DistributorRepository distributorRepository) {
+    public DistributorService(GlobalMethods globalMethods,
+                              DistributorRepository distributorRepository) {
+        this.globalMethods = globalMethods;
         this.distributorRepository = distributorRepository;
     }
 
@@ -132,26 +138,33 @@ public class DistributorService {
     }
 
     public JSONObject getDistributorInfo(Long distributorId) {
-        JSONObject payload = new JSONObject();
+        AtomicReference<JSONObject> payload = new AtomicReference<>(new JSONObject());
         distributorRepository.findDistributorByDistributorId(distributorId)
                 .ifPresent(distributor -> {
-                    payload.put("userId", distributor.getDistributorId());
-                    payload.put("ownerPhoneNumber", distributor.getPhoneNumber());
-                    payload.put("email", distributor.getEmailAddress());
-                    payload.put("name", distributor.getDistributorName());
-                    payload.put("distributorType", distributor.getDistributorType());
-                    payload.put("idImage", distributor.getIdImage());
-                    payload.put("photoImage", distributor.getPhotoImage());
-                    payload.put("district", distributor.getDistrict());
-                    payload.put("location", distributor.getLocation());
-                    payload.put("idNumber", distributor.getIdNumber());
-                    payload.put("country", distributor.getCountry());
-                    payload.put("city", distributor.getCity());
-                    payload.put("canRegAgent", distributor.getCanRegAgent());
-                    payload.put("canRegMerchant", distributor.getCanRegMerchant());
-                    payload.put("canRegBusiness", distributor.getCanRegBusiness());
-                    payload.put("Status", distributor.getStatus().toString());
+                    payload.get().put("userId", distributor.getDistributorId());
+                    payload.get().put("ownerPhoneNumber", distributor.getPhoneNumber());
+                    payload.get().put("distributorName", distributor.getDistributorName());
+                    payload.get().put("businessPhoneNumber", distributor.getPhoneNumber());
+                    payload.get().put("email", distributor.getEmailAddress());
+                    payload.get().put("name", distributor.getDistributorName());
+                    payload.get().put("distributorType", distributor.getDistributorType());
+                    payload.get().put("idImage", distributor.getIdImage());
+                    payload.get().put("photoImage", distributor.getPhotoImage());
+                    payload.get().put("district", distributor.getDistrict());
+                    payload.get().put("location", distributor.getLocation());
+                    payload.get().put("idNumber", distributor.getIdNumber());
+                    payload.get().put("country", distributor.getCountry());
+                    payload.get().put("city", distributor.getCity());
+                    payload.get().put("branch", distributor.getBranch());
+                    payload.get().put("canRegAgent", distributor.getCanRegAgent());
+                    payload.get().put("canRegMerchant", distributor.getCanRegMerchant());
+                    payload.get().put("canRegBusiness", distributor.getCanRegBusiness());
+                    payload.get().put("Status", distributor.getStatus().toString());
+                    payload.get().put("longitude", distributor.getLongitude());
+                    payload.get().put("latitude", distributor.getLatitude());
+                    JSONObject customer = globalMethods.getMultiUserCustomer(distributor.getEmailAddress());
+                    payload.set(globalMethods.mergeJSONObjects(payload.get(), customer));
                 });
-        return payload;
+        return payload.get();
     }
 }
