@@ -1,10 +1,12 @@
 package com.commerce.pal.backend.controller.portal;
 
 import com.commerce.pal.backend.common.ResponseCodes;
+import com.commerce.pal.backend.models.product.BrandImage;
 import com.commerce.pal.backend.models.product.ProductCategory;
 import com.commerce.pal.backend.models.product.ProductParentCategory;
 import com.commerce.pal.backend.models.product.ProductSubCategory;
-import com.commerce.pal.backend.module.ProductService;
+import com.commerce.pal.backend.module.product.CategoryService;
+import com.commerce.pal.backend.module.product.ProductService;
 import com.commerce.pal.backend.repo.product.*;
 import com.commerce.pal.backend.service.specification.SpecificationsDao;
 import com.commerce.pal.backend.service.specification.utils.SearchCriteria;
@@ -29,25 +31,30 @@ import java.util.Optional;
 @SuppressWarnings("Duplicates")
 public class CategoriesController {
     private final ProductService productService;
+    private final CategoryService categoryService;
     private final ProductRepository productRepository;
     private final SpecificationsDao specificationsDao;
+    private final BrandImageRepository brandImageRepository;
     private final ProductImageRepository productImageRepository;
-
     private final ProductCategoryRepository productCategoryRepository;
     private final ProductSubCategoryRepository productSubCategoryRepository;
     private final ProductParentCategoryRepository productParentCategoryRepository;
 
     @Autowired
     public CategoriesController(ProductService productService,
+                                CategoryService categoryService,
                                 ProductRepository productRepository,
                                 SpecificationsDao specificationsDao,
+                                BrandImageRepository brandImageRepository,
                                 ProductImageRepository productImageRepository,
                                 ProductCategoryRepository productCategoryRepository,
                                 ProductSubCategoryRepository productSubCategoryRepository,
                                 ProductParentCategoryRepository productParentCategoryRepository) {
         this.productService = productService;
+        this.categoryService = categoryService;
         this.productRepository = productRepository;
         this.specificationsDao = specificationsDao;
+        this.brandImageRepository = brandImageRepository;
         this.productImageRepository = productImageRepository;
         this.productCategoryRepository = productCategoryRepository;
         this.productSubCategoryRepository = productSubCategoryRepository;
@@ -82,12 +89,7 @@ public class CategoriesController {
         JSONObject responseMap = new JSONObject();
         List<JSONObject> details = new ArrayList<>();
         productParentCategoryRepository.findAll().forEach(cat -> {
-            JSONObject detail = new JSONObject();
-            detail.put("id", cat.getId());
-            detail.put("name", cat.getParentCategoryName());
-            detail.put("mobileImage", "" + cat.getMobileImage());
-            detail.put("webImage", cat.getWebImage());
-            detail.put("unique_name", cat.getParentCategoryName().replaceAll(" ", "_").toLowerCase().trim());
+            JSONObject detail = categoryService.getParentCatInfo(cat.getId());
             details.add(detail);
         });
         responseMap.put("statusCode", ResponseCodes.SUCCESS)
@@ -294,6 +296,57 @@ public class CategoriesController {
                     .put("statusDescription", "failed")
                     .put("statusMessage", "Request failed");
         }
+        return ResponseEntity.ok(responseMap.toString());
+    }
+
+    @RequestMapping(value = {"/AddBrand"}, method = {RequestMethod.POST}, produces = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<?> addBrand(@RequestBody String parent) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            JSONObject jsonObject = new JSONObject(parent);
+            brandImageRepository.findBrandImageByBrand(jsonObject.getString("brandName"))
+                    .ifPresentOrElse(brandImage -> {
+                        responseMap.put("statusCode", ResponseCodes.TRANSACTION_FAILED)
+                                .put("statusDescription", "Request failed. Brand Already Exist")
+                                .put("statusMessage", "Request failed. Brand Already Exist");
+                    }, () -> {
+                        BrandImage brandImage = new BrandImage();
+                        brandImage.setBrand(jsonObject.getString("brandName"));
+                        brandImage.setStatus(1);
+                        brandImage.setCreatedDate(Timestamp.from(Instant.now()));
+                        brandImageRepository.save(brandImage);
+                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                .put("statusDescription", "success")
+                                .put("statusMessage", "Request Successful");
+                    });
+
+        } catch (Exception ex) {
+            responseMap.put("statusCode", ResponseCodes.TRANSACTION_FAILED)
+                    .put("statusDescription", "failed")
+                    .put("statusMessage", "Request failed");
+        }
+        return ResponseEntity.ok(responseMap.toString());
+    }
+
+    @RequestMapping(value = {"/GetBrands"}, method = {RequestMethod.GET}, produces = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<?> GetBrands() {
+        JSONObject responseMap = new JSONObject();
+        List<JSONObject> details = new ArrayList<>();
+        brandImageRepository.findAll()
+                .forEach(cat -> {
+                    JSONObject detail = new JSONObject();
+                    detail.put("id", cat.getId());
+                    detail.put("name", cat.getBrand());
+                    detail.put("mobileImage", "" + cat.getMobileImage());
+                    detail.put("webImage", cat.getWebImage());
+                    details.add(detail);
+                });
+        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                .put("statusDescription", "success")
+                .put("details", details)
+                .put("statusMessage", "Request Successful");
         return ResponseEntity.ok(responseMap.toString());
     }
 

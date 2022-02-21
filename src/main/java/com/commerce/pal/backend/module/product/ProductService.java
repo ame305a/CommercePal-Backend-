@@ -1,9 +1,8 @@
-package com.commerce.pal.backend.module;
+package com.commerce.pal.backend.module.product;
 
 import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.database.ProductDatabaseService;
-import com.commerce.pal.backend.repo.product.ProductImageRepository;
-import com.commerce.pal.backend.repo.product.ProductRepository;
+import com.commerce.pal.backend.repo.product.*;
 import com.commerce.pal.backend.service.specification.SpecificationsDao;
 import lombok.extern.java.Log;
 import org.json.JSONObject;
@@ -20,8 +19,10 @@ import java.util.logging.Level;
 public class ProductService {
     private final ProductRepository productRepository;
     private final SpecificationsDao specificationsDao;
+
     private final ProductDatabaseService productDatabaseService;
     private final ProductImageRepository productImageRepository;
+
 
     @Autowired
     public ProductService(ProductRepository productRepository,
@@ -95,6 +96,8 @@ public class ProductService {
                         detail.put("mobileVideo", "" + pro.getProductMobileVideo());
                         detail.put("webImage", pro.getProductImage());
                         detail.put("webVideo", pro.getProductWebVideo());
+                        detail.put("webThumbnail", "" + pro.getWebThumbnail());
+                        detail.put("mobileThumbnail", "" + pro.getMobileThumbnail());
                         detail.put("ProductParentCategoryId", pro.getProductParentCateoryId());
                         detail.put("ProductCategoryId", pro.getProductCategoryId());
                         detail.put("ProductSubCategoryId", pro.getProductSubCategoryId());
@@ -115,10 +118,12 @@ public class ProductService {
                                 detail.put("DiscountValue", pro.getDiscountValue());
                                 detail.put("DiscountAmount", new BigDecimal(discountAmount));
                             }
+                            detail.put("offerPrice", pro.getUnitPrice().doubleValue() - discountAmount);
                         } else {
                             detail.put("DiscountType", "NotDiscounted");
                             detail.put("DiscountValue", new BigDecimal(0));
                             detail.put("DiscountAmount", new BigDecimal(0));
+                            detail.put("offerPrice", pro.getUnitPrice());
                         }
                         ArrayList<String> images = new ArrayList<String>();
                         productImageRepository.findProductImagesByProductId(pro.getProductId()).forEach(
@@ -126,6 +131,14 @@ public class ProductService {
                                     images.add(image.getFilePath());
                                 }
                         );
+                        /*
+                            currency = "ETB", // String
+                            offerPrice = 890.00, // Double
+                            actualPrice = 1200.00, // Double
+                            rating = 4.2 // Float
+                         */
+                        detail.put("currency", pro.getCurrency());
+                        detail.put("productRating", 4.2);
                         detail.put("ProductImages", images);
                     });
         } catch (Exception e) {

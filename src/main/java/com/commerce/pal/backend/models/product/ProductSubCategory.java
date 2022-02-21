@@ -30,6 +30,12 @@ public class ProductSubCategory {
     @Column(name = "MobileImage")
     private String mobileImage;
     @Basic
+    @Column(name = "WebThumbnail")
+    private String webThumbnail;
+    @Basic
+    @Column(name = "MobileThumbnail")
+    private String mobileThumbnail;
+    @Basic
     @Column(name = "Status")
     private int status;
     @Basic

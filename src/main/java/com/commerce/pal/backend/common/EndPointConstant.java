@@ -10,7 +10,8 @@ public class EndPointConstant {
             PORTAL
            */
             versioning + "/portal/**",
-            versioning + "/app/portal/**",
+            versioning + "/portal/app/**",
+            versioning + "/app/dashboard/**",
 
             /*
             OPEN APIS FOR APPS
@@ -26,7 +27,7 @@ public class EndPointConstant {
              */
             versioning + "/authenticate",
             versioning + "/password-reset",
-             versioning + "/confirm-code",
+            versioning + "/confirm-code",
             versioning + "/registration",
             versioning + "/client/registration",
 

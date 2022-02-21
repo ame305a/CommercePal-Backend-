@@ -25,6 +25,9 @@ public class ProductImage {
     @Column(name = "File_Path")
     private String filePath;
     @Basic
+    @Column(name = "MobileImage")
+    private String mobileImage;
+    @Basic
     @Column(name = "Status")
     private int status;
     @Basic

@@ -1,7 +1,7 @@
 package com.commerce.pal.backend.controller.portal;
 
 import com.commerce.pal.backend.common.ResponseCodes;
-import com.commerce.pal.backend.module.ProductService;
+import com.commerce.pal.backend.module.product.ProductService;
 import com.commerce.pal.backend.module.multi.MerchantService;
 import com.commerce.pal.backend.repo.product.ProductImageRepository;
 import com.commerce.pal.backend.repo.product.ProductRepository;

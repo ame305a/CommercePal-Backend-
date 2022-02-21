@@ -40,6 +40,12 @@ public class Product {
     @Column(name = "ProductMobileImage")
     private String productMobileImage;
     @Basic
+    @Column(name = "WebThumbnail")
+    private String webThumbnail;
+    @Basic
+    @Column(name = "MobileThumbnail")
+    private String mobileThumbnail;
+    @Basic
     @Column(name = "ProductMobileVideo")
     private String productMobileVideo;
     @Basic

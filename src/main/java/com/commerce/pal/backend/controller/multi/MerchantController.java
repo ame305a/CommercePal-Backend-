@@ -1,10 +1,9 @@
 package com.commerce.pal.backend.controller.multi;
 
 import com.commerce.pal.backend.common.ResponseCodes;
-import com.commerce.pal.backend.database.ProductDatabaseService;
 import com.commerce.pal.backend.integ.EmailClient;
 import com.commerce.pal.backend.models.LoginValidation;
-import com.commerce.pal.backend.module.ProductService;
+import com.commerce.pal.backend.module.product.ProductService;
 import com.commerce.pal.backend.module.multi.MerchantService;
 import com.commerce.pal.backend.repo.user.MerchantRepository;
 import com.commerce.pal.backend.service.amazon.UploadService;
