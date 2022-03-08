@@ -1,4 +1,4 @@
-package com.commerce.pal.backend.database;
+package com.commerce.pal.backend.module.database;
 
 import lombok.extern.java.Log;
 import org.json.JSONObject;
@@ -8,7 +8,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.ParameterMode;
 import javax.persistence.PersistenceContext;
 import javax.persistence.StoredProcedureQuery;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;

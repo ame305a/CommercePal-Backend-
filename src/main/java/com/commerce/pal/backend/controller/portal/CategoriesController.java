@@ -156,25 +156,13 @@ public class CategoriesController {
         parentCat.ifPresentOrElse(parCat -> {
             productCategoryRepository.findProductCategoriesByParentCategoryId(Long.valueOf(parCat))
                     .forEach(cat -> {
-                        JSONObject detail = new JSONObject();
-                        detail.put("id", cat.getId());
-                        detail.put("parentCategoryId", cat.getParentCategoryId());
-                        detail.put("name", cat.getCategoryName());
-                        detail.put("mobileImage", "" + cat.getCategoryMobileImage());
-                        detail.put("webImage", cat.getCategoryWebImage());
-                        detail.put("unique_name", cat.getCategoryName().replaceAll(" ", "_").toLowerCase().trim());
+                        JSONObject detail = categoryService.getCategoryInfo(cat.getId());
                         details.add(detail);
                     });
         }, () -> {
             productCategoryRepository.findAll()
                     .forEach(cat -> {
-                        JSONObject detail = new JSONObject();
-                        detail.put("id", cat.getId());
-                        detail.put("name", cat.getCategoryName());
-                        detail.put("parentCategoryId", cat.getParentCategoryId());
-                        detail.put("mobileImage", "" + cat.getCategoryMobileImage());
-                        detail.put("webImage", cat.getCategoryWebImage());
-                        detail.put("unique_name", cat.getCategoryName().replaceAll(" ", "_").toLowerCase().trim());
+                        JSONObject detail = categoryService.getCategoryInfo(cat.getId());
                         details.add(detail);
                     });
         });
@@ -243,25 +231,13 @@ public class CategoriesController {
         category.ifPresentOrElse(cate -> {
             productSubCategoryRepository.findProductSubCategoriesByProductCategoryId(Long.valueOf(cate))
                     .forEach(cat -> {
-                        JSONObject detail = new JSONObject();
-                        detail.put("id", cat.getId());
-                        detail.put("categoryId", cat.getProductCategoryId());
-                        detail.put("name", cat.getSubCategoryName());
-                        detail.put("mobileImage", "" + cat.getMobileImage());
-                        detail.put("webImage", cat.getWebImage());
-                        detail.put("unique_name", cat.getSubCategoryName().replaceAll(" ", "_").toLowerCase().trim());
+                        JSONObject detail = categoryService.getSubCategoryInfo(cat.getId());
                         details.add(detail);
                     });
         }, () -> {
             productSubCategoryRepository.findAll()
                     .forEach(cat -> {
-                        JSONObject detail = new JSONObject();
-                        detail.put("id", cat.getId());
-                        detail.put("name", cat.getSubCategoryName());
-                        detail.put("categoryId", cat.getProductCategoryId());
-                        detail.put("mobileImage", "" + cat.getMobileImage());
-                        detail.put("webImage", cat.getWebImage());
-                        detail.put("unique_name", cat.getSubCategoryName().replaceAll(" ", "_").toLowerCase().trim());
+                        JSONObject detail = categoryService.getSubCategoryInfo(cat.getId());
                         details.add(detail);
                     });
         });
@@ -336,11 +312,7 @@ public class CategoriesController {
         List<JSONObject> details = new ArrayList<>();
         brandImageRepository.findAll()
                 .forEach(cat -> {
-                    JSONObject detail = new JSONObject();
-                    detail.put("id", cat.getId());
-                    detail.put("name", cat.getBrand());
-                    detail.put("mobileImage", "" + cat.getMobileImage());
-                    detail.put("webImage", cat.getWebImage());
+                    JSONObject detail = categoryService.getBrandInfo(cat.getId());
                     details.add(detail);
                 });
         responseMap.put("statusCode", ResponseCodes.SUCCESS)
@@ -355,6 +327,7 @@ public class CategoriesController {
     public ResponseEntity<?> GetProducts(@RequestParam("parent") Optional<String> parent,
                                          @RequestParam("category ") Optional<String> category,
                                          @RequestParam("subCat") Optional<String> subCat,
+                                         @RequestParam("brand") Optional<String> brand,
                                          @RequestParam("product") Optional<String> product) {
         JSONObject responseMap = new JSONObject();
 
@@ -368,59 +341,19 @@ public class CategoriesController {
         subCat.ifPresent(value -> {
             params.add(new SearchCriteria("productSubCategoryId", ":", value));
         });
+        brand.ifPresent(value -> {
+            params.add(new SearchCriteria("manufucturer", ":", value));
+        });
         product.ifPresent(value -> {
             params.add(new SearchCriteria("productId", ":", value));
         });
-
         params.add(new SearchCriteria("status", ":", 1));
-
         List<JSONObject> details = new ArrayList<>();
-
         specificationsDao.getProducts(params)
                 .forEach(pro -> {
-                    JSONObject detail = new JSONObject();
-                    detail.put("ProductId", pro.getProductId());
-                    detail.put("ProductName", pro.getProductName());
-                    detail.put("mobileImage", "" + pro.getProductMobileImage());
-                    detail.put("mobileVideo", "" + pro.getProductMobileVideo());
-                    detail.put("webImage", pro.getProductImage());
-                    detail.put("webVideo", pro.getProductWebVideo());
-                    detail.put("ProductParentCategoryId", pro.getProductParentCateoryId());
-                    detail.put("ProductCategoryId", pro.getProductCategoryId());
-                    detail.put("ProductSubCategoryId", pro.getProductSubCategoryId());
-                    detail.put("ProductDescription", pro.getProductDescription());
-                    detail.put("SpecialInstruction", pro.getSpecialInstruction());
-                    detail.put("IsDiscounted", pro.getIsDiscounted());
-                    detail.put("ShipmentType", pro.getShipmentType());
-                    detail.put("UnitPrice", pro.getUnitPrice());
-                    if (pro.getIsDiscounted().equals(1)) {
-                        detail.put("DiscountType", pro.getDiscountType());
-
-                        Double discountAmount = 0D;
-                        if (pro.getDiscountType().equals("FIXED")) {
-                            detail.put("DiscountValue", pro.getDiscountValue());
-                            detail.put("DiscountAmount", pro.getDiscountValue());
-                        } else {
-                            discountAmount = pro.getUnitPrice().doubleValue() * pro.getDiscountValue().doubleValue() / 100;
-                            detail.put("DiscountValue", pro.getDiscountValue());
-                            detail.put("DiscountAmount", new BigDecimal(discountAmount));
-                        }
-                    } else {
-                        detail.put("DiscountType", "NotDiscounted");
-                        detail.put("DiscountValue", new BigDecimal(0));
-                        detail.put("DiscountAmount", new BigDecimal(0));
-                    }
-
-                    ArrayList<String> images = new ArrayList<String>();
-                    productImageRepository.findProductImagesByProductId(pro.getProductId()).forEach(
-                            image -> {
-                                images.add(image.getFilePath());
-                            }
-                    );
-                    detail.put("ProductImages", images);
+                    JSONObject detail = productService.getProductDetail(pro.getProductId());
                     details.add(detail);
                 });
-
         responseMap.put("statusCode", ResponseCodes.SUCCESS)
                 .put("statusDescription", "success")
                 .put("details", details)
@@ -433,47 +366,9 @@ public class CategoriesController {
     @ResponseBody
     public ResponseEntity<?> GetProductById(@RequestParam("product") String product) {
         JSONObject responseMap = new JSONObject();
-        JSONObject detail = new JSONObject();
         productRepository.findById(Long.valueOf(product))
                 .ifPresentOrElse(pro -> {
-                    detail.put("ProductId", pro.getProductId());
-                    detail.put("ProductName", pro.getProductName());
-                    detail.put("mobileImage", "" + pro.getProductMobileImage());
-                    detail.put("mobileVideo", "" + pro.getProductMobileVideo());
-                    detail.put("webImage", pro.getProductImage());
-                    detail.put("webVideo", pro.getProductWebVideo());
-                    detail.put("ProductParentCategoryId", pro.getProductParentCateoryId());
-                    detail.put("ProductCategoryId", pro.getProductCategoryId());
-                    detail.put("ProductSubCategoryId", pro.getProductSubCategoryId());
-                    detail.put("ProductDescription", pro.getProductDescription());
-                    detail.put("SpecialInstruction", pro.getSpecialInstruction());
-                    detail.put("IsDiscounted", pro.getIsDiscounted());
-                    detail.put("ShipmentType", pro.getShipmentType());
-                    detail.put("UnitPrice", pro.getUnitPrice());
-                    if (pro.getIsDiscounted().equals(1)) {
-                        detail.put("DiscountType", pro.getDiscountType());
-
-                        Double discountAmount = 0D;
-                        if (pro.getDiscountType().equals("FIXED")) {
-                            detail.put("DiscountValue", pro.getDiscountValue());
-                            detail.put("DiscountAmount", pro.getDiscountValue());
-                        } else {
-                            discountAmount = pro.getUnitPrice().doubleValue() * pro.getDiscountValue().doubleValue() / 100;
-                            detail.put("DiscountValue", pro.getDiscountValue());
-                            detail.put("DiscountAmount", new BigDecimal(discountAmount));
-                        }
-                    } else {
-                        detail.put("DiscountType", "NotDiscounted");
-                        detail.put("DiscountValue", new BigDecimal(0));
-                        detail.put("DiscountAmount", new BigDecimal(0));
-                    }
-                    ArrayList<String> images = new ArrayList<String>();
-                    productImageRepository.findProductImagesByProductId(pro.getProductId()).forEach(
-                            image -> {
-                                images.add(image.getFilePath());
-                            }
-                    );
-                    detail.put("ProductImages", images);
+                    JSONObject detail = productService.getProductDetail(pro.getProductId());
                     responseMap.put("statusCode", ResponseCodes.SUCCESS)
                             .put("statusDescription", "success")
                             .put("detail", detail)
@@ -492,7 +387,6 @@ public class CategoriesController {
         JSONObject responseMap = new JSONObject();
         try {
             JSONObject request = new JSONObject(req);
-
             request.put("merchantId", "0");
             request.put("productImage", "defaultImage.png");
             request.put("isPromoted", "0");

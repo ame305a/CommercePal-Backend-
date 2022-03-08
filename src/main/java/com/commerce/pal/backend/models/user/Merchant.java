@@ -105,9 +105,17 @@ public class Merchant {
     @Column(name = "TaxPhoto")
     private String taxPhoto;
 
+
+
     @Basic
     @Column(name = "Status")
     private Integer status;
+    @Basic
+    @Column(name = "StatusComment")
+    private String statusComment;
+    @Basic
+    @Column(name = "StatusUpdatedDate")
+    private Timestamp statusUpdatedDate;
     @Basic
     @Column(name = "RegisteredBy")
     private String registeredBy;

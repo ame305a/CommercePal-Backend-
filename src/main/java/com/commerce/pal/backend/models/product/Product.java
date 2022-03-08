@@ -97,9 +97,11 @@ public class Product {
     @Column(name = "DiscountValue")
     private BigDecimal discountValue;
     @Basic
+    @Column(name = "DiscountExpiryDate")
+    private Timestamp discountExpiryDate;
+    @Basic
     @Column(name = "UnitWeight")
     private BigDecimal unitWeight;
-
     @Basic
     @Column(name = "IsPromoted")
     private Integer isPromoted;
@@ -109,10 +111,15 @@ public class Product {
     @Basic
     @Column(name = "ShipmentType")
     private String shipmentType;
-
     @Basic
     @Column(name = "Status")
     private Integer status;
+    @Basic
+    @Column(name = "StatusComment")
+    private String statusComment;
+    @Basic
+    @Column(name = "StatusUpdatedDate")
+    private Timestamp statusUpdatedDate;
     @Basic
     @Column(name = "CreatedBy")
     private String createdBy;

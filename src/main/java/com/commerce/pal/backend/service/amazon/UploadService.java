@@ -4,7 +4,7 @@ import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.commerce.pal.backend.common.ResponseCodes;
-import com.commerce.pal.backend.database.ImageService;
+import com.commerce.pal.backend.module.database.ImageService;
 import lombok.extern.java.Log;
 import org.apache.commons.io.FilenameUtils;
 import org.json.JSONObject;
@@ -16,7 +16,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.logging.Level;
 
 @Log

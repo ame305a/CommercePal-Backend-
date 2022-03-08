@@ -7,6 +7,7 @@ import com.commerce.pal.backend.repo.app_settings.TargetBannerRepository;
 import com.commerce.pal.backend.repo.app_settings.TargetSectionChildrenRepository;
 import com.commerce.pal.backend.repo.app_settings.TargetSectionRepository;
 import com.commerce.pal.backend.repo.app_settings.TargetSettingRepository;
+import com.commerce.pal.backend.utils.GlobalMethods;
 import lombok.extern.java.Log;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,7 @@ import java.util.List;
 @RequestMapping({"/prime/api/v1/app/dashboard"})
 @SuppressWarnings("Duplicates")
 public class AppDashboardController {
+    private final GlobalMethods globalMethods;
     private final ProductService productService;
     private final CategoryService categoryService;
     private final TargetBannerRepository targetBannerRepository;
@@ -30,12 +32,14 @@ public class AppDashboardController {
     private final TargetSectionChildrenRepository targetSectionChildrenRepository;
 
     @Autowired
-    public AppDashboardController(ProductService productService,
+    public AppDashboardController(GlobalMethods globalMethods,
+                                  ProductService productService,
                                   CategoryService categoryService,
                                   TargetBannerRepository targetBannerRepository,
                                   TargetSettingRepository targetSettingRepository,
                                   TargetSectionRepository targetSectionRepository,
                                   TargetSectionChildrenRepository targetSectionChildrenRepository) {
+        this.globalMethods = globalMethods;
         this.productService = productService;
         this.categoryService = categoryService;
         this.targetBannerRepository = targetBannerRepository;
@@ -97,7 +101,6 @@ public class AppDashboardController {
     public ResponseEntity<?> getSectionMobileCatalogue(@RequestParam("target") String target) {
         JSONObject responseMap = new JSONObject();
         List<JSONObject> catalogues = new ArrayList<>();
-        JSONObject catalogue = new JSONObject();
         targetSectionRepository.findTargetSectionByTargetId(Integer.valueOf(target))
                 .forEach(targetSection -> {
                     JSONObject insideCatalogue = new JSONObject();
@@ -109,6 +112,9 @@ public class AppDashboardController {
 
                     targetSectionChildrenRepository.findTargetSectionChildrenByTargetSectionId(targetSection.getId())
                             .forEach(targetSectionChildren -> {
+                                JSONObject item = new JSONObject();
+                                item.put("sectionType", targetSectionChildren.getType());
+                                item.put("sectionDescription", targetSectionChildren.getDescription());
                                 /*
                                 Brand
                                 Product
@@ -117,28 +123,26 @@ public class AppDashboardController {
                                 SubCategory
                                  */
                                 if (targetSectionChildren.getType().equals("Brand")) {
-                                    JSONObject item = categoryService.getBrandInfo(targetSectionChildren.getItemId());
-                                    items.add(item);
+                                    JSONObject response = categoryService.getBrandInfo(targetSectionChildren.getItemId());
+                                    items.add(globalMethods.mergeJSONObjects(response, item));
                                 } else if (targetSectionChildren.getType().equals("Product")) {
-                                    JSONObject item = productService.getProductDetail(Long.valueOf(targetSectionChildren.getItemId()));
-                                    items.add(item);
+                                    JSONObject response = productService.getProductDetail(Long.valueOf(targetSectionChildren.getItemId()));
+                                    items.add(globalMethods.mergeJSONObjects(response, item));
                                 } else if (targetSectionChildren.getType().equals("ParentCategory")) {
-                                    JSONObject item = categoryService.getParentCatInfo(Long.valueOf(targetSectionChildren.getItemId()));
-                                    items.add(item);
+                                    JSONObject response = categoryService.getParentCatInfo(Long.valueOf(targetSectionChildren.getItemId()));
+                                    items.add(globalMethods.mergeJSONObjects(response, item));
                                 } else if (targetSectionChildren.getType().equals("Category")) {
-                                    JSONObject item = categoryService.getCategoryInfo(Long.valueOf(targetSectionChildren.getItemId()));
-                                    items.add(item);
+                                    JSONObject response = categoryService.getCategoryInfo(Long.valueOf(targetSectionChildren.getItemId()));
+                                    items.add(globalMethods.mergeJSONObjects(response, item));
                                 } else if (targetSectionChildren.getType().equals("SubCategory")) {
-                                    JSONObject item = categoryService.getSubCategoryInfo(Long.valueOf(targetSectionChildren.getItemId()));
-                                    items.add(item);
+                                    JSONObject response = categoryService.getSubCategoryInfo(Long.valueOf(targetSectionChildren.getItemId()));
+                                    items.add(globalMethods.mergeJSONObjects(response, item));
                                 }
 
                             });
                     insideCatalogue.put("items", items);
-                    // catalogue.put(tarSchema.getTargetKey(), insideCatalogue);
                     catalogues.add(insideCatalogue);
                 });
-        //catalogues.add(catalogue);
         responseMap.put("statusCode", ResponseCodes.SUCCESS)
                 .put("statusDescription", "success")
                 .put("catalogue", catalogues)
