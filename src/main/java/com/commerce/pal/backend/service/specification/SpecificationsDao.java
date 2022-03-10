@@ -53,15 +53,15 @@ public class SpecificationsDao {
     }
 
 
-    public List<Product> getCustomerOrder(final List<SearchCriteria> params) {
+    public List<Product> getOrderHistory(final List<SearchCriteria> params) {
         final CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         final CriteriaQuery<Product> query = builder.createQuery(Product.class);
         final Root r = query.from(Product.class);
 
         Predicate predicate = builder.conjunction();
-        SpecificationQueryCriteriaConsumer searchProduct = new SpecificationQueryCriteriaConsumer(predicate, builder, r);
-        params.stream().forEach(searchProduct);
-        predicate = searchProduct.getPredicate();
+        SpecificationQueryCriteriaConsumer searchOrder = new SpecificationQueryCriteriaConsumer(predicate, builder, r);
+        params.stream().forEach(searchOrder);
+        predicate = searchOrder.getPredicate();
         query.where(predicate);
 
         return entityManager.createQuery(query).getResultList();

@@ -10,6 +10,7 @@ import com.commerce.pal.backend.service.specification.utils.SearchCriteria;
 import lombok.extern.java.Log;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -43,6 +44,65 @@ public class ProductManagementController {
         this.specificationsDao = specificationsDao;
         this.productRepository = productRepository;
         this.productImageRepository = productImageRepository;
+    }
+
+    @RequestMapping(value = "/add-product", method = RequestMethod.POST)
+    public ResponseEntity<?> addProduct(@RequestBody String req) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            JSONObject request = new JSONObject(req);
+            request.put("merchantId", "0");
+            request.put("productImage", "defaultImage.png");
+            request.put("isPromoted", "0");
+            request.put("isPrioritized", "0");
+            request.put("ownerType", "WAREHOUSE");
+            JSONObject retDet = productService.doAddProduct(request);
+            int returnValue = retDet.getInt("returnValue");
+            if (returnValue == 1) {
+                responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                        .put("statusDescription", "failed to process request")
+                        .put("statusMessage", "internal system error");
+            } else {
+                int exists = retDet.getInt("exists");
+                if (exists == 1) {
+                    responseMap.put("statusCode", ResponseCodes.REGISTERED)
+
+                            .put("statusDescription", "Product already added")
+                            .put("statusMessage", "Product already added");
+                } else {
+                    responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                            .put("statusDescription", "success")
+                            .put("productId", retDet.getInt("exists"))
+                            .put("statusMessage", "Product successful");
+                }
+            }
+
+        } catch (Exception e) {
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("statusMessage", "internal system error");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
+    }
+
+    @RequestMapping(value = {"/GetProductById"}, method = {RequestMethod.GET}, produces = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<?> GetProductById(@RequestParam("product") String product) {
+        JSONObject responseMap = new JSONObject();
+        productRepository.findById(Long.valueOf(product))
+                .ifPresentOrElse(pro -> {
+                    JSONObject detail = productService.getProductDetail(pro.getProductId());
+                    responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                            .put("statusDescription", "success")
+                            .put("detail", detail)
+                            .put("statusMessage", "Request Successful");
+                }, () -> {
+                    responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
+                            .put("statusDescription", "The product is not found")
+                            .put("statusMessage", "The product is not found");
+                });
+
+        return ResponseEntity.ok(responseMap.toString());
     }
 
     @RequestMapping(value = {"/approved"}, method = {RequestMethod.GET}, produces = {"application/json"})
@@ -199,6 +259,45 @@ public class ProductManagementController {
                 .put("statusDescription", "success")
                 .put("data", details)
                 .put("merchantInfo", merchantInfo)
+                .put("statusMessage", "Request Successful");
+        return ResponseEntity.ok(responseMap.toString());
+    }
+
+    @RequestMapping(value = {"/GetProducts"}, method = {RequestMethod.GET}, produces = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<?> GetProducts(@RequestParam("parent") Optional<String> parent,
+                                         @RequestParam("category ") Optional<String> category,
+                                         @RequestParam("subCat") Optional<String> subCat,
+                                         @RequestParam("brand") Optional<String> brand,
+                                         @RequestParam("product") Optional<String> product) {
+        JSONObject responseMap = new JSONObject();
+
+        List<SearchCriteria> params = new ArrayList<SearchCriteria>();
+        parent.ifPresent(value -> {
+            params.add(new SearchCriteria("productParentCateoryId", ":", value));
+        });
+        category.ifPresent(value -> {
+            params.add(new SearchCriteria("productCategoryId", ":", value));
+        });
+        subCat.ifPresent(value -> {
+            params.add(new SearchCriteria("productSubCategoryId", ":", value));
+        });
+        brand.ifPresent(value -> {
+            params.add(new SearchCriteria("manufucturer", ":", value));
+        });
+        product.ifPresent(value -> {
+            params.add(new SearchCriteria("productId", ":", value));
+        });
+        params.add(new SearchCriteria("status", ":", 1));
+        List<JSONObject> details = new ArrayList<>();
+        specificationsDao.getProducts(params)
+                .forEach(pro -> {
+                    JSONObject detail = productService.getProductDetail(pro.getProductId());
+                    details.add(detail);
+                });
+        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                .put("statusDescription", "success")
+                .put("details", details)
                 .put("statusMessage", "Request Successful");
         return ResponseEntity.ok(responseMap.toString());
     }

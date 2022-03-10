@@ -9,7 +9,7 @@ import java.util.Objects;
 
 @Data
 @Entity
-@Table(name = "[Order]")
+@Table(name = "Order")
 public class Order {
     @Id
     @Column(name = "OrderId")
@@ -28,6 +28,9 @@ public class Order {
     @Column(name = "AgentId")
     private Long agentId;
     @Basic
+    @Column(name = "BusinessId")
+    private Long businessId;
+    @Basic
     @Column(name = "PaymentMethod")
     private String paymentMethod;
     @Basic
@@ -45,10 +48,12 @@ public class Order {
     @Basic
     @Column(name = "DeliveryPrice")
     private BigDecimal deliveryPrice;
-
     @Basic
     @Column(name = "OrderDate")
     private Timestamp orderDate;
+    @Basic
+    @Column(name = "IsAgentInitiated")
+    private Integer isAgentInitiated;
     @Basic
     @Column(name = "Status")
     private Integer status;

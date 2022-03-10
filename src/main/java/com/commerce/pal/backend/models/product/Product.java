@@ -31,6 +31,9 @@ public class Product {
     @Column(name = "ProductSubCategoryId")
     private Long productSubCategoryId;
     @Basic
+    @Column(name = "ProductType")
+    private String productType;
+    @Basic
     @Column(name = "ProductName")
     private String productName;
     @Basic
