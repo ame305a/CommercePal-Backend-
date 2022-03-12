@@ -9,6 +9,9 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Log
 @Service
 @SuppressWarnings("Duplicates")
@@ -41,6 +44,15 @@ public class CategoryService {
                     detail.put("mobileThumbnail", data.getMobileThumbnail());
                 });
         return detail;
+    }
+
+    public List<JSONObject> getParentCategories() {
+        List<JSONObject> details = new ArrayList<>();
+        productParentCategoryRepository.findAll().forEach(cat -> {
+            JSONObject detail = getParentCatInfo(cat.getId());
+            details.add(detail);
+        });
+        return details;
     }
 
     public JSONObject getParentCatInfo(Long id) {

@@ -1,4 +1,4 @@
-package com.commerce.pal.backend.controller.customer;
+package com.commerce.pal.backend.controller.app;
 
 import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.module.product.CategoryService;
@@ -7,7 +7,6 @@ import com.commerce.pal.backend.repo.app_settings.TargetBannerRepository;
 import com.commerce.pal.backend.repo.app_settings.TargetSectionChildrenRepository;
 import com.commerce.pal.backend.repo.app_settings.TargetSectionRepository;
 import com.commerce.pal.backend.repo.app_settings.TargetSettingRepository;
-import com.commerce.pal.backend.service.specification.utils.SearchCriteria;
 import com.commerce.pal.backend.utils.GlobalMethods;
 import lombok.extern.java.Log;
 import org.json.JSONObject;
@@ -17,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Log
 @CrossOrigin(origins = {"*"}, maxAge = 3600L)

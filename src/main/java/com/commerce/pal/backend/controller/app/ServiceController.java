@@ -1,4 +1,4 @@
-package com.commerce.pal.backend.controller.common;
+package com.commerce.pal.backend.controller.app;
 
 import com.commerce.pal.backend.repo.setting.BankRepository;
 import com.commerce.pal.backend.repo.setting.CityRepository;

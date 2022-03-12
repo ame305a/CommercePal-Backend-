@@ -87,11 +87,7 @@ public class CategoriesController {
     @ResponseBody
     public ResponseEntity<?> GetParentCategories() {
         JSONObject responseMap = new JSONObject();
-        List<JSONObject> details = new ArrayList<>();
-        productParentCategoryRepository.findAll().forEach(cat -> {
-            JSONObject detail = categoryService.getParentCatInfo(cat.getId());
-            details.add(detail);
-        });
+        List<JSONObject> details = categoryService.getParentCategories();
         responseMap.put("statusCode", ResponseCodes.SUCCESS)
                 .put("statusDescription", "success")
                 .put("details", details)

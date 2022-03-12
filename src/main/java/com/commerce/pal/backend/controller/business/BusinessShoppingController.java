@@ -1,4 +1,4 @@
-package com.commerce.pal.backend.controller.common;
+package com.commerce.pal.backend.controller.business;
 
 import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.module.product.ProductService;
@@ -17,16 +17,16 @@ import java.util.Optional;
 @Log
 @CrossOrigin(origins = {"*"}, maxAge = 3600L)
 @RestController
-@RequestMapping({"/prime/api/v1/app"})
+@RequestMapping({"/prime/api/v1/business/shopping"})
 @SuppressWarnings("Duplicates")
-public class ProductController {
+public class BusinessShoppingController {
 
     private final ProductService productService;
     private final SpecificationsDao specificationsDao;
 
     @Autowired
-    public ProductController(ProductService productService,
-                             SpecificationsDao specificationsDao) {
+    public BusinessShoppingController(ProductService productService,
+                                      SpecificationsDao specificationsDao) {
         this.productService = productService;
         this.specificationsDao = specificationsDao;
     }
@@ -34,10 +34,10 @@ public class ProductController {
     @RequestMapping(value = {"/get-products"}, method = {RequestMethod.GET}, produces = {"application/json"})
     @ResponseBody
     public ResponseEntity<?> getProducts(@RequestParam("parent") Optional<String> parent,
-                                        @RequestParam("category ") Optional<String> category,
-                                        @RequestParam("subCat") Optional<String> subCat,
-                                        @RequestParam("brand") Optional<String> brand,
-                                        @RequestParam("product") Optional<String> product) {
+                                         @RequestParam("category ") Optional<String> category,
+                                         @RequestParam("subCat") Optional<String> subCat,
+                                         @RequestParam("brand") Optional<String> brand,
+                                         @RequestParam("product") Optional<String> product) {
         JSONObject responseMap = new JSONObject();
 
         List<SearchCriteria> params = new ArrayList<SearchCriteria>();
@@ -57,6 +57,8 @@ public class ProductController {
             params.add(new SearchCriteria("productId", ":", value));
         });
         params.add(new SearchCriteria("status", ":", 1));
+        params.add(new SearchCriteria("productType", ":", "WHOLESALE"));
+
         List<JSONObject> details = new ArrayList<>();
         specificationsDao.getProducts(params)
                 .forEach(pro -> {

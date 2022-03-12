@@ -1,11 +1,9 @@
-package com.commerce.pal.backend.controller.multi;
+package com.commerce.pal.backend.controller.business;
 
 import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.integ.EmailClient;
 import com.commerce.pal.backend.models.LoginValidation;
-import com.commerce.pal.backend.module.multi.AgentService;
 import com.commerce.pal.backend.module.multi.BusinessService;
-import com.commerce.pal.backend.repo.user.AgentRepository;
 import com.commerce.pal.backend.repo.user.BusinessRepository;
 import com.commerce.pal.backend.service.amazon.UploadService;
 import com.commerce.pal.backend.utils.GlobalMethods;
@@ -24,9 +22,9 @@ import java.util.concurrent.atomic.AtomicReference;
 @Log
 @CrossOrigin(origins = {"*"}, maxAge = 3600L)
 @RestController
-@RequestMapping({"/prime/api/v1/agent"})
+@RequestMapping({"/prime/api/v1/business"})
 @SuppressWarnings("Duplicates")
-public class AgentController {
+public class BusinessController {
 
     @Autowired
     private EmailClient emailClient;
@@ -34,16 +32,16 @@ public class AgentController {
     private UploadService uploadService;
 
     private final GlobalMethods globalMethods;
-    private final AgentService agentService;
-    private final AgentRepository agentRepository;
+    private final BusinessService businessService;
+    private final BusinessRepository businessRepository;
 
     @Autowired
-    public AgentController(GlobalMethods globalMethods,
-                           AgentService agentService,
-                           AgentRepository agentRepository) {
+    public BusinessController(GlobalMethods globalMethods,
+                              BusinessService businessService,
+                              BusinessRepository businessRepository) {
         this.globalMethods = globalMethods;
-        this.agentService = agentService;
-        this.agentRepository = agentRepository;
+        this.businessService = businessService;
+        this.businessRepository = businessRepository;
     }
 
     @RequestMapping(value = "/accept-terms", method = RequestMethod.POST)
@@ -52,21 +50,21 @@ public class AgentController {
         try {
             JSONObject request = new JSONObject(req);
             LoginValidation user = globalMethods.fetchUserDetails();
-            agentRepository.findAgentByEmailAddress(user.getEmailAddress())
-                    .ifPresentOrElse(agent -> {
-                        if (agent.getTermsOfServiceStatus().equals(1)) {
+            businessRepository.findBusinessByEmailAddress(user.getEmailAddress())
+                    .ifPresentOrElse(business -> {
+                        if (business.getTermsOfServiceStatus().equals(1)) {
                             responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
                                     .put("statusDescription", "Merchant has already accepted terms of service")
                                     .put("statusMessage", "Merchant has already accepted terms of service");
                         } else {
-                            agent.setTermsOfServiceStatus(1);
-                            agent.setTermsOfServiceDate(Timestamp.from(Instant.now()));
-                            agent.setStatus(1);
-                            agentRepository.save(agent);
+                            business.setTermsOfServiceStatus(1);
+                            business.setTermsOfServiceDate(Timestamp.from(Instant.now()));
+                            business.setStatus(1);
+                            businessRepository.save(business);
                             JSONObject emailBody = new JSONObject();
-                            emailBody.put("email", agent.getEmailAddress());
+                            emailBody.put("email", business.getEmailAddress());
                             emailBody.put("subject", "Terms of Service Agreement");
-                            emailBody.put("template", "agent-service-agreement.ftl");
+                            emailBody.put("template", "business-service-agreement.ftl");
                             emailClient.emailTemplateSender(emailBody);
                             responseMap.put("statusCode", ResponseCodes.SUCCESS)
                                     .put("statusDescription", "Successful")
@@ -74,8 +72,8 @@ public class AgentController {
                         }
                     }, () -> {
                         responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
-                                .put("statusDescription", "Agent Does not exists")
-                                .put("statusMessage", "Agent Does not exists");
+                                .put("statusDescription", "Merchant Does not exists")
+                                .put("statusMessage", "Merchant Does not exists");
                     });
 
         } catch (Exception e) {
@@ -92,15 +90,15 @@ public class AgentController {
         try {
             JSONObject request = new JSONObject(req);
             LoginValidation user = globalMethods.fetchUserDetails();
-            agentRepository.findAgentByEmailAddress(user.getEmailAddress())
-                    .ifPresentOrElse(agent -> {
-                        request.put("ownerType", agent.getOwnerType());
-                        request.put("ownerId", agent.getOwnerId().toString());
-                        responseMap.set(agentService.updateAgent(String.valueOf(agent.getAgentId()), request));
+            businessRepository.findBusinessByEmailAddress(user.getEmailAddress())
+                    .ifPresentOrElse(business -> {
+                        request.put("ownerType", business.getOwnerType());
+                        request.put("ownerId", business.getOwnerId().toString());
+                        responseMap.set(businessService.updateBusiness(String.valueOf(business.getBusinessId()), request));
                     }, () -> {
                         responseMap.get().put("statusCode", ResponseCodes.REQUEST_FAILED)
-                                .put("statusDescription", "Agent Does not exists")
-                                .put("statusMessage", "Agent Does not exists");
+                                .put("statusDescription", "Business Does not exists")
+                                .put("statusMessage", "Business Does not exists");
                     });
 
         } catch (Exception e) {
@@ -117,14 +115,14 @@ public class AgentController {
         AtomicReference<JSONObject> responseMap = new AtomicReference<>(new JSONObject());
         try {
             LoginValidation user = globalMethods.fetchUserDetails();
-            agentRepository.findAgentByEmailAddress(user.getEmailAddress())
-                    .ifPresentOrElse(agent -> {
-                        String imageFileUrl = uploadService.uploadFileAlone(multipartFile, "Web", "AGENT");
-                        responseMap.set(agentService.uploadDocs(String.valueOf(agent.getAgentId()), fileType, imageFileUrl));
+            businessRepository.findBusinessByEmailAddress(user.getEmailAddress())
+                    .ifPresentOrElse(business -> {
+                        String imageFileUrl = uploadService.uploadFileAlone(multipartFile, "Web", "BUSINESS");
+                        responseMap.set(businessService.uploadDocs(String.valueOf(business.getBusinessId()), fileType, imageFileUrl));
                     }, () -> {
                         responseMap.get().put("statusCode", ResponseCodes.REQUEST_FAILED)
-                                .put("statusDescription", "agent Does not exists")
-                                .put("statusMessage", "agent Does not exists");
+                                .put("statusDescription", "Business Does not exists")
+                                .put("statusMessage", "Business Does not exists");
                     });
         } catch (Exception e) {
             responseMap.get().put("statusCode", ResponseCodes.SYSTEM_ERROR)
