@@ -1,8 +1,9 @@
-package com.commerce.pal.backend.controller.business;
+package com.commerce.pal.backend.controller.agent;
 
 import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.models.LoginValidation;
 import com.commerce.pal.backend.module.transaction.OrderProcessingService;
+import com.commerce.pal.backend.repo.user.AgentRepository;
 import com.commerce.pal.backend.repo.user.BusinessRepository;
 import com.commerce.pal.backend.service.specification.SpecificationsDao;
 import com.commerce.pal.backend.utils.GlobalMethods;
@@ -17,23 +18,23 @@ import java.util.List;
 @Log
 @CrossOrigin(origins = {"*"}, maxAge = 3600L)
 @RestController
-@RequestMapping({"/prime/api/v1/business/order"})
+@RequestMapping({"/prime/api/v1/agent/order"})
 @SuppressWarnings("Duplicates")
-public class BUsinessOrderController {
+public class AgentOrderController {
 
     private final GlobalMethods globalMethods;
     private final SpecificationsDao specificationsDao;
-    private final BusinessRepository businessRepository;
+    private final AgentRepository agentRepository;
     private final OrderProcessingService orderProcessingService;
 
     @Autowired
-    public BUsinessOrderController(GlobalMethods globalMethods,
-                                   SpecificationsDao specificationsDao,
-                                   BusinessRepository businessRepository,
-                                   OrderProcessingService orderProcessingService) {
+    public AgentOrderController(GlobalMethods globalMethods,
+                                SpecificationsDao specificationsDao,
+                                AgentRepository agentRepository,
+                                OrderProcessingService orderProcessingService) {
         this.globalMethods = globalMethods;
         this.specificationsDao = specificationsDao;
-        this.businessRepository = businessRepository;
+        this.agentRepository = agentRepository;
         this.orderProcessingService = orderProcessingService;
     }
 
@@ -42,8 +43,8 @@ public class BUsinessOrderController {
     public ResponseEntity<?> orderSummary() {
         JSONObject responseMap = new JSONObject();
         LoginValidation user = globalMethods.fetchUserDetails();
-        businessRepository.findBusinessByEmailAddress(user.getEmailAddress())
-                .ifPresentOrElse(merchant -> {
+        agentRepository.findAgentByEmailAddress(user.getEmailAddress())
+                .ifPresentOrElse(agent -> {
                     List<JSONObject> details = orderProcessingService.getOrderSummary(responseMap);
                     responseMap.put("statusCode", ResponseCodes.SUCCESS)
                             .put("statusDescription", "success")

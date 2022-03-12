@@ -1,8 +1,9 @@
-package com.commerce.pal.backend.controller.business;
+package com.commerce.pal.backend.controller.agent;
 
 import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.models.LoginValidation;
 import com.commerce.pal.backend.module.transaction.TransactionProcessingService;
+import com.commerce.pal.backend.repo.user.AgentRepository;
 import com.commerce.pal.backend.repo.user.BusinessRepository;
 import com.commerce.pal.backend.utils.GlobalMethods;
 import lombok.extern.java.Log;
@@ -16,20 +17,20 @@ import java.util.List;
 @Log
 @CrossOrigin(origins = {"*"}, maxAge = 3600L)
 @RestController
-@RequestMapping({"/prime/api/v1/business/transaction"})
+@RequestMapping({"/prime/api/v1/agent/transaction"})
 @SuppressWarnings("Duplicates")
-public class BusinessTransactionController {
+public class AgentTransactionController {
 
     private final GlobalMethods globalMethods;
-    private final BusinessRepository businessRepository;
+    private final AgentRepository agentRepository;
     private final TransactionProcessingService transactionProcessingService;
 
     @Autowired
-    public BusinessTransactionController(GlobalMethods globalMethods,
-                                         BusinessRepository businessRepository,
-                                         TransactionProcessingService transactionProcessingService) {
+    public AgentTransactionController(GlobalMethods globalMethods,
+                                      AgentRepository agentRepository,
+                                      TransactionProcessingService transactionProcessingService) {
         this.globalMethods = globalMethods;
-        this.businessRepository = businessRepository;
+        this.agentRepository = agentRepository;
         this.transactionProcessingService = transactionProcessingService;
     }
 
@@ -38,8 +39,8 @@ public class BusinessTransactionController {
     public ResponseEntity<?> getPaymentSummary() {
         JSONObject responseMap = new JSONObject();
         LoginValidation user = globalMethods.fetchUserDetails();
-        businessRepository.findBusinessByEmailAddress(user.getEmailAddress())
-                .ifPresentOrElse(business -> {
+        agentRepository.findAgentByEmailAddress(user.getEmailAddress())
+                .ifPresentOrElse(agent -> {
                     List<JSONObject> details = transactionProcessingService.getPayment(responseMap);
                     responseMap.put("statusCode", ResponseCodes.SUCCESS)
                             .put("statusDescription", "success")
@@ -58,8 +59,8 @@ public class BusinessTransactionController {
     public ResponseEntity<?> getCommissionSummary() {
         JSONObject responseMap = new JSONObject();
         LoginValidation user = globalMethods.fetchUserDetails();
-        businessRepository.findBusinessByEmailAddress(user.getEmailAddress())
-                .ifPresentOrElse(business -> {
+        agentRepository.findAgentByEmailAddress(user.getEmailAddress())
+                .ifPresentOrElse(agent -> {
                     List<JSONObject> details = transactionProcessingService.getPayment(responseMap);
                     responseMap.put("statusCode", ResponseCodes.SUCCESS)
                             .put("statusDescription", "success")
