@@ -1,6 +1,7 @@
 package com.commerce.pal.backend.module.product;
 
 import com.commerce.pal.backend.common.ResponseCodes;
+import com.commerce.pal.backend.models.product.Product;
 import com.commerce.pal.backend.module.database.ProductDatabaseService;
 import com.commerce.pal.backend.repo.product.*;
 import com.commerce.pal.backend.service.specification.SpecificationsDao;
@@ -182,4 +183,6 @@ public class ProductService {
         }
         return detail;
     }
+
+
 }

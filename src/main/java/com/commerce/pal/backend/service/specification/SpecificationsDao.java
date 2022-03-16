@@ -3,6 +3,7 @@ package com.commerce.pal.backend.service.specification;
 
 import com.commerce.pal.backend.models.product.Product;
 import com.commerce.pal.backend.models.product.ProductCategory;
+import com.commerce.pal.backend.models.transaction.AgentFloat;
 import com.commerce.pal.backend.service.specification.utils.SearchCriteria;
 import com.commerce.pal.backend.service.specification.utils.SpecificationQueryCriteriaConsumer;
 import lombok.extern.java.Log;
@@ -62,6 +63,20 @@ public class SpecificationsDao {
         SpecificationQueryCriteriaConsumer searchOrder = new SpecificationQueryCriteriaConsumer(predicate, builder, r);
         params.stream().forEach(searchOrder);
         predicate = searchOrder.getPredicate();
+        query.where(predicate);
+
+        return entityManager.createQuery(query).getResultList();
+    }
+
+    public List<AgentFloat> getAgentRequest(final List<SearchCriteria> params) {
+        final CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        final CriteriaQuery<AgentFloat> query = builder.createQuery(AgentFloat.class);
+        final Root r = query.from(Product.class);
+
+        Predicate predicate = builder.conjunction();
+        SpecificationQueryCriteriaConsumer searchRequest = new SpecificationQueryCriteriaConsumer(predicate, builder, r);
+        params.stream().forEach(searchRequest);
+        predicate = searchRequest.getPredicate();
         query.where(predicate);
 
         return entityManager.createQuery(query).getResultList();

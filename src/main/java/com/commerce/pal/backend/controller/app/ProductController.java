@@ -1,22 +1,27 @@
 package com.commerce.pal.backend.controller.app;
 
 import com.commerce.pal.backend.common.ResponseCodes;
+import com.commerce.pal.backend.models.LoginValidation;
 import com.commerce.pal.backend.module.product.CategoryService;
 import com.commerce.pal.backend.module.product.ProductService;
 import com.commerce.pal.backend.repo.product.BrandImageRepository;
 import com.commerce.pal.backend.repo.product.ProductCategoryRepository;
+import com.commerce.pal.backend.repo.product.ProductRepository;
 import com.commerce.pal.backend.repo.product.ProductSubCategoryRepository;
 import com.commerce.pal.backend.service.specification.SpecificationsDao;
 import com.commerce.pal.backend.service.specification.utils.SearchCriteria;
 import lombok.extern.java.Log;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Level;
 
 @Log
 @CrossOrigin(origins = {"*"}, maxAge = 3600L)
@@ -28,6 +33,7 @@ public class ProductController {
     private final ProductService productService;
     private final CategoryService categoryService;
     private final SpecificationsDao specificationsDao;
+    private final ProductRepository productRepository;
     private final BrandImageRepository brandImageRepository;
     private final ProductCategoryRepository productCategoryRepository;
     private final ProductSubCategoryRepository productSubCategoryRepository;
@@ -36,12 +42,14 @@ public class ProductController {
     public ProductController(ProductService productService,
                              CategoryService categoryService,
                              SpecificationsDao specificationsDao,
+                             ProductRepository productRepository,
                              BrandImageRepository brandImageRepository,
                              ProductCategoryRepository productCategoryRepository,
                              ProductSubCategoryRepository productSubCategoryRepository) {
         this.productService = productService;
         this.categoryService = categoryService;
         this.specificationsDao = specificationsDao;
+        this.productRepository = productRepository;
         this.brandImageRepository = brandImageRepository;
         this.productCategoryRepository = productCategoryRepository;
         this.productSubCategoryRepository = productSubCategoryRepository;
@@ -161,10 +169,66 @@ public class ProductController {
                     JSONObject detail = productService.getProductDetail(pro.getProductId());
                     details.add(detail);
                 });
-        responseMap.put("statusCode", ResponseCodes.SUCCESS)
-                .put("statusDescription", "success")
+        if (details.isEmpty()) {
+                responseMap.put("statusCode", ResponseCodes.NOT_EXIST);
+        } else {
+            responseMap.put("statusCode", ResponseCodes.SUCCESS);
+        }
+        responseMap.put("statusDescription", "success")
                 .put("details", details)
                 .put("statusMessage", "Request Successful");
         return ResponseEntity.ok(responseMap.toString());
+    }
+
+
+    @RequestMapping(value = "/get-pricing", method = RequestMethod.POST)
+    public ResponseEntity<?> updatePricing(@RequestBody String checkOut) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            JSONObject request = new JSONObject(checkOut);
+            productRepository.findById(Long.valueOf(request.getInt("productId")))
+                    .ifPresentOrElse(product -> {
+                        JSONObject proValue = new JSONObject();
+                        proValue.put("UnitPrice", product.getUnitPrice());
+                        proValue.put("Quantity", request.getInt("quantity"));
+                        proValue.put("IsDiscounted", product.getIsDiscounted());
+                        if (product.getIsDiscounted().equals(1)) {
+                            proValue.put("DiscountType", product.getDiscountType());
+
+                            Double discountAmount = 0D;
+                            if (product.getDiscountType().equals("FIXED")) {
+                                proValue.put("DiscountValue", product.getDiscountValue());
+                                proValue.put("DiscountAmount", product.getDiscountValue());
+                            } else {
+                                discountAmount = product.getUnitPrice().doubleValue() * product.getDiscountValue().doubleValue() / 100;
+                                proValue.put("DiscountValue", product.getDiscountValue());
+                                proValue.put("DiscountAmount", new BigDecimal(discountAmount));
+                            }
+                        } else {
+                            proValue.put("DiscountType", "NotDiscounted");
+                            proValue.put("DiscountValue", new BigDecimal(0));
+                            proValue.put("DiscountAmount", new BigDecimal(0));
+                        }
+
+                        proValue.put("TotalUnitPrice", new BigDecimal(product.getUnitPrice().doubleValue() * Double.valueOf(request.getInt("quantity"))));
+                        proValue.put("TotalDiscount", new BigDecimal(proValue.getBigDecimal("DiscountAmount").doubleValue() * Double.valueOf(request.getInt("quantity"))));
+                        proValue.put("FinalPrice", proValue.getBigDecimal("TotalUnitPrice").doubleValue() - proValue.getBigDecimal("TotalDiscount").doubleValue());
+                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                .put("productPricing", proValue)
+                                .put("statusDescription", "Product Passed")
+                                .put("statusMessage", "Product Passed");
+                    }, () -> {
+                        responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
+                                .put("statusDescription", "Invalid Product Passed")
+                                .put("statusMessage", "Invalid Product Passed");
+                    });
+
+        } catch (Exception e) {
+            log.log(Level.WARNING, "GET PRICING ERROR : " + e.getMessage());
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("statusMessage", "internal system error");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
     }
 }
