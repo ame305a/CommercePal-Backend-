@@ -207,6 +207,9 @@ public class GlobalMethods {
             case "MESSENGER":
                 results = messengerRepository.findMessengerByEmailAddress(email).get().getMessengerId();
                 break;
+            case "CUSTOMER":
+                results = customerRepository.findCustomerByEmailAddress(email).get().getCustomerId();
+                break;
         }
         return String.valueOf(results);
     }

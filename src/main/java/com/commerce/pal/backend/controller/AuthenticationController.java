@@ -379,7 +379,7 @@ public class AuthenticationController {
     }
 
     @RequestMapping(value = "/registration", method = RequestMethod.POST)
-    public ResponseEntity<?> userRegistration(@RequestBody String registration) {
+    public ResponseEntity<?> customerRegistration(@RequestBody String registration) {
         JSONObject responseMap = new JSONObject();
 
         try {
@@ -390,29 +390,30 @@ public class AuthenticationController {
 
             responseMap = registrationStoreService.doCustomerRegistration(request);
 
-            int returnValue = responseMap.getInt("returnValue");
-            if (returnValue == 1) {
-                responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
-                        .put("statusDescription", "failed to process request")
-                        .put("statusMessage", "internal system error");
+            int exists = responseMap.getInt("exists");
+            String userId = globalMethods.getUserId("CUSTOMER", request.getString("email").trim());
+
+            if (exists == 1) {
+                responseMap.put("statusCode", ResponseCodes.REGISTERED)
+                        .put("statusDescription", "email address already registered")
+                        .put("statusMessage", "registration exists");
+            } else if (exists == -1) {
+                responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                        .put("userId", userId)
+                        .put("statusDescription", "success. Use current login details")
+                        .put("statusMessage", "registration successful. Use current login details");
             } else {
+                responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                        .put("userId", userId)
+                        .put("statusDescription", "success")
+                        .put("statusMessage", "registration successful");
 
-                int exists = responseMap.getInt("exists");
+                String msg = "Welcome to CommercePal! Your CUSTOMER Account has been created. " +
+                        "Username is " + request.getString("email").trim() + " and password : " + password;
 
-                if (exists == 1) {
-                    responseMap.put("statusCode", ResponseCodes.REGISTERED)
-                            .put("statusDescription", "email address already registered")
-                            .put("statusMessage", "registration exists");
-                } else {
-                    responseMap.put("statusCode", ResponseCodes.SUCCESS)
-                            .put("statusDescription", "success")
-                            .put("statusMessage", "registration successful");
-
-                    String msg = "Welcome to CommercePal! Your username is " + request.getString("email").trim()
-                            + " and password : " + password;
-                    emailClient.emailSender(msg, request.getString("email").trim(), "REGISTRATION");
-                }
+                emailClient.emailSender(msg, request.getString("email").trim(), "REGISTRATION");
             }
+
         } catch (Exception e) {
             log.log(Level.WARNING, "User Registration Error : " + e.getMessage());
             responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
