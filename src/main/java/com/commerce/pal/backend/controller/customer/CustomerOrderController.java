@@ -6,6 +6,7 @@ import com.commerce.pal.backend.models.LoginValidation;
 import com.commerce.pal.backend.models.order.LoanOrder;
 import com.commerce.pal.backend.models.order.Order;
 import com.commerce.pal.backend.models.order.OrderItem;
+import com.commerce.pal.backend.models.user.CustomerAddress;
 import com.commerce.pal.backend.repo.order.LoanOrderRepository;
 import com.commerce.pal.backend.repo.order.OrderItemRepository;
 import com.commerce.pal.backend.repo.order.OrderRepository;
@@ -92,11 +93,14 @@ public class CustomerOrderController {
                         newOrder.set(orderRepository.save(newOrder.get()));
                         AtomicReference<Double> totalAmount = new AtomicReference<>(0d);
                         AtomicReference<Double> totalDiscount = new AtomicReference<>(0d);
+                        AtomicReference<Integer> count = new AtomicReference<>(0);
                         items.forEach(item -> {
+                            count.set(count.get() + 1);
                             JSONObject itmValue = new JSONObject(item.toString());
                             productRepository.findById(Long.valueOf(itmValue.getInt("productId")))
                                     .ifPresentOrElse(product -> {
                                         OrderItem orderItem = new OrderItem();
+                                        orderItem.setSubOrderNumber(transRef + "-" + count.get().toString());
                                         orderItem.setOrderId(newOrder.get().getOrderId());
                                         orderItem.setProductLinkingId(product.getProductId());
                                         orderItem.setMerchantId(product.getMerchantId());
@@ -222,7 +226,6 @@ public class CustomerOrderController {
         JSONObject responseMap = new JSONObject();
         try {
             JSONObject request = new JSONObject(checkOut);
-
             orderRepository.findOrderByOrderRef(request.getString("orderRef"))
                     .ifPresentOrElse(order -> {
                         loanOrderRepository.findLoanOrderByOrderId(order.getOrderId())
@@ -321,5 +324,32 @@ public class CustomerOrderController {
                     rate.put("Rate", 0);
                 });
         return rate;
+    }
+
+    @RequestMapping(value = "/assign-delivery-address", method = RequestMethod.POST)
+    public ResponseEntity<?> assignDeliveryAddress(@RequestBody String checkOut) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            JSONObject reqBody = new JSONObject(checkOut);
+            LoginValidation user = globalMethods.fetchUserDetails();
+
+            customerRepository.findCustomerByEmailAddress(user.getEmailAddress())
+                    .ifPresentOrElse(customer -> {
+
+                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                .put("statusDescription", "success")
+                                .put("statusMessage", "success");
+                    }, () -> {
+                        responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                                .put("statusDescription", "failed to process request")
+                                .put("statusMessage", "internal system error");
+                    });
+        } catch (Exception e) {
+            log.log(Level.WARNING, "CUSTOMER DELIVERY ADDRESS INFO : " + e.getMessage());
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("statusMessage", "internal system error");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
     }
 }

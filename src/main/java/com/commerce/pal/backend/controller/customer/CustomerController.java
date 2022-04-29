@@ -79,8 +79,6 @@ public class CustomerController {
         this.shipmentPricingRepository = shipmentPricingRepository;
     }
 
-
-
     @RequestMapping(value = "/update-user-info", method = RequestMethod.POST)
     public ResponseEntity<?> updateUserInfo(@RequestBody String checkOut) {
         JSONObject responseMap = new JSONObject();
@@ -115,8 +113,6 @@ public class CustomerController {
         return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
     }
 
-
-
     @RequestMapping(value = "/add-delivery-address", method = RequestMethod.POST)
     public ResponseEntity<?> addDeliveryAddress(@RequestBody String checkOut) {
         JSONObject responseMap = new JSONObject();
@@ -128,6 +124,7 @@ public class CustomerController {
                     .ifPresentOrElse(customer -> {
                         CustomerAddress customerAddress = new CustomerAddress();
                         customerAddress.setCustomerId(customer.getCustomerId());
+                        customerAddress.setRegionId(reqBody.getInt("regionId"));
                         customerAddress.setCountry(reqBody.getString("country"));
                         customerAddress.setCity(reqBody.getString("city"));
                         customerAddress.setSubCity(reqBody.getString("subCity"));
@@ -157,9 +154,7 @@ public class CustomerController {
     public ResponseEntity<?> getDeliveryAddress() {
         JSONObject responseMap = new JSONObject();
         try {
-
             LoginValidation user = globalMethods.fetchUserDetails();
-
             customerRepository.findCustomerByEmailAddress(user.getEmailAddress())
                     .ifPresentOrElse(customer -> {
                         List<JSONObject> addresses = new ArrayList<>();
@@ -172,6 +167,7 @@ public class CustomerController {
                                     payload.put("physicalAddress", customerAddress.getPhysicalAddress());
                                     payload.put("latitude", customerAddress.getLatitude());
                                     payload.put("longitude", customerAddress.getLongitude());
+                                    payload.put("addressId", customerAddress.getId());
                                     addresses.add(payload);
                                 });
                         responseMap.put("statusCode", ResponseCodes.SUCCESS)

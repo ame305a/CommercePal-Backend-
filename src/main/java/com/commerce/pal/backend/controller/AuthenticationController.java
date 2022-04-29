@@ -180,7 +180,7 @@ public class AuthenticationController {
                                 .put("statusDescription", "success")
                                 .put("statusMessage", "Change Password was successful");
                     }, () -> {
-                        responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                        responseMap.put("statusCode", ResponseCodes.NOT_REGISTERED)
                                 .put("statusDescription", "The User does not exists")
                                 .put("statusMessage", "The User does not exists");
                     });
