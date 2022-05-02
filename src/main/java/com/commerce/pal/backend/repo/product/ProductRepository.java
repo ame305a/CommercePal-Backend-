@@ -23,4 +23,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query(value = "SELECT ProductSubCategoryId  FROM Product WHERE MerchantId = ?1  GROUP BY ProductSubCategoryId", nativeQuery = true)
     List<Long> findProductsByProductSubCategoryId(Long merchant);
+
+    List<Product> findAllByProductParentCateoryId(Long category);
+
+    List<Product> findAllByProductCategoryId(Long category);
+
+    List<Product> findAllByProductSubCategoryId(Long category);
 }

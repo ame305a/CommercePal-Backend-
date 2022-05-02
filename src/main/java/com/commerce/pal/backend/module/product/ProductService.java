@@ -4,7 +4,6 @@ import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.models.product.Product;
 import com.commerce.pal.backend.module.database.ProductDatabaseService;
 import com.commerce.pal.backend.repo.product.*;
-import com.commerce.pal.backend.service.specification.SpecificationsDao;
 import lombok.extern.java.Log;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,22 +23,29 @@ import java.util.logging.Level;
 @Service
 @SuppressWarnings("Duplicates")
 public class ProductService {
+    private final CategoryService categoryService;
     private final ProductRepository productRepository;
-    private final SpecificationsDao specificationsDao;
-
+    private final ProductMoreRepository productMoreRepository;
     private final ProductDatabaseService productDatabaseService;
     private final ProductImageRepository productImageRepository;
-
+    private final ProductCategoryService productCategoryService;
+    private final ProductMoreTemplateRepository productMoreTemplateRepository;
 
     @Autowired
-    public ProductService(ProductRepository productRepository,
-                          SpecificationsDao specificationsDao,
+    public ProductService(CategoryService categoryService,
+                          ProductRepository productRepository,
+                          ProductMoreRepository productMoreRepository,
                           ProductDatabaseService productDatabaseService,
-                          ProductImageRepository productImageRepository) {
+                          ProductImageRepository productImageRepository,
+                          ProductCategoryService productCategoryService,
+                          ProductMoreTemplateRepository productMoreTemplateRepository) {
+        this.categoryService = categoryService;
         this.productRepository = productRepository;
-        this.specificationsDao = specificationsDao;
+        this.productMoreRepository = productMoreRepository;
         this.productDatabaseService = productDatabaseService;
         this.productImageRepository = productImageRepository;
+        this.productCategoryService = productCategoryService;
+        this.productMoreTemplateRepository = productMoreTemplateRepository;
     }
 
     public JSONObject doAddProduct(JSONObject request) {
@@ -190,6 +196,55 @@ public class ProductService {
                         );
 
                         List<JSONObject> more = new ArrayList<>();
+
+                        productMoreRepository.findAll()
+                                .forEach(productMore -> {
+                                    JSONObject item = new JSONObject();
+                                    item.put("template", productMore.getTemplate());
+                                    item.put("catalogueType", productMore.getCatalogueType());
+                                    item.put("display_name", productMore.getDisplayName());
+                                    item.put("key", productMore.getMoreKey());
+
+                                    if (productMore.getPickType().equals("R")) {
+                                        List<JSONObject> items = new ArrayList<>();
+                                        if (productMore.getCatalogueType().equals("Brand")) {
+                                            //items = productCategoryService.getRandomProductsByParentCategory(pro.getManufucturer());
+                                        } else if (productMore.getCatalogueType().equals("Product")) {
+                                        } else if (productMore.getCatalogueType().equals("ParentCategory")) {
+                                            items = productCategoryService.getRandomParentCategories(productMore.getReturnNumber());
+                                        } else if (productMore.getCatalogueType().equals("Category")) {
+                                            items = productCategoryService.getRandomCategoriesByParentId(pro.getProductParentCateoryId(), productMore.getReturnNumber());
+                                        } else if (productMore.getCatalogueType().equals("SubCategory")) {
+                                            items = productCategoryService.getRandomSubCategoriesByCategoryId(pro.getProductCategoryId(), productMore.getReturnNumber());
+                                        }
+                                        item.put("items", items);
+                                    } else {
+                                        List<JSONObject> finalItems = new ArrayList<>();
+                                        productMoreTemplateRepository.findProductMoreTemplateByProductMoreId(productMore.getId())
+                                                .forEach(template -> {
+                                                    if (template.getType().equals("Brand")) {
+                                                        JSONObject response = categoryService.getBrandInfo(Long.valueOf(template.getTypeId()));
+                                                        finalItems.add(response);
+                                                    } else if (template.getType().equals("Product")) {
+                                                        JSONObject response = getProductDetail(Long.valueOf(template.getId()));
+                                                        finalItems.add(response);
+                                                    } else if (template.getType().equals("ParentCategory")) {
+                                                        JSONObject response = categoryService.getParentCatInfo(Long.valueOf(template.getId()));
+                                                        finalItems.add(response);
+                                                    } else if (template.getType().equals("Category")) {
+                                                        JSONObject response = categoryService.getCategoryInfo(Long.valueOf(template.getId()));
+                                                        finalItems.add(response);
+                                                    } else if (template.getType().equals("SubCategory")) {
+                                                        JSONObject response = categoryService.getSubCategoryInfo(Long.valueOf(template.getId()));
+                                                        finalItems.add(response);
+                                                    }
+                                                });
+                                        item.put("items", finalItems);
+                                    }
+
+                                    more.add(item);
+                                });
+                        detail.put("more", more);
 
                         JSONObject similarProducts = new JSONObject();
                         similarProducts.put("template", "similar_products");
