@@ -147,9 +147,16 @@ public class CustomerOrderController {
                                     .put("statusDescription", newOrder.get().getStatusDescription())
                                     .put("statusMessage", newOrder.get().getStatusDescription());
                         } else {
+                            JSONObject productPricing = new JSONObject();
+                            productPricing.put("TotalCheckoutPrice", newOrder.get().getTotalPrice() );
+                            productPricing.put("VoucherDiscountAmount", 0.00);
+                            productPricing.put("DeliveryFeeAmount", newOrder.get().getDeliveryPrice());
+                            productPricing.put("FinalTotalCheckoutPrice", newOrder.get().getTotalPrice());
+
                             responseMap.put("statusCode", ResponseCodes.SUCCESS)
                                     .put("statusDescription", "Order was successful")
                                     .put("OrderRef", transRef)
+                                    .put("productPricing", productPricing)
                                     .put("statusMessage", "Order was successful");
                         }
                     }, () -> {

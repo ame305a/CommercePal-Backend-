@@ -150,6 +150,53 @@ public class CustomerController {
         return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
     }
 
+
+    @RequestMapping(value = "/update-delivery-address", method = RequestMethod.POST)
+    public ResponseEntity<?> updateDeliveryAddress(@RequestBody String request) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            JSONObject reqBody = new JSONObject(request);
+            LoginValidation user = globalMethods.fetchUserDetails();
+
+            customerRepository.findCustomerByEmailAddress(user.getEmailAddress())
+                    .ifPresentOrElse(customer -> {
+                        customerAddressRepository.findCustomerAddressByCustomerIdAndId(
+                                        customer.getCustomerId(), reqBody.getLong("id"))
+                                .ifPresentOrElse(customerAddress -> {
+                                    customerAddress.setRegionId(reqBody.has("productName") ? reqBody.getInt("regionId") : customerAddress.getRegionId());
+                                    customerAddress.setCountry(reqBody.has("country") ? reqBody.getString("country") : customerAddress.getCountry());
+                                    customerAddress.setCity(reqBody.has("city") ? reqBody.getString("city") : customerAddress.getCity());
+                                    customerAddress.setSubCity(reqBody.has("subCity") ? reqBody.getString("subCity") : customerAddress.getSubCity());
+                                    customerAddress.setPhoneNumber(reqBody.has("phoneNumber") ? reqBody.getString("phoneNumber") : customerAddress.getPhoneNumber());
+                                    customerAddress.setPhysicalAddress(reqBody.has("physicalAddress") ? reqBody.getString("physicalAddress") : customerAddress.getPhysicalAddress());
+                                    customerAddress.setLatitude(reqBody.has("latitude") ? reqBody.getString("latitude") : customerAddress.getLatitude());
+                                    customerAddress.setLongitude(reqBody.has("longitude") ? reqBody.getString("longitude") : customerAddress.getLongitude());
+                                    customerAddressRepository.save(customerAddress);
+                                    responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                            .put("statusDescription", "success")
+                                            .put("statusMessage", "success");
+                                }, () -> {
+                                    responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                                            .put("statusDescription", "failed to process request")
+                                            .put("statusMessage", "internal system error");
+                                });
+                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                .put("statusDescription", "success")
+                                .put("statusMessage", "success");
+                    }, () -> {
+                        responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                                .put("statusDescription", "failed to process request")
+                                .put("statusMessage", "internal system error");
+                    });
+        } catch (Exception e) {
+            log.log(Level.WARNING, "CUSTOMER DELIVERY ADDRESS INFO : " + e.getMessage());
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("statusMessage", "internal system error");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
+    }
+
     @RequestMapping(value = "/get-delivery-address", method = RequestMethod.POST)
     public ResponseEntity<?> getDeliveryAddress() {
         JSONObject responseMap = new JSONObject();
@@ -161,6 +208,8 @@ public class CustomerController {
                         customerAddressRepository.findCustomerAddressByCustomerId(customer.getCustomerId())
                                 .forEach(customerAddress -> {
                                     JSONObject payload = new JSONObject();
+                                    payload.put("id", customerAddress.getId());
+                                    payload.put("regionId", customerAddress.getRegionId());
                                     payload.put("country", customerAddress.getCountry());
                                     payload.put("city", customerAddress.getCity());
                                     payload.put("subCity", customerAddress.getSubCity());

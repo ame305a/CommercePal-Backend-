@@ -135,10 +135,10 @@ public class ProductService {
                     .ifPresent(pro -> {
                         detail.put("ProductId", pro.getProductId());
                         detail.put("ProductName", pro.getProductName());
-                        detail.put("ShortDescription", "" + pro.getShortDescription());
-                        detail.put("mobileImage", "" + pro.getProductMobileImage());
+                        detail.put("ShortDescription", pro.getShortDescription() != null ? pro.getShortDescription() : "");
+                        detail.put("mobileImage", pro.getProductMobileImage() != null ? pro.getProductMobileImage() : "");
                         detail.put("mobileVideo", "" + pro.getProductMobileVideo());
-                        detail.put("webImage", pro.getProductImage());
+                        detail.put("webImage", pro.getProductImage() != null ? pro.getProductImage() : "");
                         detail.put("webVideo", pro.getProductWebVideo());
                         detail.put("webThumbnail", "" + pro.getWebThumbnail());
                         detail.put("mobileThumbnail", "" + pro.getMobileThumbnail());
