@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -246,27 +249,6 @@ public class ProductService {
                                 });
                         detail.put("more", more);
 
-                        JSONObject similarProducts = new JSONObject();
-                        similarProducts.put("template", "similar_products");
-                        similarProducts.put("catalogueType", "catalogueType");
-                        similarProducts.put("display_name", "Similar in this category");
-                        similarProducts.put("key", "similar_products");
-
-                        // Get similarProducts Pri
-                        List<JSONObject> similarProductsItems = new ArrayList<>();
-                        for (int i = 0; i < 4; i++) {
-                            Random rand = new Random();
-                            Product randomProduct = products.get(rand.nextInt(products.size()));
-                            JSONObject similarProduct = new JSONObject();
-                            similarProduct.put("mobileImage", randomProduct.getProductMobileImage());
-                            similarProduct.put("webImage", randomProduct.getProductImage());
-                            similarProduct.put("name", randomProduct.getProductName());
-                            similarProduct.put("id", randomProduct.getProductId());
-                            similarProduct.put("mobileImage", randomProduct.getProductMobileImage());
-                            similarProductsItems.add(similarProduct);
-                        }
-                        similarProducts.put("items", similarProductsItems);
-
                         // Product Reviews
                         List<JSONObject> reviews = new ArrayList<>();
                         for (int i = 1; i < 6; i++) {
@@ -277,8 +259,8 @@ public class ProductService {
                             productReview.put("rating", 4);
                             productReview.put("reviewerProfileImageUrl", "https://dwjzmw55yd4uj.cloudfront.net/Web/Images/product_imgs_1631562373357_912.jpg");
                             productReview.put("reviewerName", "Arlene McCoy");
-                            Integer randomNum = ThreadLocalRandom.current().nextInt(1440, 144000 + 1);
-                            productReview.put("date", Timestamp.from(Instant.now().minusSeconds(TimeUnit.MINUTES.toSeconds(randomNum))));
+                            productReview.put("date", ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT).toString());
+                            reviews.add(productReview);
                         }
                         detail.put("reviews", reviews);
                     });
