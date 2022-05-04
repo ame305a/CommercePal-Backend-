@@ -146,11 +146,11 @@ public class ProductService {
                         detail.put("ProductName", pro.getProductName());
                         detail.put("ShortDescription", pro.getShortDescription() != null ? pro.getShortDescription() : "");
                         detail.put("mobileImage", pro.getProductMobileImage() != null ? pro.getProductMobileImage() : "");
-                        detail.put("mobileVideo", "" + pro.getProductMobileVideo());
+                        detail.put("mobileVideo", pro.getProductMobileVideo() != null ? pro.getProductMobileVideo() : "");
                         detail.put("webImage", pro.getProductImage() != null ? pro.getProductImage() : "");
-                        detail.put("webVideo", pro.getProductWebVideo());
-                        detail.put("webThumbnail", "" + pro.getWebThumbnail());
-                        detail.put("mobileThumbnail", "" + pro.getMobileThumbnail());
+                        detail.put("webVideo", pro.getProductWebVideo() != null ? pro.getProductWebVideo() : "");
+                        detail.put("webThumbnail", pro.getWebThumbnail() != null ? pro.getWebThumbnail() : "");
+                        detail.put("mobileThumbnail", pro.getMobileThumbnail() != null ? pro.getMobileThumbnail() : "");
                         detail.put("ProductParentCategoryId", pro.getProductParentCateoryId());
                         detail.put("ProductCategoryId", pro.getProductCategoryId());
                         detail.put("ProductSubCategoryId", pro.getProductSubCategoryId());

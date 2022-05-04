@@ -1,8 +1,6 @@
 package com.commerce.pal.backend.controller.app;
 
-import com.commerce.pal.backend.repo.setting.BankRepository;
-import com.commerce.pal.backend.repo.setting.CityRepository;
-import com.commerce.pal.backend.repo.setting.CountryRepository;
+import com.commerce.pal.backend.repo.setting.*;
 import lombok.extern.java.Log;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,14 +21,20 @@ public class ServiceController {
     private final BankRepository bankRepository;
     private final CityRepository cityRepository;
     private final CountryRepository countryRepository;
+    private final PaymentMethodRepository paymentMethodRepository;
+    private final PaymentMethodItemRepository paymentMethodItemRepository;
 
     @Autowired
     public ServiceController(BankRepository bankRepository,
                              CityRepository cityRepository,
-                             CountryRepository countryRepository) {
+                             CountryRepository countryRepository,
+                             PaymentMethodRepository paymentMethodRepository,
+                             PaymentMethodItemRepository paymentMethodItemRepository) {
         this.bankRepository = bankRepository;
         this.cityRepository = cityRepository;
         this.countryRepository = countryRepository;
+        this.paymentMethodRepository = paymentMethodRepository;
+        this.paymentMethodItemRepository = paymentMethodItemRepository;
     }
 
     @RequestMapping(value = {"/countries"}, method = {RequestMethod.GET}, produces = {"application/json"})
@@ -68,6 +72,34 @@ public class ServiceController {
             banks.add(one);
         });
         return ResponseEntity.status(HttpStatus.OK).body(banks.toString());
+    }
+
+    @RequestMapping(value = {"/payment-method"}, method = {RequestMethod.GET}, produces = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<?> paymentMethodList() {
+        List<JSONObject> paymentMethods = new ArrayList<>();
+        paymentMethodRepository.findPaymentMethodByStatus(1).forEach(paymentMethod -> {
+            JSONObject payMed = new JSONObject();
+            payMed.put("name", paymentMethod.getName());
+            payMed.put("paymentMethod", paymentMethod.getPaymentMethod());
+            payMed.put("iconUrl", paymentMethod.getIconUrl());
+            List<JSONObject> items = new ArrayList<>();
+            paymentMethodItemRepository.findPaymentMethodItemsByPaymentMethodIdAndStatus(
+                    paymentMethod.getId(), 1
+            ).forEach(paymentMethodItem -> {
+                JSONObject item = new JSONObject();
+                item.put("paymentMethod", paymentMethod.getPaymentMethod());
+                item.put("name", paymentMethodItem.getName());
+                item.put("paymentType", paymentMethodItem.getPaymentType());
+                item.put("iconUrl", paymentMethodItem.getIconUrl());
+                items.add(item);
+            });
+            payMed.put("items", items);
+            paymentMethods.add(payMed);
+        });
+        JSONObject paymentMeds = new JSONObject();
+        paymentMeds.put("paymentMethods", paymentMethods);
+        return ResponseEntity.status(HttpStatus.OK).body(paymentMeds.toString());
     }
 
 
