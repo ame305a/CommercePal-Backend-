@@ -6,12 +6,12 @@ import com.commerce.pal.backend.models.LoginValidation;
 import com.commerce.pal.backend.models.order.LoanOrder;
 import com.commerce.pal.backend.models.order.Order;
 import com.commerce.pal.backend.models.order.OrderItem;
-import com.commerce.pal.backend.models.user.CustomerAddress;
 import com.commerce.pal.backend.repo.order.LoanOrderRepository;
 import com.commerce.pal.backend.repo.order.OrderItemRepository;
 import com.commerce.pal.backend.repo.order.OrderRepository;
 import com.commerce.pal.backend.repo.order.ShipmentPricingRepository;
 import com.commerce.pal.backend.repo.product.ProductRepository;
+import com.commerce.pal.backend.repo.user.CustomerAddressRepository;
 import com.commerce.pal.backend.repo.user.CustomerRepository;
 import com.commerce.pal.backend.utils.GlobalMethods;
 import lombok.extern.java.Log;
@@ -52,6 +52,7 @@ public class CustomerOrderController {
     private final LoanOrderRepository loanOrderRepository;
     private final OrderItemRepository orderItemRepository;
     private final ShipmentPricingRepository shipmentPricingRepository;
+    private final CustomerAddressRepository customerAddressRepository;
 
 
     public CustomerOrderController(GlobalMethods globalMethods,
@@ -60,7 +61,8 @@ public class CustomerOrderController {
                                    CustomerRepository customerRepository,
                                    LoanOrderRepository loanOrderRepository,
                                    OrderItemRepository orderItemRepository,
-                                   ShipmentPricingRepository shipmentPricingRepository) {
+                                   ShipmentPricingRepository shipmentPricingRepository,
+                                   CustomerAddressRepository customerAddressRepository) {
         this.globalMethods = globalMethods;
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
@@ -68,6 +70,7 @@ public class CustomerOrderController {
         this.loanOrderRepository = loanOrderRepository;
         this.orderItemRepository = orderItemRepository;
         this.shipmentPricingRepository = shipmentPricingRepository;
+        this.customerAddressRepository = customerAddressRepository;
     }
 
     @RequestMapping(value = "/check-out", method = RequestMethod.POST)
@@ -90,6 +93,8 @@ public class CustomerOrderController {
                         newOrder.get().setStatus(0);
                         newOrder.get().setIsAgentInitiated(0);
                         newOrder.get().setStatusDescription("Pending Payment and Shipping");
+                        newOrder.get().setIsCustomerAddressAssigned(1);
+                        newOrder.get().setPaymentStatus(0);
                         newOrder.set(orderRepository.save(newOrder.get()));
                         AtomicReference<Double> totalAmount = new AtomicReference<>(0d);
                         AtomicReference<Double> totalDiscount = new AtomicReference<>(0d);
@@ -131,6 +136,11 @@ public class CustomerOrderController {
                                         orderItem.setStatus(0);
                                         orderItem.setStatusDescription("Pending Payment and Shipping");
                                         orderItem.setCreatedDate(Timestamp.from(Instant.now()));
+                                        orderItem.setDeliveryPrice(new BigDecimal(0));
+                                        orderItem.setTaxValue(new BigDecimal(0));
+                                        orderItem.setTaxAmount(new BigDecimal(0));
+                                        orderItem.setShipmentStatus(0);
+                                        orderItem.setAssignedWareHouseId(0);
                                         orderItemRepository.save(orderItem);
                                         totalAmount.set(totalAmount.get() + orderItem.getTotalAmount().doubleValue());
                                         totalDiscount.set(totalDiscount.get() + orderItem.getTotalDiscount().doubleValue());
@@ -147,16 +157,16 @@ public class CustomerOrderController {
                                     .put("statusDescription", newOrder.get().getStatusDescription())
                                     .put("statusMessage", newOrder.get().getStatusDescription());
                         } else {
-                            JSONObject checkoutSummary  = new JSONObject();
-                            checkoutSummary .put("TotalCheckoutPrice", newOrder.get().getTotalPrice() );
-                            checkoutSummary .put("VoucherDiscountAmount", 0.00);
-                            checkoutSummary .put("DeliveryFeeAmount", newOrder.get().getDeliveryPrice());
-                            checkoutSummary .put("FinalTotalCheckoutPrice", newOrder.get().getTotalPrice());
+                            JSONObject checkoutSummary = new JSONObject();
+                            checkoutSummary.put("TotalCheckoutPrice", newOrder.get().getTotalPrice());
+                            checkoutSummary.put("VoucherDiscountAmount", 0.00);
+                            checkoutSummary.put("DeliveryFeeAmount", newOrder.get().getDeliveryPrice());
+                            checkoutSummary.put("FinalTotalCheckoutPrice", newOrder.get().getTotalPrice());
 
                             responseMap.put("statusCode", ResponseCodes.SUCCESS)
                                     .put("statusDescription", "Order was successful")
                                     .put("OrderRef", transRef)
-                                    .put("checkoutSummary ", checkoutSummary )
+                                    .put("checkoutSummary ", checkoutSummary)
                                     .put("statusMessage", "Order was successful");
                         }
                     }, () -> {
@@ -339,13 +349,28 @@ public class CustomerOrderController {
         try {
             JSONObject reqBody = new JSONObject(checkOut);
             LoginValidation user = globalMethods.fetchUserDetails();
-
             customerRepository.findCustomerByEmailAddress(user.getEmailAddress())
                     .ifPresentOrElse(customer -> {
-
-                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
-                                .put("statusDescription", "success")
-                                .put("statusMessage", "success");
+                        customerAddressRepository.findCustomerAddressByCustomerIdAndId(customer.getCustomerId(), Long.valueOf(reqBody.getString("AddressId")))
+                                .ifPresentOrElse(customerAddress -> {
+                                    orderRepository.findOrderByOrderRef(reqBody.getString("orderRef"))
+                                            .ifPresentOrElse(order -> {
+                                                order.setCustomerAddressId(customerAddress.getId());
+                                                order.setIsCustomerAddressAssigned(1);
+                                                orderRepository.save(order);
+                                                responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                                        .put("statusDescription", "success")
+                                                        .put("statusMessage", "success");
+                                            }, () -> {
+                                                responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
+                                                        .put("statusDescription", "The Order does not belong to the customer")
+                                                        .put("statusMessage", "The Order does not belong to the customer");
+                                            });
+                                }, () -> {
+                                    responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
+                                            .put("statusDescription", "The Address does not belong to the customer")
+                                            .put("statusMessage", "The Address does not belong to the customer");
+                                });
                     }, () -> {
                         responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
                                 .put("statusDescription", "failed to process request")

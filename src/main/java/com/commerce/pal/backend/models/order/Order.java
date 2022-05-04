@@ -55,6 +55,12 @@ public class Order {
     @Column(name = "IsAgentInitiated")
     private Integer isAgentInitiated;
     @Basic
+    @Column(name = "CustomerAddressId")
+    private Long customerAddressId;
+    @Basic
+    @Column(name = "IsCustomerAddressAssigned")
+    private Integer isCustomerAddressAssigned;
+    @Basic
     @Column(name = "Status")
     private Integer status;
     @Basic
@@ -63,5 +69,22 @@ public class Order {
     @Basic
     @Column(name = "VerifiedBy")
     private String verifiedBy;
-
+    @Basic
+    @Column(name = "PaymentStatus")
+    private Integer paymentStatus;
+    @Basic
+    @Column(name = "PaymentStatusDescription")
+    private String paymentStatusDescription;
+    @Basic
+    @Column(name = "SahayRef")
+    private String sahayRef;
+    @Basic
+    @Column(name = "BillerReference")
+    private String billerReference;
+    @Basic
+    @Column(name = "ShippingStatus")
+    private String shippingStatus;
+    @Basic
+    @Column(name = "PaymentDate")
+    private Timestamp paymentDate;
 }

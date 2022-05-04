@@ -31,4 +31,17 @@ public class CustomerService {
 
         return customerData;
     }
+
+    public JSONObject getCustomerInfo(Long customerId) {
+        JSONObject payload = new JSONObject();
+        customerRepository.findCustomerByCustomerId(customerId)
+                .ifPresent(customer -> {
+                    payload.put("firstName", customer.getFirstName());
+                    payload.put("lastName", customer.getLastName());
+                    payload.put("language", customer.getLanguage());
+                    payload.put("phoneNumber", customer.getPhoneNumber());
+                    payload.put("email", customer.getEmailAddress());
+                });
+        return payload;
+    }
 }

@@ -49,11 +49,29 @@ public class OrderItem {
     @Column(name = "TotalAmount")
     private BigDecimal totalAmount;
     @Basic
+    @Column(name = "TaxValue")
+    private BigDecimal taxValue;
+    @Basic
+    @Column(name = "TaxAmount")
+    private BigDecimal taxAmount;
+    @Basic
     @Column(name = "TotalDiscount")
     private BigDecimal totalDiscount;
     @Basic
     @Column(name = "DeliveryPrice")
     private BigDecimal deliveryPrice;
+    @Basic
+    @Column(name = "ShipmentType")
+    private String shipmentType;
+    @Basic
+    @Column(name = "ShipmentStatus")
+    private Integer shipmentStatus;
+    @Basic
+    @Column(name = "ShipmentUpdateDate")
+    private Timestamp shipmentUpdateDate;
+    @Basic
+    @Column(name = "AssignedWareHouseId")
+    private Integer assignedWareHouseId;
     @Basic
     @Column(name = "Status")
     private Integer status;
@@ -63,5 +81,4 @@ public class OrderItem {
     @Basic
     @Column(name = "CreatedDate")
     private Timestamp createdDate;
-
 }

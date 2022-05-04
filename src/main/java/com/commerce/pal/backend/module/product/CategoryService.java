@@ -38,10 +38,10 @@ public class CategoryService {
                 .ifPresent(data -> {
                     detail.put("id", data.getId());
                     detail.put("name", data.getBrand());
-                    detail.put("mobileImage", data.getMobileImage());
-                    detail.put("webImage", data.getWebImage());
-                    detail.put("webThumbnail", data.getWebThumbnail());
-                    detail.put("mobileThumbnail", data.getMobileThumbnail());
+                    detail.put("mobileImage", data.getMobileImage() != null ? data.getMobileImage() : "");
+                    detail.put("webImage", data.getWebImage() != null ? data.getWebImage() : "");
+                    detail.put("webThumbnail", data.getWebThumbnail() != null ? data.getWebThumbnail() : "");
+                    detail.put("mobileThumbnail", data.getMobileThumbnail() != null ? data.getMobileThumbnail() : "");
                 });
         return detail;
     }
@@ -61,10 +61,10 @@ public class CategoryService {
                 .ifPresent(data -> {
                     detail.put("id", data.getId());
                     detail.put("name", data.getParentCategoryName());
-                    detail.put("mobileImage", data.getMobileImage());
-                    detail.put("webImage", data.getWebImage());
-                    detail.put("webThumbnail", data.getWebThumbnail());
-                    detail.put("mobileThumbnail", data.getMobileThumbnail());
+                    detail.put("mobileImage", data.getMobileImage() != null ? data.getMobileImage() : "");
+                    detail.put("webImage", data.getWebImage() != null ? data.getWebImage() : "");
+                    detail.put("webThumbnail", data.getWebThumbnail() != null ? data.getWebThumbnail() : "");
+                    detail.put("mobileThumbnail", data.getMobileThumbnail() != null ? data.getMobileThumbnail() : "");
                     detail.put("unique_name", data.getParentCategoryName().replaceAll(" ", "_").toLowerCase().trim());
                 });
         return detail;
@@ -77,10 +77,10 @@ public class CategoryService {
                     detail.put("id", data.getId());
                     detail.put("parentCategoryId", data.getParentCategoryId());
                     detail.put("name", data.getCategoryName());
-                    detail.put("mobileImage", data.getCategoryMobileImage());
-                    detail.put("webImage", data.getCategoryWebImage());
-                    detail.put("webThumbnail", data.getWebThumbnail());
-                    detail.put("mobileThumbnail", data.getMobileThumbnail());
+                    detail.put("mobileImage", data.getCategoryMobileImage() != null ? data.getCategoryMobileImage() : "");
+                    detail.put("webImage", data.getCategoryWebImage() != null ? data.getCategoryWebImage() : "");
+                    detail.put("webThumbnail", data.getWebThumbnail() != null ? data.getWebThumbnail() : "");
+                    detail.put("mobileThumbnail", data.getMobileThumbnail() != null ? data.getMobileThumbnail() : "");
                     detail.put("unique_name", data.getCategoryName().replaceAll(" ", "_").toLowerCase().trim());
                 });
         return detail;
@@ -93,11 +93,11 @@ public class CategoryService {
                     detail.put("id", data.getId());
                     detail.put("name", data.getSubCategoryName());
                     detail.put("categoryId", data.getProductCategoryId());
-                    detail.put("mobileImage", "" + data.getMobileImage());
-                    detail.put("webImage", data.getWebImage());
                     detail.put("unique_name", data.getSubCategoryName().replaceAll(" ", "_").toLowerCase().trim());
-                    detail.put("webThumbnail", data.getWebThumbnail());
-                    detail.put("mobileThumbnail", data.getMobileThumbnail());
+                    detail.put("mobileImage", data.getMobileImage() != null ? data.getMobileImage() : "");
+                    detail.put("webImage", data.getWebImage() != null ? data.getWebImage() : "");
+                    detail.put("webThumbnail", data.getWebThumbnail() != null ? data.getWebThumbnail() : "");
+                    detail.put("mobileThumbnail", data.getMobileThumbnail() != null ? data.getMobileThumbnail() : "");
                 });
         return detail;
     }

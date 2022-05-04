@@ -14,6 +14,11 @@ public class EndPointConstant {
             versioning + "/app/dashboard/**",
 
             /*
+            DATA ACCESS ENDPOINT
+             */
+
+            versioning + "/data/**",
+            /*
             OPEN APIS FOR APPS
              */
             versioning + "/app/*",

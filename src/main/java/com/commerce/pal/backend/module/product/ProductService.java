@@ -270,5 +270,67 @@ public class ProductService {
         return detail;
     }
 
+    public JSONObject getProductLimitedDetails(Long product) {
+        JSONObject detail = new JSONObject();
+        try {
+            productRepository.findProductByProductId(product)
+                    .ifPresent(pro -> {
+                        detail.put("ProductId", pro.getProductId());
+                        detail.put("ProductName", pro.getProductName());
+                        detail.put("ShortDescription", pro.getShortDescription() != null ? pro.getShortDescription() : "");
+                        detail.put("mobileImage", pro.getProductMobileImage() != null ? pro.getProductMobileImage() : "");
+                        detail.put("mobileVideo", pro.getProductMobileVideo() != null ? pro.getProductMobileVideo() : "");
+                        detail.put("webImage", pro.getProductImage() != null ? pro.getProductImage() : "");
+                        detail.put("webVideo", pro.getProductWebVideo() != null ? pro.getProductWebVideo() : "");
+                        detail.put("webThumbnail", pro.getWebThumbnail() != null ? pro.getWebThumbnail() : "");
+                        detail.put("mobileThumbnail", pro.getMobileThumbnail() != null ? pro.getMobileThumbnail() : "");
+                        detail.put("ProductParentCategoryId", pro.getProductParentCateoryId());
+                        detail.put("ProductCategoryId", pro.getProductCategoryId());
+                        detail.put("ProductSubCategoryId", pro.getProductSubCategoryId());
+                        detail.put("ProductDescription", pro.getProductDescription());
+                        detail.put("SpecialInstruction", pro.getSpecialInstruction());
+                        detail.put("IsDiscounted", pro.getIsDiscounted());
+                        detail.put("ShipmentType", pro.getShipmentType());
+                        detail.put("UnitPrice", pro.getUnitPrice());
+                        detail.put("actualPrice", pro.getUnitPrice());
+                        if (pro.getIsDiscounted().equals(1)) {
+                            detail.put("DiscountType", pro.getDiscountType());
+
+                            Double discountAmount = 0D;
+                            if (pro.getDiscountType().equals("FIXED")) {
+                                detail.put("DiscountValue", pro.getDiscountValue());
+                                detail.put("DiscountAmount", pro.getDiscountValue());
+                                detail.put("discountDescription", pro.getDiscountValue() + " " + pro.getCurrency());
+                            } else {
+                                discountAmount = pro.getUnitPrice().doubleValue() * pro.getDiscountValue().doubleValue() / 100;
+                                detail.put("DiscountValue", pro.getDiscountValue());
+                                detail.put("DiscountAmount", new BigDecimal(discountAmount));
+                                detail.put("discountDescription", pro.getDiscountValue() + "% Discount");
+                            }
+                            detail.put("offerPrice", pro.getUnitPrice().doubleValue() - discountAmount);
+                        } else {
+                            detail.put("DiscountType", "NotDiscounted");
+                            detail.put("DiscountValue", new BigDecimal(0));
+                            detail.put("DiscountAmount", new BigDecimal(0));
+                            detail.put("offerPrice", pro.getUnitPrice());
+                            detail.put("discountDescription", pro.getDiscountValue() + " " + pro.getCurrency());
+                        }
+                        ArrayList<String> images = new ArrayList<String>();
+                        productImageRepository.findProductImagesByProductId(pro.getProductId()).forEach(
+                                image -> {
+                                    images.add(image.getFilePath());
+                                }
+                        );
+                        detail.put("discountExpiry", pro.getDiscountExpiryDate());
+                        detail.put("currency", pro.getCurrency());
+                        detail.put("productRating", 4.2);
+                        detail.put("ratingCount", 30);
+                        detail.put("ProductImages", images);
+                    });
+        } catch (Exception e) {
+            log.log(Level.WARNING, e.getMessage());
+        }
+        return detail;
+    }
 
 }
