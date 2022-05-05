@@ -47,13 +47,19 @@ public class DataAccessController {
             JSONObject jsonObject = new JSONObject(request);
             switch (jsonObject.getString("Type")) {
                 case "PRODUCT":
-                    responseMap = productService.getProductLimitedDetails(Long.valueOf(jsonObject.getString("TypeId")));
+                    responseMap = productService.getProductLimitedDetails(jsonObject.getLong("TypeId"));
+                    break;
+                case "AGENT":
+                    responseMap = agentService.getAgentInfo(jsonObject.getLong("TypeId"));
                     break;
                 case "CUSTOMER":
-                    responseMap = customerService.getCustomerInfo(Long.valueOf(jsonObject.getString("TypeId")));
+                    responseMap = customerService.getCustomerInfo(jsonObject.getLong("TypeId"));
                     break;
                 case "MERCHANT":
-                    responseMap = merchantService.getMerchantInfo(Long.valueOf(jsonObject.getString("TypeId")));
+                    responseMap = merchantService.getMerchantInfo(jsonObject.getLong("TypeId"));
+                    break;
+                case "CUSTOMER-ADDRESS":
+                    responseMap = customerService.getCustomerAddressById(jsonObject.getLong("TypeId"));
                     break;
             }
             responseMap.put("statusCode", ResponseCodes.SUCCESS)

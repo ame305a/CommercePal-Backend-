@@ -1,5 +1,6 @@
 package com.commerce.pal.backend.module.multi;
 
+import com.commerce.pal.backend.repo.user.CustomerAddressRepository;
 import com.commerce.pal.backend.repo.user.CustomerRepository;
 import lombok.extern.java.Log;
 import org.json.JSONObject;
@@ -12,10 +13,13 @@ import org.springframework.stereotype.Service;
 public class CustomerService {
 
     private final CustomerRepository customerRepository;
+    private final CustomerAddressRepository customerAddressRepository;
 
     @Autowired
-    public CustomerService(CustomerRepository customerRepository) {
+    public CustomerService(CustomerRepository customerRepository,
+                           CustomerAddressRepository customerAddressRepository) {
         this.customerRepository = customerRepository;
+        this.customerAddressRepository = customerAddressRepository;
     }
 
     public JSONObject getMultiUserCustomer(String email) {
@@ -41,6 +45,23 @@ public class CustomerService {
                     payload.put("language", customer.getLanguage());
                     payload.put("phoneNumber", customer.getPhoneNumber());
                     payload.put("email", customer.getEmailAddress());
+                });
+        return payload;
+    }
+
+    public JSONObject getCustomerAddressById(Long addressId) {
+        JSONObject payload = new JSONObject();
+        customerAddressRepository.findById(addressId)
+                .ifPresent(customerAddress -> {
+                    payload.put("id", customerAddress.getId());
+                    payload.put("regionId", customerAddress.getRegionId());
+                    payload.put("country", customerAddress.getCountry());
+                    payload.put("city", customerAddress.getCity());
+                    payload.put("subCity", customerAddress.getSubCity());
+                    payload.put("physicalAddress", customerAddress.getPhysicalAddress());
+                    payload.put("latitude", customerAddress.getLatitude());
+                    payload.put("longitude", customerAddress.getLongitude());
+                    payload.put("addressId", customerAddress.getId());
                 });
         return payload;
     }

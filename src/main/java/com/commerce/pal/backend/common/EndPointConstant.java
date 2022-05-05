@@ -16,8 +16,7 @@ public class EndPointConstant {
             /*
             DATA ACCESS ENDPOINT
              */
-
-            versioning + "/data/**",
+            versioning + "/data/request",
             /*
             OPEN APIS FOR APPS
              */

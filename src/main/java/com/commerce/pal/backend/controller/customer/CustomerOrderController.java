@@ -86,6 +86,9 @@ public class CustomerOrderController {
                     .ifPresentOrElse(customer -> {
                         AtomicReference<Order> newOrder = new AtomicReference<>(new Order());
                         newOrder.get().setCustomerId(customer.getCustomerId());
+                        newOrder.get().setMerchantId(0L);
+                        newOrder.get().setAgentId(0l);
+                        newOrder.get().setBusinessId(0L);
                         newOrder.get().setOrderRef(transRef);
                         newOrder.get().setPaymentMethod(request.getString("paymentMethod"));
                         newOrder.get().setSaleType(MERCHANT_TO_CUSTOMER);
@@ -95,6 +98,11 @@ public class CustomerOrderController {
                         newOrder.get().setStatusDescription("Pending Payment and Shipping");
                         newOrder.get().setIsCustomerAddressAssigned(1);
                         newOrder.get().setPaymentStatus(0);
+                        newOrder.get().setCurrency("ETB");
+                        newOrder.get().setCountryCode("ET");
+                        newOrder.get().setTax(new BigDecimal(0));
+                        newOrder.get().setDeliveryPrice(new BigDecimal(0));
+
                         newOrder.set(orderRepository.save(newOrder.get()));
                         AtomicReference<Double> totalAmount = new AtomicReference<>(0d);
                         AtomicReference<Double> totalDiscount = new AtomicReference<>(0d);
@@ -141,6 +149,7 @@ public class CustomerOrderController {
                                         orderItem.setTaxAmount(new BigDecimal(0));
                                         orderItem.setShipmentStatus(0);
                                         orderItem.setAssignedWareHouseId(0);
+                                        orderItem.setUserShipmentStatus(0);
                                         orderItemRepository.save(orderItem);
                                         totalAmount.set(totalAmount.get() + orderItem.getTotalAmount().doubleValue());
                                         totalDiscount.set(totalDiscount.get() + orderItem.getTotalDiscount().doubleValue());
@@ -175,6 +184,7 @@ public class CustomerOrderController {
                                 .put("statusMessage", "Customer Does not exists");
                     });
         } catch (Exception e) {
+            log.log(Level.WARNING, e.getMessage());
             responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
                     .put("statusDescription", "failed to process request")
                     .put("statusMessage", "internal system error");
