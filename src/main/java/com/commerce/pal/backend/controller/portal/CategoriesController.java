@@ -61,6 +61,9 @@ public class CategoriesController {
         this.productParentCategoryRepository = productParentCategoryRepository;
     }
 
+
+
+
     @RequestMapping(value = {"/AddParentCategory"}, method = {RequestMethod.POST}, produces = {"application/json"})
     @ResponseBody
     public ResponseEntity<?> addParentCategory(@RequestBody String parent) {
@@ -300,6 +303,33 @@ public class CategoriesController {
         }
         return ResponseEntity.ok(responseMap.toString());
     }
+
+    @RequestMapping(value = {"/UpdateBrand"}, method = {RequestMethod.POST}, produces = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<?> updateBrand(@RequestBody String parent) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            JSONObject jsonObject = new JSONObject(parent);
+            brandImageRepository.findById(jsonObject.getLong("id"))
+                    .ifPresentOrElse(par -> {
+                        par.setBrand(jsonObject.getString("name"));
+                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                .put("statusDescription", "success")
+                                .put("statusMessage", "Request Successful");
+                    }, () -> {
+                        responseMap.put("statusCode", ResponseCodes.TRANSACTION_FAILED)
+                                .put("statusDescription", "failed")
+                                .put("statusMessage", "Request failed");
+                    });
+        } catch (Exception ex) {
+            responseMap.put("statusCode", ResponseCodes.TRANSACTION_FAILED)
+                    .put("statusDescription", "failed")
+                    .put("statusMessage", "Request failed");
+        }
+        return ResponseEntity.ok(responseMap.toString());
+    }
+
+
 
     @RequestMapping(value = {"/GetBrands"}, method = {RequestMethod.GET}, produces = {"application/json"})
     @ResponseBody

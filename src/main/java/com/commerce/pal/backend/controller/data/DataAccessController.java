@@ -1,16 +1,12 @@
-package com.commerce.pal.backend.controller.payment;
+package com.commerce.pal.backend.controller.data;
 
 import com.commerce.pal.backend.common.ResponseCodes;
-import com.commerce.pal.backend.models.product.ProductParentCategory;
 import com.commerce.pal.backend.module.multi.*;
 import com.commerce.pal.backend.module.product.ProductService;
 import lombok.extern.java.Log;
 import org.json.JSONObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.sql.Timestamp;
-import java.time.Instant;
 
 @Log
 @CrossOrigin(origins = {"*"}, maxAge = 3600L)
