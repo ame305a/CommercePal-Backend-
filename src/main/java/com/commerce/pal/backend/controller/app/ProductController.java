@@ -1,13 +1,12 @@
 package com.commerce.pal.backend.controller.app;
 
 import com.commerce.pal.backend.common.ResponseCodes;
-import com.commerce.pal.backend.models.LoginValidation;
 import com.commerce.pal.backend.module.product.CategoryService;
 import com.commerce.pal.backend.module.product.ProductService;
-import com.commerce.pal.backend.repo.product.BrandImageRepository;
-import com.commerce.pal.backend.repo.product.ProductCategoryRepository;
+import com.commerce.pal.backend.repo.product.categories.BrandImageRepository;
+import com.commerce.pal.backend.repo.product.categories.ProductCategoryRepository;
 import com.commerce.pal.backend.repo.product.ProductRepository;
-import com.commerce.pal.backend.repo.product.ProductSubCategoryRepository;
+import com.commerce.pal.backend.repo.product.categories.ProductSubCategoryRepository;
 import com.commerce.pal.backend.service.specification.SpecificationsDao;
 import com.commerce.pal.backend.service.specification.utils.SearchCriteria;
 import lombok.extern.java.Log;

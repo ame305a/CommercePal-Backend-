@@ -3,6 +3,7 @@ package com.commerce.pal.backend.controller.merchant;
 import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.models.LoginValidation;
 import com.commerce.pal.backend.module.product.ProductService;
+import com.commerce.pal.backend.repo.product.ProductFeatureRepository;
 import com.commerce.pal.backend.repo.user.MerchantRepository;
 import com.commerce.pal.backend.service.specification.SpecificationsDao;
 import com.commerce.pal.backend.service.specification.utils.SearchCriteria;
@@ -28,19 +29,40 @@ public class MerchantProductController {
     private final ProductService productService;
     private final SpecificationsDao specificationsDao;
     private final MerchantRepository merchantRepository;
+    private final ProductFeatureRepository productFeatureRepository;
 
     @Autowired
     public MerchantProductController(GlobalMethods globalMethods,
                                      ProductService productService,
                                      SpecificationsDao specificationsDao,
-                                     MerchantRepository merchantRepository) {
+                                     MerchantRepository merchantRepository,
+                                     ProductFeatureRepository productFeatureRepository) {
         this.globalMethods = globalMethods;
         this.productService = productService;
         this.specificationsDao = specificationsDao;
         this.merchantRepository = merchantRepository;
+        this.productFeatureRepository = productFeatureRepository;
     }
 
-
+    @RequestMapping(value = {"/get-features"}, method = {RequestMethod.GET}, produces = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<?> getProductFeatures() {
+        JSONObject responseMap = new JSONObject();
+        List<JSONObject> details = new ArrayList<>();
+        productFeatureRepository.findAll().forEach(productFeature -> {
+            JSONObject detail = new JSONObject();
+            detail.put("subCategoryId", productFeature.getSubCategoryId());
+            detail.put("featureName", productFeature.getFeatureName());
+            detail.put("unitOfMeasure", productFeature.getUnitOfMeasure());
+            detail.put("variableType", productFeature.getVariableType());
+            details.add(detail);
+        });
+        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                .put("statusDescription", "success")
+                .put("details", details)
+                .put("statusMessage", "Request Successful");
+        return ResponseEntity.ok(responseMap.toString());
+    }
 
     @RequestMapping(value = "/add-product", method = RequestMethod.POST)
     public ResponseEntity<?> addProduct(@RequestBody String req) {

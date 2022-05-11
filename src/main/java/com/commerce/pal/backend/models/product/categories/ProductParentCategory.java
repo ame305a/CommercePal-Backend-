@@ -1,23 +1,25 @@
-package com.commerce.pal.backend.models.product;
+package com.commerce.pal.backend.models.product.categories;
 
 import lombok.*;
 
 import javax.persistence.*;
-import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.Objects;
 
 @Data
 @Entity
-@Table(name = "BrandImages")
-public class BrandImage {
+@Table(name = "ProductParentCategory")
+public class ProductParentCategory {
     @Id
     @Column(name = "Id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private long id;
     @Basic
-    @Column(name = "Brand")
-    private String brand;
+    @Column(name = "ParentCategoryName")
+    private String parentCategoryName;
+    @Basic
+    @Column(name = "ParentCategoryImage")
+    private String parentCategoryImage;
     @Basic
     @Column(name = "WebImage")
     private String webImage;

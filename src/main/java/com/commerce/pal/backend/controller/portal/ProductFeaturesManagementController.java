@@ -2,9 +2,7 @@ package com.commerce.pal.backend.controller.portal;
 
 import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.models.product.ProductFeature;
-import com.commerce.pal.backend.models.product.ProductParentCategory;
 import com.commerce.pal.backend.repo.product.ProductFeatureRepository;
-import com.commerce.pal.backend.repo.product.ProductFeatureValueRepository;
 import lombok.extern.java.Log;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,7 +86,7 @@ public class ProductFeaturesManagementController {
 
     @RequestMapping(value = {"/get-features"}, method = {RequestMethod.GET}, produces = {"application/json"})
     @ResponseBody
-    public ResponseEntity<?> GetParentCategories() {
+    public ResponseEntity<?> getProductFeatures() {
         JSONObject responseMap = new JSONObject();
         List<JSONObject> details = new ArrayList<>();
         productFeatureRepository.findAll().forEach(productFeature -> {

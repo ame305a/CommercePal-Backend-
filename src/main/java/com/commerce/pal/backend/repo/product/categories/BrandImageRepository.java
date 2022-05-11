@@ -1,6 +1,6 @@
-package com.commerce.pal.backend.repo.product;
+package com.commerce.pal.backend.repo.product.categories;
 
-import com.commerce.pal.backend.models.product.BrandImage;
+import com.commerce.pal.backend.models.product.categories.BrandImage;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

@@ -1,6 +1,6 @@
-package com.commerce.pal.backend.repo.product;
+package com.commerce.pal.backend.repo.product.categories;
 
-import com.commerce.pal.backend.models.product.ProductSubCategory;
+import com.commerce.pal.backend.models.product.categories.ProductSubCategory;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

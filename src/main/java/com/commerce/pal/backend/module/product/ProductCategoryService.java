@@ -1,10 +1,13 @@
 package com.commerce.pal.backend.module.product;
 
-import com.commerce.pal.backend.models.product.Product;
-import com.commerce.pal.backend.models.product.ProductCategory;
-import com.commerce.pal.backend.models.product.ProductParentCategory;
-import com.commerce.pal.backend.models.product.ProductSubCategory;
+import com.commerce.pal.backend.models.product.categories.ProductCategory;
+import com.commerce.pal.backend.models.product.categories.ProductParentCategory;
+import com.commerce.pal.backend.models.product.categories.ProductSubCategory;
 import com.commerce.pal.backend.repo.product.*;
+import com.commerce.pal.backend.repo.product.categories.BrandImageRepository;
+import com.commerce.pal.backend.repo.product.categories.ProductCategoryRepository;
+import com.commerce.pal.backend.repo.product.categories.ProductParentCategoryRepository;
+import com.commerce.pal.backend.repo.product.categories.ProductSubCategoryRepository;
 import lombok.extern.java.Log;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;

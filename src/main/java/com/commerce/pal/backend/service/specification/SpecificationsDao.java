@@ -2,7 +2,7 @@ package com.commerce.pal.backend.service.specification;
 
 
 import com.commerce.pal.backend.models.product.Product;
-import com.commerce.pal.backend.models.product.ProductCategory;
+import com.commerce.pal.backend.models.product.categories.ProductCategory;
 import com.commerce.pal.backend.models.transaction.AgentFloat;
 import com.commerce.pal.backend.service.specification.utils.SearchCriteria;
 import com.commerce.pal.backend.service.specification.utils.SpecificationQueryCriteriaConsumer;

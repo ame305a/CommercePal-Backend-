@@ -1,23 +1,24 @@
 package com.commerce.pal.backend.controller.portal;
 
 import com.commerce.pal.backend.common.ResponseCodes;
-import com.commerce.pal.backend.models.product.BrandImage;
-import com.commerce.pal.backend.models.product.ProductCategory;
-import com.commerce.pal.backend.models.product.ProductParentCategory;
-import com.commerce.pal.backend.models.product.ProductSubCategory;
+import com.commerce.pal.backend.models.product.categories.BrandImage;
+import com.commerce.pal.backend.models.product.categories.ProductCategory;
+import com.commerce.pal.backend.models.product.categories.ProductParentCategory;
+import com.commerce.pal.backend.models.product.categories.ProductSubCategory;
 import com.commerce.pal.backend.module.product.CategoryService;
 import com.commerce.pal.backend.module.product.ProductService;
 import com.commerce.pal.backend.repo.product.*;
+import com.commerce.pal.backend.repo.product.categories.BrandImageRepository;
+import com.commerce.pal.backend.repo.product.categories.ProductCategoryRepository;
+import com.commerce.pal.backend.repo.product.categories.ProductParentCategoryRepository;
+import com.commerce.pal.backend.repo.product.categories.ProductSubCategoryRepository;
 import com.commerce.pal.backend.service.specification.SpecificationsDao;
-import com.commerce.pal.backend.service.specification.utils.SearchCriteria;
 import lombok.extern.java.Log;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;

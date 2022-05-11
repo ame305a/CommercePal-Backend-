@@ -1,4 +1,4 @@
-package com.commerce.pal.backend.models.product;
+package com.commerce.pal.backend.models.product.categories;
 
 import lombok.*;
 
@@ -8,18 +8,21 @@ import java.util.Objects;
 
 @Data
 @Entity
-@Table(name = "ProductParentCategory")
-public class ProductParentCategory {
+@Table(name = "ProductSubCategory")
+public class ProductSubCategory {
     @Id
     @Column(name = "Id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     @Basic
-    @Column(name = "ParentCategoryName")
-    private String parentCategoryName;
+    @Column(name = "ProductCategoryId")
+    private long productCategoryId;
     @Basic
-    @Column(name = "ParentCategoryImage")
-    private String parentCategoryImage;
+    @Column(name = "SubCategoryType")
+    private String subCategoryType;
+    @Basic
+    @Column(name = "SubCategoryName")
+    private String subCategoryName;
     @Basic
     @Column(name = "WebImage")
     private String webImage;
