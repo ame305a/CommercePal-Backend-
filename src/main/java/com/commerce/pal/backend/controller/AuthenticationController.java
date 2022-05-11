@@ -4,7 +4,7 @@ import com.commerce.pal.backend.common.JwtTokenUtil;
 import com.commerce.pal.backend.common.JwtUserDetailsService;
 import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.module.database.RegistrationStoreService;
-import com.commerce.pal.backend.integ.EmailClient;
+import com.commerce.pal.backend.integ.notification.EmailClient;
 import com.commerce.pal.backend.models.LoginValidation;
 import com.commerce.pal.backend.module.DistributorService;
 import com.commerce.pal.backend.module.multi.AgentService;

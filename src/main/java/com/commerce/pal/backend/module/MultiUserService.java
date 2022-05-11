@@ -2,7 +2,7 @@ package com.commerce.pal.backend.module;
 
 import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.module.database.RegistrationStoreService;
-import com.commerce.pal.backend.integ.EmailClient;
+import com.commerce.pal.backend.integ.notification.EmailClient;
 import com.commerce.pal.backend.module.multi.AgentService;
 import com.commerce.pal.backend.module.multi.BusinessService;
 import com.commerce.pal.backend.module.multi.MerchantService;

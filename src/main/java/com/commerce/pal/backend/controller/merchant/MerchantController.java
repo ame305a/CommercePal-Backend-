@@ -1,14 +1,13 @@
 package com.commerce.pal.backend.controller.merchant;
 
 import com.commerce.pal.backend.common.ResponseCodes;
-import com.commerce.pal.backend.integ.EmailClient;
+import com.commerce.pal.backend.integ.notification.EmailClient;
 import com.commerce.pal.backend.models.LoginValidation;
 import com.commerce.pal.backend.module.product.ProductService;
 import com.commerce.pal.backend.module.multi.MerchantService;
 import com.commerce.pal.backend.repo.user.MerchantRepository;
 import com.commerce.pal.backend.service.amazon.UploadService;
 import com.commerce.pal.backend.service.specification.SpecificationsDao;
-import com.commerce.pal.backend.service.specification.utils.SearchCriteria;
 import com.commerce.pal.backend.utils.GlobalMethods;
 import lombok.extern.java.Log;
 import org.json.JSONObject;
@@ -20,9 +19,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Log

@@ -57,26 +57,18 @@ public class ProductManagementController {
             request.put("isPrioritized", "0");
             request.put("ownerType", "WAREHOUSE");
             JSONObject retDet = productService.doAddProduct(request);
-            int returnValue = retDet.getInt("returnValue");
-            if (returnValue == 1) {
+            int returnValue = retDet.getInt("productId");
+            if (returnValue == 0) {
                 responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
                         .put("statusDescription", "failed to process request")
                         .put("statusMessage", "internal system error");
             } else {
-                int exists = retDet.getInt("exists");
-                if (exists == 1) {
-                    responseMap.put("statusCode", ResponseCodes.REGISTERED)
-
-                            .put("statusDescription", "Product already added")
-                            .put("statusMessage", "Product already added");
-                } else {
-                    responseMap.put("statusCode", ResponseCodes.SUCCESS)
-                            .put("statusDescription", "success")
-                            .put("productId", retDet.getInt("exists"))
-                            .put("statusMessage", "Product successful");
-                }
+                responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                        .put("statusDescription", "success")
+                        .put("productId", retDet.getInt("productId"))
+                        .put("subProductId", retDet.getInt("subProductId"))
+                        .put("statusMessage", "Product successful");
             }
-
         } catch (Exception e) {
             responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
                     .put("statusDescription", "failed to process request")

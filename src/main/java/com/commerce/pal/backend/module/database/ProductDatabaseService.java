@@ -37,6 +37,7 @@ public class ProductDatabaseService {
             query.registerStoredProcedureParameter("ProductImage", String.class, ParameterMode.IN);
             query.registerStoredProcedureParameter("ProductDescription", String.class, ParameterMode.IN);
             query.registerStoredProcedureParameter("SpecialInstruction", String.class, ParameterMode.IN);
+            query.registerStoredProcedureParameter("ShortDescription", String.class, ParameterMode.IN);
             query.registerStoredProcedureParameter("Quantity", String.class, ParameterMode.IN);
             query.registerStoredProcedureParameter("UnitOfMeasure", String.class, ParameterMode.IN);
             query.registerStoredProcedureParameter("UnitPrice", String.class, ParameterMode.IN);
@@ -61,6 +62,7 @@ public class ProductDatabaseService {
             query.setParameter("ProductImage", regHm.getString("productImage"));
             query.setParameter("ProductDescription", regHm.getString("productDescription"));
             query.setParameter("SpecialInstruction", regHm.getString("specialInstruction"));
+            query.setParameter("ShortDescription", regHm.getString("shortDescription"));
             query.setParameter("Quantity", regHm.getString("quantity"));
             query.setParameter("UnitOfMeasure", regHm.getString("unitOfMeasure"));
             query.setParameter("UnitPrice", regHm.getString("unitPrice"));
@@ -75,15 +77,16 @@ public class ProductDatabaseService {
             query.setParameter("IsPromoted", regHm.getString("isPromoted"));
             query.setParameter("IsPrioritized", regHm.getString("isPrioritized"));
             query.setParameter("CreatedBy", regHm.getString("createdBy"));
-
             query.registerStoredProcedureParameter("ProductExist", Integer.class, ParameterMode.OUT);
+            query.registerStoredProcedureParameter("SubProductId", Integer.class, ParameterMode.OUT);
             query.execute();
-            Integer exists = (Integer) query.getOutputParameterValue("ProductExist");
-            retDet.put("returnValue", exists);
-            retDet.put("exists", exists);
+            Integer productId = (Integer) query.getOutputParameterValue("ProductExist");
+            Integer subProductId = (Integer) query.getOutputParameterValue("SubProductId");
+            retDet.put("productId", productId);
+            retDet.put("subProductId", subProductId);
         } catch (Exception e) {
             log.log(Level.WARNING, "Error at doCustomerRegistration - " + e.getMessage());
-            retDet.put("returnValue", 1);
+            retDet.put("productId", 0);
         }
         return retDet;
     }

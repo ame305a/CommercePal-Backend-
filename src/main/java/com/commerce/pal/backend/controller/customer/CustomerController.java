@@ -1,11 +1,8 @@
 package com.commerce.pal.backend.controller.customer;
 
 import com.commerce.pal.backend.common.ResponseCodes;
-import com.commerce.pal.backend.integ.EmailClient;
+import com.commerce.pal.backend.integ.notification.EmailClient;
 import com.commerce.pal.backend.models.LoginValidation;
-import com.commerce.pal.backend.models.order.LoanOrder;
-import com.commerce.pal.backend.models.order.Order;
-import com.commerce.pal.backend.models.order.OrderItem;
 import com.commerce.pal.backend.models.user.CustomerAddress;
 import com.commerce.pal.backend.repo.order.LoanOrderRepository;
 import com.commerce.pal.backend.repo.order.OrderItemRepository;
@@ -17,7 +14,6 @@ import com.commerce.pal.backend.repo.user.CustomerRepository;
 import com.commerce.pal.backend.repo.user.MerchantRepository;
 import com.commerce.pal.backend.utils.GlobalMethods;
 import lombok.extern.java.Log;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,16 +21,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
-
-import static com.commerce.pal.backend.common.ResponseCodes.MERCHANT_TO_CUSTOMER;
 
 @Log
 @CrossOrigin(origins = {"*"}, maxAge = 3600L)

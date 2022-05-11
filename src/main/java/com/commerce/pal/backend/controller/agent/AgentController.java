@@ -1,12 +1,10 @@
 package com.commerce.pal.backend.controller.agent;
 
 import com.commerce.pal.backend.common.ResponseCodes;
-import com.commerce.pal.backend.integ.EmailClient;
+import com.commerce.pal.backend.integ.notification.EmailClient;
 import com.commerce.pal.backend.models.LoginValidation;
 import com.commerce.pal.backend.module.multi.AgentService;
-import com.commerce.pal.backend.module.multi.BusinessService;
 import com.commerce.pal.backend.repo.user.AgentRepository;
-import com.commerce.pal.backend.repo.user.BusinessRepository;
 import com.commerce.pal.backend.service.amazon.UploadService;
 import com.commerce.pal.backend.utils.GlobalMethods;
 import lombok.extern.java.Log;

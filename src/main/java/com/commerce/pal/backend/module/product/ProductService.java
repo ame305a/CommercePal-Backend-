@@ -56,7 +56,7 @@ public class ProductService {
         try {
             retDet = productDatabaseService.doAddProduct(request);
         } catch (Exception ex) {
-            retDet.put("returnValue", 1);
+            retDet.put("productId", 0);
             log.log(Level.WARNING, "Error ProductDatabaseService doAddProduct : " + ex.getMessage());
         }
         return retDet;
