@@ -40,6 +40,8 @@ public class MerchantProductController {
         this.merchantRepository = merchantRepository;
     }
 
+
+
     @RequestMapping(value = "/add-product", method = RequestMethod.POST)
     public ResponseEntity<?> addProduct(@RequestBody String req) {
         JSONObject responseMap = new JSONObject();
@@ -185,7 +187,6 @@ public class MerchantProductController {
                 });
         return ResponseEntity.ok(responseMap.toString());
     }
-
 
     @RequestMapping(value = "/enable-disable-account", method = RequestMethod.POST)
     public ResponseEntity<?> enableDisableAccount(@RequestBody String req) {

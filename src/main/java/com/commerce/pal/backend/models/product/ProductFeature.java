@@ -2,27 +2,34 @@ package com.commerce.pal.backend.models.product;
 
 import lombok.*;
 
-import javax.persistence.Basic;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.sql.Timestamp;
 import java.util.Objects;
 
 @Data
 @Entity
 public class ProductFeature {
-    @Id@Column(name = "Id")
-    private long id;
-    @Basic@Column(name = "FeatureName")
+    @Id
+    @Column(name = "Id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Basic
+    @Column(name = "SubCategoryId")
+    private Long subCategoryId;
+    @Basic
+    @Column(name = "FeatureName")
     private String featureName;
-    @Basic@Column(name = "UnitOfMeasure")
+    @Basic
+    @Column(name = "UnitOfMeasure")
     private String unitOfMeasure;
-    @Basic@Column(name = "VariableType")
-    private int variableType;
-    @Basic@Column(name = "Status")
-    private int status;
-    @Basic@Column(name = "CreatedDate")
+    @Basic
+    @Column(name = "VariableType")
+    private String variableType;
+    @Basic
+    @Column(name = "Status")
+    private Integer status;
+    @Basic
+    @Column(name = "CreatedDate")
     private Timestamp createdDate;
 
 }

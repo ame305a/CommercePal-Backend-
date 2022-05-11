@@ -1,7 +1,7 @@
 package com.commerce.pal.backend.controller.customer;
 
 import com.commerce.pal.backend.common.ResponseCodes;
-import com.commerce.pal.backend.integ.notification.EmailClient;
+import com.commerce.pal.backend.integ.notification.email.EmailClient;
 import com.commerce.pal.backend.models.LoginValidation;
 import com.commerce.pal.backend.models.order.LoanOrder;
 import com.commerce.pal.backend.models.order.Order;

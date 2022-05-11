@@ -1,7 +1,7 @@
 package com.commerce.pal.backend.controller.agent;
 
 import com.commerce.pal.backend.common.ResponseCodes;
-import com.commerce.pal.backend.integ.notification.EmailClient;
+import com.commerce.pal.backend.integ.notification.email.EmailClient;
 import com.commerce.pal.backend.models.LoginValidation;
 import com.commerce.pal.backend.module.multi.AgentService;
 import com.commerce.pal.backend.repo.user.AgentRepository;

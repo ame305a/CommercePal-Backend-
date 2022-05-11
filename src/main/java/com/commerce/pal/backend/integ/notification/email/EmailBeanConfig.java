@@ -1,4 +1,4 @@
-package com.commerce.pal.backend.integ.notification;
+package com.commerce.pal.backend.integ.notification.email;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

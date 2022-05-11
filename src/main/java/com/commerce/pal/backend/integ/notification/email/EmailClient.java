@@ -1,4 +1,4 @@
-package com.commerce.pal.backend.integ.notification;
+package com.commerce.pal.backend.integ.notification.email;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
