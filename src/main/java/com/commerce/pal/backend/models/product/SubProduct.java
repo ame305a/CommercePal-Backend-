@@ -4,38 +4,20 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.Objects;
 
 @Data
 @Entity
-@Table(name = "Product")
-public class Product {
+public class SubProduct {
     @Id
-    @Column(name = "ProductId")
+    @Column(name = "SubProductId")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long productId;
+    private Long subProductId;
     @Basic
-    @Column(name = "OwnerType")
-    private String ownerType;
-    @Basic
-    @Column(name = "MerchantId")
-    private Long merchantId;
-    @Basic
-    @Column(name = "ProductParentCateoryId")
-    private Long productParentCateoryId;
-    @Basic
-    @Column(name = "ProductCategoryId")
-    private Long productCategoryId;
-    @Basic
-    @Column(name = "ProductSubCategoryId")
-    private Long productSubCategoryId;
-    @Basic
-    @Column(name = "ProductType")
-    private String productType;
-    @Basic
-    @Column(name = "ProductName")
-    private String productName;
+    @Column(name = "ProductId")
+    private Long productId;
     @Basic
     @Column(name = "ShortDescription")
     private String shortDescription;
@@ -58,41 +40,8 @@ public class Product {
     @Column(name = "ProductWebVideo")
     private String productWebVideo;
     @Basic
-    @Column(name = "ProductDescription")
-    private String productDescription;
-    @Basic
-    @Column(name = "SpecialInstruction")
-    private String specialInstruction;
-    @Basic
-    @Column(name = "Quantity")
-    private Integer quantity;
-    @Basic
-    @Column(name = "UnitOfMeasure")
-    private String unitOfMeasure;
-    @Basic
     @Column(name = "UnitPrice")
     private BigDecimal unitPrice;
-    @Basic
-    @Column(name = "Currency")
-    private String currency;
-    @Basic
-    @Column(name = "Tax")
-    private BigDecimal tax;
-    @Basic
-    @Column(name = "MinOrder")
-    private Integer minOrder;
-    @Basic
-    @Column(name = "MaxOrder")
-    private Integer maxOrder;
-    @Basic
-    @Column(name = "SoldQuantity")
-    private Integer soldQuantity;
-    @Basic
-    @Column(name = "CountryOfOrigin")
-    private String countryOfOrigin;
-    @Basic
-    @Column(name = "Manufucturer")
-    private String manufucturer;
     @Basic
     @Column(name = "IsDiscounted")
     private Integer isDiscounted;
@@ -101,28 +50,16 @@ public class Product {
     private String discountType;
     @Basic
     @Column(name = "DiscountValue")
-    private BigDecimal discountValue;
+    private Long discountValue;
     @Basic
     @Column(name = "DiscountExpiryDate")
     private Timestamp discountExpiryDate;
-    @Basic
-    @Column(name = "UnitWeight")
-    private BigDecimal unitWeight;
     @Basic
     @Column(name = "IsPromoted")
     private Integer isPromoted;
     @Basic
     @Column(name = "IsPrioritized")
     private Integer isPrioritized;
-    @Basic
-    @Column(name = "ShipmentType")
-    private String shipmentType;
-
-
-    @Basic
-    @Column(name = "PrimarySubProduct")
-    private Long primarySubProduct;
-
     @Basic
     @Column(name = "Status")
     private Integer status;

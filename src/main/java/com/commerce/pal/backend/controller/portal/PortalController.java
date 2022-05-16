@@ -21,7 +21,6 @@ public class PortalController {
 
     private final MultiUserService multiUserService;
 
-
     @Autowired
     public PortalController(MultiUserService multiUserService) {
         this.multiUserService = multiUserService;

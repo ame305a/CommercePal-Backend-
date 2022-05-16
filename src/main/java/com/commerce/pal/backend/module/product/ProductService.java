@@ -1,7 +1,6 @@
 package com.commerce.pal.backend.module.product;
 
 import com.commerce.pal.backend.common.ResponseCodes;
-import com.commerce.pal.backend.models.product.Product;
 import com.commerce.pal.backend.module.database.ProductDatabaseService;
 import com.commerce.pal.backend.repo.product.*;
 import lombok.extern.java.Log;
@@ -17,9 +16,6 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 @Log
@@ -28,6 +24,7 @@ import java.util.logging.Level;
 public class ProductService {
     private final CategoryService categoryService;
     private final ProductRepository productRepository;
+    private final SubProductService subProductService;
     private final ProductMoreRepository productMoreRepository;
     private final ProductDatabaseService productDatabaseService;
     private final ProductImageRepository productImageRepository;
@@ -37,6 +34,7 @@ public class ProductService {
     @Autowired
     public ProductService(CategoryService categoryService,
                           ProductRepository productRepository,
+                          SubProductService subProductService,
                           ProductMoreRepository productMoreRepository,
                           ProductDatabaseService productDatabaseService,
                           ProductImageRepository productImageRepository,
@@ -44,6 +42,7 @@ public class ProductService {
                           ProductMoreTemplateRepository productMoreTemplateRepository) {
         this.categoryService = categoryService;
         this.productRepository = productRepository;
+        this.subProductService = subProductService;
         this.productMoreRepository = productMoreRepository;
         this.productDatabaseService = productDatabaseService;
         this.productImageRepository = productImageRepository;
@@ -160,6 +159,10 @@ public class ProductService {
                         detail.put("ShipmentType", pro.getShipmentType());
                         detail.put("UnitPrice", pro.getUnitPrice());
                         detail.put("actualPrice", pro.getUnitPrice());
+                        detail.put("PrimarySubCategory", pro.getPrimarySubProduct());
+                        List<JSONObject> subProducts = new ArrayList<>();
+                        subProducts = subProductService.getSubByProduct(pro.getProductId());
+                        detail.put("subProducts", subProducts);
                         if (pro.getIsDiscounted().equals(1)) {
                             detail.put("DiscountType", pro.getDiscountType());
 
@@ -194,12 +197,7 @@ public class ProductService {
                         detail.put("ratingCount", 30);
                         detail.put("ProductImages", images);
 
-                        List<Product> products = productRepository.findProductsByProductParentCateoryIdAndProductCategoryIdAndProductSubCategoryId(
-                                pro.getProductParentCateoryId(), pro.getProductCategoryId(), pro.getProductSubCategoryId()
-                        );
-
                         List<JSONObject> more = new ArrayList<>();
-
                         productMoreRepository.findAll()
                                 .forEach(productMore -> {
                                     JSONObject item = new JSONObject();
@@ -248,7 +246,16 @@ public class ProductService {
                                     more.add(item);
                                 });
                         detail.put("more", more);
-
+                        List<JSONObject> featureDetails = new ArrayList<>();
+                        List<Long> subProductId = subProductService.getSubProductByProductId(pro.getProductId());
+                        subProductService.getGroupProductFeature(subProductId)
+                                .forEach(featureId -> {
+                                    JSONObject featureIdValues = new JSONObject();
+                                    featureIdValues.put("FeatureId", featureId);
+                                    featureIdValues.put("Available", subProductService.getGroupProductFeature(featureId));
+                                    featureDetails.add(featureIdValues);
+                                });
+                        detail.put("featureDetails", featureDetails);
                         // Product Reviews
                         List<JSONObject> reviews = new ArrayList<>();
                         for (int i = 1; i < 6; i++) {
@@ -332,5 +339,6 @@ public class ProductService {
         }
         return detail;
     }
+
 
 }

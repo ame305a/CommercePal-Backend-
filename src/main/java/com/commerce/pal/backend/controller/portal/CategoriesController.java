@@ -330,8 +330,6 @@ public class CategoriesController {
         return ResponseEntity.ok(responseMap.toString());
     }
 
-
-
     @RequestMapping(value = {"/GetBrands"}, method = {RequestMethod.GET}, produces = {"application/json"})
     @ResponseBody
     public ResponseEntity<?> GetBrands() {
