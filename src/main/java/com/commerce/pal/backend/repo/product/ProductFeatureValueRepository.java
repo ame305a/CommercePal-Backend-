@@ -13,6 +13,6 @@ public interface ProductFeatureValueRepository extends JpaRepository<ProductFeat
     @Query(value = "SELECT ProductFeatureId  FROM ProductFeatureValue WHERE ProductId IN ?1 GROUP BY ProductFeatureId", nativeQuery = true)
     List<Long> findProductFeatureValuesByProductId(List<Long> subs);
 
-    @Query(value = " SELECT Value  FROM ProductFeatureValue WHERE ProductFeatureId = 1 GROUP BY Value", nativeQuery = true)
+    @Query(value = " SELECT Value  FROM ProductFeatureValue WHERE ProductFeatureId = ?1 GROUP BY Value", nativeQuery = true)
     List<String> findProductFeatureValuesByProductFeatureId(Long featureId);
 }

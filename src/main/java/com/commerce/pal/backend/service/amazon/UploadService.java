@@ -78,6 +78,46 @@ public class UploadService {
         return responseMap;
     }
 
+    public JSONObject uploadPickUpPhoto(MultipartFile multipartFile, String id, String orderItemId) {
+        JSONObject responseMap = new JSONObject();
+
+        try {
+
+            final File file = convertMultiPartFileToFile(multipartFile);
+            String fileName = "pick_up-item" + "_" + String.valueOf(System.currentTimeMillis()) + "_" + getRandomNumber() + "." + getFileExtension(file.getName());
+            String bucketLocation = bucketName + "/PickUpItems/Images";
+            String imageUrl = baseUrl + "/PickUpItems/Images" + "/" + fileName;
+            uploadFileToS3Bucket(bucketLocation, file, fileName);
+
+            // Update the Tables
+            JSONObject uploadJson = new JSONObject();
+            uploadJson.put("Id", id);
+            uploadJson.put("OrderItemId", orderItemId);
+            uploadJson.put("ImageUrl", imageUrl);
+
+            JSONObject upRes = imageService.uploadPickUpImage(uploadJson);
+
+            if (upRes.getString("Status").equals("00")) {
+                responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                        .put("statusDescription", "success")
+                        .put("imageUrl", imageUrl)
+                        .put("statusMessage", "Request Successful");
+            } else {
+                responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
+                        .put("statusDescription", upRes.getString("Narration"))
+                        .put("statusMessage", upRes.getString("Narration"));
+            }
+            log.log(Level.INFO, "File upload is completed.");
+            file.delete();    // To remove the file locally created in the project folder.
+        } catch (final AmazonServiceException ex) {
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "Error =" + ex.getMessage())
+                    .put("statusMessage", "Error=" + ex.getMessage());
+            log.log(Level.WARNING, "Error= {} while uploading file.", ex.getMessage());
+        }
+        return responseMap;
+    }
+
     public String uploadFileAlone(MultipartFile multipartFile, String platform, String type) {
         String responseMap = new String();
         try {

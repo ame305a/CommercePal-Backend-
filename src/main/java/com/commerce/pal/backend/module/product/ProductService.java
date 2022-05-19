@@ -160,8 +160,7 @@ public class ProductService {
                         detail.put("UnitPrice", pro.getUnitPrice());
                         detail.put("actualPrice", pro.getUnitPrice());
                         detail.put("PrimarySubCategory", pro.getPrimarySubProduct());
-                        List<JSONObject> subProducts = new ArrayList<>();
-                        subProducts = subProductService.getSubByProduct(pro.getProductId());
+                        List<JSONObject> subProducts = subProductService.getSubByProduct(pro.getProductId());
                         detail.put("subProducts", subProducts);
                         if (pro.getIsDiscounted().equals(1)) {
                             detail.put("DiscountType", pro.getDiscountType());
@@ -258,7 +257,7 @@ public class ProductService {
                         detail.put("featureDetails", featureDetails);
                         // Product Reviews
                         List<JSONObject> reviews = new ArrayList<>();
-                        for (int i = 1; i < 6; i++) {
+                        for (int i = 1; i < 3; i++) {
                             JSONObject productReview = new JSONObject();
                             productReview.put("id", i);
                             productReview.put("title", "Great Product!");
@@ -295,14 +294,12 @@ public class ProductService {
                         detail.put("ProductCategoryId", pro.getProductCategoryId());
                         detail.put("ProductSubCategoryId", pro.getProductSubCategoryId());
                         detail.put("ProductDescription", pro.getProductDescription());
-                        detail.put("SpecialInstruction", pro.getSpecialInstruction());
                         detail.put("IsDiscounted", pro.getIsDiscounted());
                         detail.put("ShipmentType", pro.getShipmentType());
                         detail.put("UnitPrice", pro.getUnitPrice());
                         detail.put("actualPrice", pro.getUnitPrice());
                         if (pro.getIsDiscounted().equals(1)) {
                             detail.put("DiscountType", pro.getDiscountType());
-
                             Double discountAmount = 0D;
                             if (pro.getDiscountType().equals("FIXED")) {
                                 detail.put("DiscountValue", pro.getDiscountValue());
@@ -322,17 +319,10 @@ public class ProductService {
                             detail.put("offerPrice", pro.getUnitPrice());
                             detail.put("discountDescription", pro.getDiscountValue() + " " + pro.getCurrency());
                         }
-                        ArrayList<String> images = new ArrayList<String>();
-                        productImageRepository.findProductImagesByProductId(pro.getProductId()).forEach(
-                                image -> {
-                                    images.add(image.getFilePath());
-                                }
-                        );
                         detail.put("discountExpiry", pro.getDiscountExpiryDate());
                         detail.put("currency", pro.getCurrency());
                         detail.put("productRating", 4.2);
                         detail.put("ratingCount", 30);
-                        detail.put("ProductImages", images);
                     });
         } catch (Exception e) {
             log.log(Level.WARNING, e.getMessage());

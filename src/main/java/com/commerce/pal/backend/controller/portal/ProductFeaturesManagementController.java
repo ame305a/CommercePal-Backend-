@@ -13,6 +13,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 
 @Log
@@ -86,16 +87,28 @@ public class ProductFeaturesManagementController {
 
     @RequestMapping(value = {"/get-features"}, method = {RequestMethod.GET}, produces = {"application/json"})
     @ResponseBody
-    public ResponseEntity<?> getProductFeatures() {
+    public ResponseEntity<?> getProductFeatures(@RequestParam("sub-category") Optional<String> sub) {
         JSONObject responseMap = new JSONObject();
         List<JSONObject> details = new ArrayList<>();
-        productFeatureRepository.findAll().forEach(productFeature -> {
-            JSONObject detail = new JSONObject();
-            detail.put("subCategoryId", productFeature.getSubCategoryId());
-            detail.put("featureName", productFeature.getFeatureName());
-            detail.put("unitOfMeasure", productFeature.getUnitOfMeasure());
-            detail.put("variableType", productFeature.getVariableType());
-            details.add(detail);
+        sub.ifPresentOrElse(subCat -> {
+            productFeatureRepository.findProductFeaturesBySubCategoryId(Long.valueOf(subCat))
+                    .forEach(productFeature -> {
+                        JSONObject detail = new JSONObject();
+                        detail.put("subCategoryId", productFeature.getSubCategoryId());
+                        detail.put("featureName", productFeature.getFeatureName());
+                        detail.put("unitOfMeasure", productFeature.getUnitOfMeasure());
+                        detail.put("variableType", productFeature.getVariableType());
+                        details.add(detail);
+                    });
+        }, () -> {
+            productFeatureRepository.findAll().forEach(productFeature -> {
+                JSONObject detail = new JSONObject();
+                detail.put("subCategoryId", productFeature.getSubCategoryId());
+                detail.put("featureName", productFeature.getFeatureName());
+                detail.put("unitOfMeasure", productFeature.getUnitOfMeasure());
+                detail.put("variableType", productFeature.getVariableType());
+                details.add(detail);
+            });
         });
         responseMap.put("statusCode", ResponseCodes.SUCCESS)
                 .put("statusDescription", "success")

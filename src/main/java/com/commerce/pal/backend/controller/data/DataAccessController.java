@@ -3,8 +3,10 @@ package com.commerce.pal.backend.controller.data;
 import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.module.multi.*;
 import com.commerce.pal.backend.module.product.ProductService;
+import com.commerce.pal.backend.module.product.SubProductService;
 import lombok.extern.java.Log;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,19 +22,23 @@ public class DataAccessController {
     private final CustomerService customerService;
     private final MerchantService merchantService;
     private final MessengerService messengerService;
+    private final SubProductService subProductService;
 
+    @Autowired
     public DataAccessController(AgentService agentService,
                                 ProductService productService,
                                 BusinessService businessService,
                                 CustomerService customerService,
                                 MerchantService merchantService,
-                                MessengerService messengerService) {
+                                MessengerService messengerService,
+                                SubProductService subProductService) {
         this.agentService = agentService;
         this.productService = productService;
         this.businessService = businessService;
         this.customerService = customerService;
         this.merchantService = merchantService;
         this.messengerService = messengerService;
+        this.subProductService = subProductService;
     }
 
     @RequestMapping(value = {"/request"}, method = {RequestMethod.POST}, produces = {"application/json"})
@@ -44,6 +50,9 @@ public class DataAccessController {
             switch (jsonObject.getString("Type")) {
                 case "PRODUCT":
                     responseMap = productService.getProductLimitedDetails(jsonObject.getLong("TypeId"));
+                    break;
+                case "SUB-PRODUCT":
+                    responseMap = subProductService.getSubProductInfo(jsonObject.getLong("TypeId"));
                     break;
                 case "AGENT":
                     responseMap = agentService.getAgentInfo(jsonObject.getLong("TypeId"));

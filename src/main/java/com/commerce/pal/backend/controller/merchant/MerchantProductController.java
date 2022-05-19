@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Log
 @CrossOrigin(origins = {"*"}, maxAge = 3600L)
@@ -210,6 +211,51 @@ public class MerchantProductController {
         return ResponseEntity.ok(responseMap.toString());
     }
 
+    @RequestMapping(value = {"/get-product-by-id"}, method = {RequestMethod.GET}, produces = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<?> getProductById(@RequestParam("parent") Optional<String> parent,
+                                            @RequestParam("category ") Optional<String> category,
+                                            @RequestParam("subCat") Optional<String> subCat,
+                                            @RequestParam("brand") Optional<String> brand,
+                                            @RequestParam("product") Optional<String> product) {
+        JSONObject responseMap = new JSONObject();
+        LoginValidation user = globalMethods.fetchUserDetails();
+        merchantRepository.findMerchantByEmailAddress(user.getEmailAddress())
+                .ifPresentOrElse(merchant -> {
+                    List<SearchCriteria> params = new ArrayList<SearchCriteria>();
+                    params.add(new SearchCriteria("merchantId", ":", merchant.getMerchantId()));
+                    parent.ifPresent(value -> {
+                        params.add(new SearchCriteria("productParentCateoryId", ":", value));
+                    });
+                    category.ifPresent(value -> {
+                        params.add(new SearchCriteria("productCategoryId", ":", value));
+                    });
+                    subCat.ifPresent(value -> {
+                        params.add(new SearchCriteria("productSubCategoryId", ":", value));
+                    });
+                    brand.ifPresent(value -> {
+                        params.add(new SearchCriteria("manufucturer", ":", value));
+                    });
+                    product.ifPresent(value -> {
+                        params.add(new SearchCriteria("productId", ":", value));
+                    });
+                    AtomicReference<JSONObject> detail = new AtomicReference<>(new JSONObject());
+                    specificationsDao.getProducts(params)
+                            .forEach(pro -> {
+                                detail.set(productService.getProductLimitedDetails(pro.getProductId()));
+                            });
+                    responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                            .put("statusDescription", "success")
+                            .put("detail", detail.get())
+                            .put("statusMessage", "Request Successful");
+                }, () -> {
+                    responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
+                            .put("statusDescription", "Merchant Does not exists")
+                            .put("statusMessage", "Merchant Does not exists");
+                });
+        return ResponseEntity.ok(responseMap.toString());
+    }
+
     @RequestMapping(value = "/enable-disable-account", method = RequestMethod.POST)
     public ResponseEntity<?> enableDisableAccount(@RequestBody String req) {
         JSONObject responseMap = new JSONObject();
@@ -222,8 +268,7 @@ public class MerchantProductController {
                         uploadJson.put("MerchantId", merchant.getMerchantId());
                         uploadJson.put("Type", request.getString("type"));
                         uploadJson.put("Platform", request.getString("StatusComment"));
-                        JSONObject updateRes = new JSONObject();
-                        updateRes = productService.enableDisableAccount(request);
+                        JSONObject updateRes = productService.enableDisableAccount(request);
                         if (updateRes.getString("Status").equals("00")) {
                             responseMap.put("statusCode", ResponseCodes.SUCCESS)
                                     .put("statusDescription", "success")

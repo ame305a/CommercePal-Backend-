@@ -25,6 +25,10 @@ public class OrderItem {
     @Column(name = "ProductLinkingId")
     private Long productLinkingId;
     @Basic
+    @Column(name = "SubProductId")
+    private Long subProductId;
+
+    @Basic
     @Column(name = "MerchantId")
     private Long merchantId;
     @Basic

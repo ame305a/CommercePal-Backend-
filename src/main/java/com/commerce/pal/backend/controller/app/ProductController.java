@@ -3,6 +3,7 @@ package com.commerce.pal.backend.controller.app;
 import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.module.product.CategoryService;
 import com.commerce.pal.backend.module.product.ProductService;
+import com.commerce.pal.backend.repo.product.ProductFeatureRepository;
 import com.commerce.pal.backend.repo.product.categories.BrandImageRepository;
 import com.commerce.pal.backend.repo.product.categories.ProductCategoryRepository;
 import com.commerce.pal.backend.repo.product.ProductRepository;
@@ -34,6 +35,7 @@ public class ProductController {
     private final SpecificationsDao specificationsDao;
     private final ProductRepository productRepository;
     private final BrandImageRepository brandImageRepository;
+    private final ProductFeatureRepository productFeatureRepository;
     private final ProductCategoryRepository productCategoryRepository;
     private final ProductSubCategoryRepository productSubCategoryRepository;
 
@@ -43,6 +45,7 @@ public class ProductController {
                              SpecificationsDao specificationsDao,
                              ProductRepository productRepository,
                              BrandImageRepository brandImageRepository,
+                             ProductFeatureRepository productFeatureRepository,
                              ProductCategoryRepository productCategoryRepository,
                              ProductSubCategoryRepository productSubCategoryRepository) {
         this.productService = productService;
@@ -50,6 +53,7 @@ public class ProductController {
         this.specificationsDao = specificationsDao;
         this.productRepository = productRepository;
         this.brandImageRepository = brandImageRepository;
+        this.productFeatureRepository = productFeatureRepository;
         this.productCategoryRepository = productCategoryRepository;
         this.productSubCategoryRepository = productSubCategoryRepository;
     }
@@ -135,6 +139,38 @@ public class ProductController {
         return ResponseEntity.ok(responseMap.toString());
     }
 
+    @RequestMapping(value = {"/get-sub-category-features"}, method = {RequestMethod.GET}, produces = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<?> GetSubCategoriesFeatures(@RequestParam("sub-category") Optional<String> sub) {
+        JSONObject responseMap = new JSONObject();
+        List<JSONObject> details = new ArrayList<>();
+        sub.ifPresentOrElse(subCat -> {
+            productFeatureRepository.findProductFeaturesBySubCategoryId(Long.valueOf(subCat))
+                    .forEach(productFeature -> {
+                        JSONObject detail = new JSONObject();
+                        detail.put("subCategoryId", productFeature.getSubCategoryId());
+                        detail.put("featureName", productFeature.getFeatureName());
+                        detail.put("unitOfMeasure", productFeature.getUnitOfMeasure());
+                        detail.put("variableType", productFeature.getVariableType());
+                        details.add(detail);
+                    });
+        }, () -> {
+            productFeatureRepository.findAll().forEach(productFeature -> {
+                JSONObject detail = new JSONObject();
+                detail.put("subCategoryId", productFeature.getSubCategoryId());
+                detail.put("featureName", productFeature.getFeatureName());
+                detail.put("unitOfMeasure", productFeature.getUnitOfMeasure());
+                detail.put("variableType", productFeature.getVariableType());
+                details.add(detail);
+            });
+        });
+        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                .put("statusDescription", "success")
+                .put("details", details)
+                .put("statusMessage", "Request Successful");
+        return ResponseEntity.ok(responseMap.toString());
+    }
+
     @RequestMapping(value = {"/get-products"}, method = {RequestMethod.GET}, produces = {"application/json"})
     @ResponseBody
     public ResponseEntity<?> getProducts(@RequestParam("parent") Optional<String> parent,
@@ -169,7 +205,7 @@ public class ProductController {
                     details.add(detail);
                 });
         if (details.isEmpty()) {
-                responseMap.put("statusCode", ResponseCodes.NOT_EXIST);
+            responseMap.put("statusCode", ResponseCodes.NOT_EXIST);
         } else {
             responseMap.put("statusCode", ResponseCodes.SUCCESS);
         }
