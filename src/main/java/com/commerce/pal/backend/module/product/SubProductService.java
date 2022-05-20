@@ -174,14 +174,13 @@ public class SubProductService {
                         });
                     });
                 });
-
     }
 
     public JSONObject addSubProduct(JSONObject subPayload) {
         JSONObject response = new JSONObject();
         try {
             AtomicReference<SubProduct> subProduct = new AtomicReference<>(new SubProduct());
-            subProduct.get().setProductId(subPayload.getLong("productId"));
+            subProduct.get().setProductId(subPayload.getLong("ProductId"));
             subProduct.get().setShortDescription(subPayload.getString("shortDescription"));
             subProduct.get().setUnitPrice(new BigDecimal(subPayload.getString("unitPrice")));
             subProduct.get().setIsDiscounted(Integer.valueOf(subPayload.getString("isDiscounted")));
@@ -214,13 +213,13 @@ public class SubProductService {
     public JSONObject updateSubProduct(JSONObject subPayload) {
         JSONObject response = new JSONObject();
         try {
-            subProductRepository.findSubProductsByProductIdAndSubProductId(subPayload.getLong("productId"), subPayload.getLong("subProductId"))
+            subProductRepository.findSubProductsByProductIdAndSubProductId(subPayload.getLong("ProductId"), subPayload.getLong("subProductId"))
                     .ifPresentOrElse(subProduct -> {
-                        subProduct.setShortDescription(subPayload.getString("shortDescription"));
-                        subProduct.setUnitPrice(new BigDecimal(subPayload.getString("unitPrice")));
-                        subProduct.setIsDiscounted(Integer.valueOf(subPayload.getString("isDiscounted")));
-                        subProduct.setDiscountType(subPayload.getString("discountType"));
-                        subProduct.setDiscountValue(Long.valueOf(subPayload.getString("discountValue")));
+                        subProduct.setShortDescription(subPayload.has("shortDescription") ? subPayload.getString("shortDescription") : subProduct.getShortDescription());
+                        subProduct.setUnitPrice(subPayload.has("unitPrice") ? new BigDecimal(subPayload.getString("unitPrice")) : subProduct.getUnitPrice());
+                        subProduct.setIsDiscounted(subPayload.has("isDiscounted") ? Integer.valueOf(subPayload.getString("isDiscounted")) : subProduct.getIsDiscounted());
+                        subProduct.setDiscountType(subPayload.has("discountType") ? subPayload.getString("discountType") : subProduct.getDiscountType());
+                        subProduct.setDiscountValue(subPayload.has("discountValue") ? Long.valueOf(subPayload.getString("discountValue")) : subProduct.getDiscountValue());
                         if (subPayload.has("productFeature")) {
                             updateInsertFeatures(subProduct.getSubProductId(), subPayload.getJSONArray("productFeature"));
                         }

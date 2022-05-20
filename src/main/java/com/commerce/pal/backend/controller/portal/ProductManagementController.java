@@ -95,7 +95,7 @@ public class ProductManagementController {
         AtomicReference<JSONObject> responseMap = new AtomicReference<>(new JSONObject());
         try {
             JSONObject request = new JSONObject(req);
-            productRepository.findProductByProductId(Long.valueOf(request.getString("productId")))
+            productRepository.findProductByProductId(Long.valueOf(request.getString("ProductId")))
                     .ifPresentOrElse(product -> {
                         if (subProductService.validateFeature(product.getProductSubCategoryId(), request.getJSONArray("productFeature")).equals(1)) {
                             responseMap.set(subProductService.addSubProduct(request));
@@ -119,12 +119,12 @@ public class ProductManagementController {
         return ResponseEntity.status(HttpStatus.OK).body(responseMap.get().toString());
     }
 
-    @RequestMapping(value = "/udpate-sub-product", method = RequestMethod.POST)
+    @RequestMapping(value = "/update-sub-product", method = RequestMethod.POST)
     public ResponseEntity<?> updateSubProduct(@RequestBody String req) {
         AtomicReference<JSONObject> responseMap = new AtomicReference<>(new JSONObject());
         try {
             JSONObject request = new JSONObject(req);
-            productRepository.findProductByProductId(Long.valueOf(request.getString("productId")))
+            productRepository.findProductByProductId(Long.valueOf(request.getString("ProductId")))
                     .ifPresentOrElse(product -> {
                         if (subProductService.validateFeature(product.getProductSubCategoryId(), request.getJSONArray("productFeature")).equals(1)) {
                             responseMap.set(subProductService.updateSubProduct(request));
