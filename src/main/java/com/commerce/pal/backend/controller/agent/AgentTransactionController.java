@@ -61,6 +61,7 @@ public class AgentTransactionController {
                         agentFloat.setAgentId(agent.getAgentId());
                         agentFloat.setAmount(request.getDouble("amount"));
                         agentFloat.setComment(request.getString("comment"));
+                        agentFloat.setStatus(0);
                         agentFloat.setRequestDate(Timestamp.from(Instant.now()));
                         agentFloatRepository.save(agentFloat);
                         responseMap.put("statusCode", ResponseCodes.SUCCESS)
@@ -112,8 +113,8 @@ public class AgentTransactionController {
                             .put("statusMessage", "Request Successful");
                 }, () -> {
                     responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
-                            .put("statusDescription", "Merchant Does not exists")
-                            .put("statusMessage", "Merchant Does not exists");
+                            .put("statusDescription", "Agent Does not exists")
+                            .put("statusMessage", "Agent Does not exists");
                 });
         return ResponseEntity.ok(responseMap.toString());
     }

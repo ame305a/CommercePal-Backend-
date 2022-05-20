@@ -71,7 +71,7 @@ public class SpecificationsDao {
     public List<AgentFloat> getAgentRequest(final List<SearchCriteria> params) {
         final CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         final CriteriaQuery<AgentFloat> query = builder.createQuery(AgentFloat.class);
-        final Root r = query.from(Product.class);
+        final Root r = query.from(AgentFloat.class);
 
         Predicate predicate = builder.conjunction();
         SpecificationQueryCriteriaConsumer searchRequest = new SpecificationQueryCriteriaConsumer(predicate, builder, r);
