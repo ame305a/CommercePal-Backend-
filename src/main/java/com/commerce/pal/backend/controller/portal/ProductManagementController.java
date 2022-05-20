@@ -1,6 +1,7 @@
 package com.commerce.pal.backend.controller.portal;
 
 import com.commerce.pal.backend.common.ResponseCodes;
+import com.commerce.pal.backend.models.LoginValidation;
 import com.commerce.pal.backend.module.product.ProductService;
 import com.commerce.pal.backend.module.multi.MerchantService;
 import com.commerce.pal.backend.module.product.SubProductService;
@@ -83,6 +84,20 @@ public class ProductManagementController {
             }
         } catch (Exception e) {
             log.log(Level.WARNING, e.getMessage());
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("statusMessage", "internal system error");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
+    }
+
+    @RequestMapping(value = "/update-product", method = RequestMethod.POST)
+    public ResponseEntity<?> updateProduct(@RequestBody String req) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            JSONObject request = new JSONObject(req);
+            responseMap = productService.updateProduct(request);
+        } catch (Exception e) {
             responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
                     .put("statusDescription", "failed to process request")
                     .put("statusMessage", "internal system error");
