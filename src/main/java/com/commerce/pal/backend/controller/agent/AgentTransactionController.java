@@ -100,7 +100,7 @@ public class AgentTransactionController {
                         detail.put("TransRef", agentFloat.getTransRef());
                         detail.put("Amount", agentFloat.getAmount());
                         detail.put("Comment", agentFloat.getComment());
-                        detail.put("Status", "Approved");
+                        detail.put("Status",  agentFloat.getStatus());
                         detail.put("ReviewComment", agentFloat.getReview());
                         detail.put("RequestDate", agentFloat.getRequestDate());
                         detail.put("ReviewDate", agentFloat.getReviewDate());
