@@ -96,6 +96,9 @@ public class ProductService {
                         product.setManufucturer(reqBody.has("manufucturer") ? reqBody.getString("manufucturer") : product.getManufucturer());
                         product.setIsDiscounted(reqBody.has("isDiscounted") ? Integer.valueOf(reqBody.getString("isDiscounted")) : product.getIsDiscounted());
                         productRepository.save(product);
+                        reqBody.put("ProductId", String.valueOf(product.getProductId()));
+                        reqBody.put("subProductId", String.valueOf(product.getPrimarySubProduct()));
+                        subProductService.updateSubProduct(reqBody);
                         responseMap.put("statusCode", ResponseCodes.SUCCESS)
                                 .put("statusDescription", "success")
                                 .put("statusMessage", "Request Successful");
