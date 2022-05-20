@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ProductFeatureValueRepository extends JpaRepository<ProductFeatureValue, Long> {
 
@@ -15,4 +16,7 @@ public interface ProductFeatureValueRepository extends JpaRepository<ProductFeat
 
     @Query(value = " SELECT Value  FROM ProductFeatureValue WHERE ProductFeatureId = ?1 GROUP BY Value", nativeQuery = true)
     List<String> findProductFeatureValuesByProductFeatureId(Long featureId);
+
+
+    Optional<ProductFeatureValue> findProductFeatureValuesByProductFeatureIdAndProductId(Long featureId, Long subProdId);
 }

@@ -1,14 +1,22 @@
 package com.commerce.pal.backend.module.product;
 
+import com.commerce.pal.backend.common.ResponseCodes;
+import com.commerce.pal.backend.models.order.Order;
+import com.commerce.pal.backend.models.product.ProductFeatureValue;
+import com.commerce.pal.backend.models.product.SubProduct;
 import com.commerce.pal.backend.repo.product.*;
 import lombok.extern.java.Log;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 
 @Log
@@ -130,5 +138,110 @@ public class SubProductService {
         return featuresValues;
     }
 
+    public Integer validateFeature(Long subCategory, JSONArray features) {
+        AtomicReference<Integer> validated = new AtomicReference<>(1);
+        features.forEach(feature -> {
+            JSONObject featureValue = new JSONObject(feature.toString());
+            productFeatureRepository.findByIdAndSubCategoryId(featureValue.getLong("FeatureId"), subCategory)
+                    .ifPresentOrElse(productFeature -> {
+                    }, () -> {
+                        validated.set(0);
+                    });
+        });
+        return validated.get();
+    }
+
+    public void updateInsertFeatures(Long subProductId, JSONArray features) {
+        subProductRepository.findById(subProductId)
+                .ifPresent(subProduct -> {
+                    features.forEach(feature -> {
+                        JSONObject featureValue = new JSONObject(feature.toString());
+                        productFeatureValueRepository.findProductFeatureValuesByProductFeatureIdAndProductId(
+                                featureValue.getLong("FeatureId"), subProductId
+                        ).ifPresentOrElse(productFeatureValue -> {
+                            productFeatureValue.setValue(featureValue.getString("FeatureValue"));
+                            productFeatureValue.setUnitOfMeasure(featureValue.getString("UnitOfMeasure"));
+                            productFeatureValueRepository.save(productFeatureValue);
+                        }, () -> {
+                            ProductFeatureValue productFeatureValue = new ProductFeatureValue();
+                            productFeatureValue.setProductId(subProductId);
+                            productFeatureValue.setProductFeatureId(featureValue.getLong("FeatureId"));
+                            productFeatureValue.setValue(featureValue.getString("FeatureValue"));
+                            productFeatureValue.setUnitOfMeasure(featureValue.getString("UnitOfMeasure"));
+                            productFeatureValue.setStatus(1);
+                            productFeatureValue.setCreatedDate(Timestamp.from(Instant.now()));
+                            productFeatureValueRepository.save(productFeatureValue);
+                        });
+                    });
+                });
+
+    }
+
+    public JSONObject addSubProduct(JSONObject subPayload) {
+        JSONObject response = new JSONObject();
+        try {
+            AtomicReference<SubProduct> subProduct = new AtomicReference<>(new SubProduct());
+            subProduct.get().setProductId(subPayload.getLong("productId"));
+            subProduct.get().setShortDescription(subPayload.getString("shortDescription"));
+            subProduct.get().setUnitPrice(new BigDecimal(subPayload.getString("unitPrice")));
+            subProduct.get().setIsDiscounted(Integer.valueOf(subPayload.getString("isDiscounted")));
+            subProduct.get().setDiscountType(subPayload.getString("discountType"));
+            subProduct.get().setDiscountValue(Long.valueOf(subPayload.getString("discountValue")));
+            subProduct.get().setIsPromoted(0);
+            subProduct.get().setIsPrioritized(0);
+            subProduct.get().setStatus(1);
+            subProduct.get().setCreatedDate(Timestamp.from(Instant.now()));
+            subProduct.get().setCreatedBy(subPayload.getString("createdBy"));
+            subProduct.set(subProductRepository.save(subProduct.get()));
+
+            response.put("statusCode", ResponseCodes.SUCCESS)
+                    .put("statusDescription", "success")
+                    .put("productId", subPayload.getLong("ProductId"))
+                    .put("subProductId", subProduct.get().getSubProductId())
+                    .put("statusMessage", "Sub Product successful");
+
+            updateInsertFeatures(subProduct.get().getSubProductId(), subPayload.getJSONArray("productFeature"));
+        } catch (Exception ex) {
+            log.log(Level.WARNING, ex.getMessage());
+            response.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("statusMessage", "internal system error");
+            log.log(Level.WARNING, ex.getMessage());
+        }
+        return response;
+    }
+
+    public JSONObject updateSubProduct(JSONObject subPayload) {
+        JSONObject response = new JSONObject();
+        try {
+            subProductRepository.findSubProductsByProductIdAndSubProductId(subPayload.getLong("productId"), subPayload.getLong("subProductId"))
+                    .ifPresentOrElse(subProduct -> {
+                        subProduct.setShortDescription(subPayload.getString("shortDescription"));
+                        subProduct.setUnitPrice(new BigDecimal(subPayload.getString("unitPrice")));
+                        subProduct.setIsDiscounted(Integer.valueOf(subPayload.getString("isDiscounted")));
+                        subProduct.setDiscountType(subPayload.getString("discountType"));
+                        subProduct.setDiscountValue(Long.valueOf(subPayload.getString("discountValue")));
+                        if (subPayload.has("productFeature")) {
+                            updateInsertFeatures(subProduct.getSubProductId(), subPayload.getJSONArray("productFeature"));
+                        }
+                        subProductRepository.save(subProduct);
+                        response.put("statusCode", ResponseCodes.SUCCESS)
+                                .put("statusDescription", "success")
+                                .put("productId", subPayload.getLong("ProductId"))
+                                .put("subProductId", subProduct.getSubProductId())
+                                .put("statusMessage", "Sub Product successful");
+                    }, () -> {
+                        response.put("statusCode", ResponseCodes.REQUEST_FAILED)
+                                .put("statusDescription", "The SubProduct does not exist")
+                                .put("statusMessage", "The SubProduct does not exist");
+                    });
+        } catch (Exception ex) {
+            log.log(Level.WARNING, ex.getMessage());
+            response.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("statusMessage", "internal system error");
+        }
+        return response;
+    }
 
 }

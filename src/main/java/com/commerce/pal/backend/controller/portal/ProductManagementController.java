@@ -3,6 +3,7 @@ package com.commerce.pal.backend.controller.portal;
 import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.module.product.ProductService;
 import com.commerce.pal.backend.module.multi.MerchantService;
+import com.commerce.pal.backend.module.product.SubProductService;
 import com.commerce.pal.backend.repo.product.ProductImageRepository;
 import com.commerce.pal.backend.repo.product.ProductRepository;
 import com.commerce.pal.backend.service.specification.SpecificationsDao;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 
 @Log
@@ -29,6 +31,7 @@ public class ProductManagementController {
 
     private final ProductService productService;
     private final MerchantService merchantService;
+    private final SubProductService subProductService;
     private final SpecificationsDao specificationsDao;
     private final ProductRepository productRepository;
     private final ProductImageRepository productImageRepository;
@@ -36,11 +39,13 @@ public class ProductManagementController {
     @Autowired
     public ProductManagementController(ProductService productService,
                                        MerchantService merchantService,
+                                       SubProductService subProductService,
                                        SpecificationsDao specificationsDao,
                                        ProductRepository productRepository,
                                        ProductImageRepository productImageRepository) {
         this.productService = productService;
         this.merchantService = merchantService;
+        this.subProductService = subProductService;
         this.specificationsDao = specificationsDao;
         this.productRepository = productRepository;
         this.productImageRepository = productImageRepository;
@@ -56,25 +61,91 @@ public class ProductManagementController {
             request.put("isPromoted", "0");
             request.put("isPrioritized", "0");
             request.put("ownerType", "WAREHOUSE");
-            JSONObject retDet = productService.doAddProduct(request);
-            int returnValue = retDet.getInt("productId");
-            if (returnValue == 0) {
-                responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
-                        .put("statusDescription", "failed to process request")
-                        .put("statusMessage", "internal system error");
+            if (subProductService.validateFeature(Long.valueOf(request.getString("productSubCategoryId")), request.getJSONArray("productFeature")).equals(1)) {
+                JSONObject retDet = productService.doAddProduct(request);
+                int returnValue = retDet.getInt("productId");
+                if (returnValue == 0) {
+                    responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                            .put("statusDescription", "failed to process request")
+                            .put("statusMessage", "internal system error");
+                } else {
+                    responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                            .put("statusDescription", "success")
+                            .put("productId", retDet.getInt("productId"))
+                            .put("subProductId", retDet.getInt("subProductId"))
+                            .put("statusMessage", "Product successful");
+                    subProductService.updateInsertFeatures(Long.valueOf(retDet.getInt("subProductId")), request.getJSONArray("productFeature"));
+                }
             } else {
-                responseMap.put("statusCode", ResponseCodes.SUCCESS)
-                        .put("statusDescription", "success")
-                        .put("productId", retDet.getInt("productId"))
-                        .put("subProductId", retDet.getInt("subProductId"))
-                        .put("statusMessage", "Product successful");
+                responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
+                        .put("statusDescription", "Product features not defined well")
+                        .put("statusMessage", "Product features not defined well");
             }
         } catch (Exception e) {
+            log.log(Level.WARNING, e.getMessage());
             responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
                     .put("statusDescription", "failed to process request")
                     .put("statusMessage", "internal system error");
         }
         return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
+    }
+
+    @RequestMapping(value = "/add-sub-product", method = RequestMethod.POST)
+    public ResponseEntity<?> addSubProduct(@RequestBody String req) {
+        AtomicReference<JSONObject> responseMap = new AtomicReference<>(new JSONObject());
+        try {
+            JSONObject request = new JSONObject(req);
+            productRepository.findProductByProductId(Long.valueOf(request.getString("productId")))
+                    .ifPresentOrElse(product -> {
+                        if (subProductService.validateFeature(product.getProductSubCategoryId(), request.getJSONArray("productFeature")).equals(1)) {
+                            responseMap.set(subProductService.addSubProduct(request));
+                        } else {
+                            responseMap.get().put("statusCode", ResponseCodes.REQUEST_FAILED)
+                                    .put("statusDescription", "Product features not defined well")
+                                    .put("statusMessage", "Product features not defined well");
+                        }
+                    }, () -> {
+                        responseMap.get().put("statusCode", ResponseCodes.REQUEST_FAILED)
+                                .put("statusDescription", "Product Does not exists")
+                                .put("statusMessage", "Product Does not exists");
+                    });
+
+        } catch (Exception e) {
+            log.log(Level.WARNING, e.getMessage());
+            responseMap.get().put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("statusMessage", "internal system error");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(responseMap.get().toString());
+    }
+
+    @RequestMapping(value = "/udpate-sub-product", method = RequestMethod.POST)
+    public ResponseEntity<?> updateSubProduct(@RequestBody String req) {
+        AtomicReference<JSONObject> responseMap = new AtomicReference<>(new JSONObject());
+        try {
+            JSONObject request = new JSONObject(req);
+            productRepository.findProductByProductId(Long.valueOf(request.getString("productId")))
+                    .ifPresentOrElse(product -> {
+                        if (subProductService.validateFeature(product.getProductSubCategoryId(), request.getJSONArray("productFeature")).equals(1)) {
+                            responseMap.set(subProductService.updateSubProduct(request));
+                        } else {
+                            responseMap.get().put("statusCode", ResponseCodes.REQUEST_FAILED)
+                                    .put("statusDescription", "Product features not defined well")
+                                    .put("statusMessage", "Product features not defined well");
+                        }
+                    }, () -> {
+                        responseMap.get().put("statusCode", ResponseCodes.REQUEST_FAILED)
+                                .put("statusDescription", "Product Does not exists")
+                                .put("statusMessage", "Product Does not exists");
+                    });
+
+        } catch (Exception e) {
+            log.log(Level.WARNING, e.getMessage());
+            responseMap.get().put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("statusMessage", "internal system error");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(responseMap.get().toString());
     }
 
     @RequestMapping(value = {"/GetProductById"}, method = {RequestMethod.GET}, produces = {"application/json"})

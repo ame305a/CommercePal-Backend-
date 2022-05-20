@@ -94,6 +94,7 @@ public class ProductFeaturesManagementController {
             productFeatureRepository.findProductFeaturesBySubCategoryId(Long.valueOf(subCat))
                     .forEach(productFeature -> {
                         JSONObject detail = new JSONObject();
+                        detail.put("featureId", productFeature.getId());
                         detail.put("subCategoryId", productFeature.getSubCategoryId());
                         detail.put("featureName", productFeature.getFeatureName());
                         detail.put("unitOfMeasure", productFeature.getUnitOfMeasure());
@@ -103,6 +104,7 @@ public class ProductFeaturesManagementController {
         }, () -> {
             productFeatureRepository.findAll().forEach(productFeature -> {
                 JSONObject detail = new JSONObject();
+                detail.put("featureId", productFeature.getId());
                 detail.put("subCategoryId", productFeature.getSubCategoryId());
                 detail.put("featureName", productFeature.getFeatureName());
                 detail.put("unitOfMeasure", productFeature.getUnitOfMeasure());

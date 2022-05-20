@@ -81,5 +81,4 @@ public class SubProduct {
     @Basic
     @Column(name = "VerifiedDate")
     private Timestamp verifiedDate;
-
 }
