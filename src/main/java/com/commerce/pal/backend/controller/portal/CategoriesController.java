@@ -1,6 +1,7 @@
 package com.commerce.pal.backend.controller.portal;
 
 import com.commerce.pal.backend.common.ResponseCodes;
+import com.commerce.pal.backend.models.order.Order;
 import com.commerce.pal.backend.models.product.categories.BrandImage;
 import com.commerce.pal.backend.models.product.categories.ProductCategory;
 import com.commerce.pal.backend.models.product.categories.ProductParentCategory;
@@ -24,6 +25,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Log
 @CrossOrigin(origins = {"*"}, maxAge = 3600L)
@@ -61,8 +63,6 @@ public class CategoriesController {
         this.productSubCategoryRepository = productSubCategoryRepository;
         this.productParentCategoryRepository = productParentCategoryRepository;
     }
-
-
 
 
     @RequestMapping(value = {"/AddParentCategory"}, method = {RequestMethod.POST}, produces = {"application/json"})
@@ -206,13 +206,14 @@ public class CategoriesController {
         JSONObject responseMap = new JSONObject();
         try {
             JSONObject jsonObject = new JSONObject(parent);
-            ProductSubCategory par = new ProductSubCategory();
-            par.setSubCategoryName(jsonObject.getString("name"));
-            par.setProductCategoryId(jsonObject.getLong("categoryId"));
-            par.setCreatedDate(Timestamp.from(Instant.now()));
-            par.setStatus(1);
-            productSubCategoryRepository.save(par);
+            AtomicReference<ProductSubCategory> par = new AtomicReference<>(new ProductSubCategory());
+            par.get().setSubCategoryName(jsonObject.getString("name"));
+            par.get().setProductCategoryId(jsonObject.getLong("categoryId"));
+            par.get().setCreatedDate(Timestamp.from(Instant.now()));
+            par.get().setStatus(1);
+            par.set(productSubCategoryRepository.save(par.get()));
             responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                    .put("details", categoryService.getSubCategoryInfo(par.get().getId()))
                     .put("statusDescription", "success")
                     .put("statusMessage", "Request Successful");
         } catch (Exception ex) {
