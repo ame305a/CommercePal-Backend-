@@ -30,6 +30,7 @@ import java.time.Instant;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 
+import static com.commerce.pal.backend.common.ResponseCodes.INSUFFICIENT_FUNDS;
 import static com.commerce.pal.backend.common.ResponseCodes.MERCHANT_TO_CUSTOMER;
 
 @Log
@@ -96,7 +97,7 @@ public class CustomerOrderController {
                         newOrder.get().setStatus(0);
                         newOrder.get().setIsAgentInitiated(0);
                         newOrder.get().setStatusDescription("Pending Payment and Shipping");
-                        newOrder.get().setIsCustomerAddressAssigned(1);
+                        newOrder.get().setIsUserAddressAssigned(0);
                         newOrder.get().setPaymentStatus(0);
                         newOrder.get().setCurrency("ETB");
                         newOrder.get().setCountryCode("ET");
@@ -361,25 +362,33 @@ public class CustomerOrderController {
             LoginValidation user = globalMethods.fetchUserDetails();
             customerRepository.findCustomerByEmailAddress(user.getEmailAddress())
                     .ifPresentOrElse(customer -> {
-                        customerAddressRepository.findCustomerAddressByCustomerIdAndId(customer.getCustomerId(), Long.valueOf(reqBody.getString("AddressId")))
-                                .ifPresentOrElse(customerAddress -> {
-                                    orderRepository.findOrderByOrderRef(reqBody.getString("orderRef"))
-                                            .ifPresentOrElse(order -> {
-                                                order.setCustomerAddressId(customerAddress.getId());
-                                                order.setIsCustomerAddressAssigned(1);
-                                                orderRepository.save(order);
-                                                responseMap.put("statusCode", ResponseCodes.SUCCESS)
-                                                        .put("statusDescription", "success")
-                                                        .put("statusMessage", "success");
-                                            }, () -> {
-                                                responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
-                                                        .put("statusDescription", "The Order does not belong to the customer")
-                                                        .put("statusMessage", "The Order does not belong to the customer");
-                                            });
+                        orderRepository.findOrderByOrderRef(reqBody.getString("orderRef"))
+                                .ifPresentOrElse(order -> {
+                                    if (reqBody.getString("PreferredLocationType").equals("C")) {
+                                        customerAddressRepository.findCustomerAddressByCustomerIdAndId(customer.getCustomerId(), Long.valueOf(reqBody.getString("AddressId")))
+                                                .ifPresentOrElse(customerAddress -> {
+                                                    order.setPreferredLocationType("C");
+                                                    order.setUserAddressId(customerAddress.getId());
+                                                    order.setIsUserAddressAssigned(1);
+                                                    orderRepository.save(order);
+                                                }, () -> {
+                                                    responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
+                                                            .put("statusDescription", "The Address does not belong to the customer")
+                                                            .put("statusMessage", "The Address does not belong to the customer");
+                                                });
+                                    } else {
+                                        order.setPreferredLocationType("C");
+                                        order.setUserAddressId(Long.valueOf(reqBody.getString("AddressId")));
+                                        order.setIsUserAddressAssigned(1);
+                                        orderRepository.save(order);
+                                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                                .put("statusDescription", "success")
+                                                .put("statusMessage", "success");
+                                    }
                                 }, () -> {
                                     responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
-                                            .put("statusDescription", "The Address does not belong to the customer")
-                                            .put("statusMessage", "The Address does not belong to the customer");
+                                            .put("statusDescription", "The Order does not belong to the customer")
+                                            .put("statusMessage", "The Order does not belong to the customer");
                                 });
                     }, () -> {
                         responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)

@@ -66,6 +66,15 @@ public class Agent {
     @Column(name = "Language")
     private String language;
     @Basic
+    @Column(name = "RegionId")
+    private Integer regionId;
+    @Basic
+    @Column(name = "ServiceCodeId")
+    private Integer serviceCodeId;
+    @Basic
+    @Column(name = "PhysicalAddress")
+    private String physicalAddress;
+    @Basic
     @Column(name = "Longitude")
     private String longitude;
     @Basic

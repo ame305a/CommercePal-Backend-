@@ -17,7 +17,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 
 @Log
 @CrossOrigin(origins = {"*"}, maxAge = 3600L)
@@ -126,6 +129,76 @@ public class AgentController {
                     });
         } catch (Exception e) {
             responseMap.get().put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("statusMessage", "internal system error");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
+    }
+
+    @RequestMapping(value = "/update-delivery-address", method = RequestMethod.POST)
+    public ResponseEntity<?> updateDeliveryAddress(@RequestBody String request) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            JSONObject reqBody = new JSONObject(request);
+            LoginValidation user = globalMethods.fetchUserDetails();
+
+            agentRepository.findAgentByEmailAddress(user.getEmailAddress())
+                    .ifPresentOrElse(agent -> {
+                        agent.setRegionId(reqBody.has("regionId") ? reqBody.getInt("regionId") : agent.getRegionId());
+                        agent.setCountry(reqBody.has("country") ? reqBody.getString("country") : agent.getCountry());
+                        agent.setCity(reqBody.has("city") ? reqBody.getString("city") : agent.getCity());
+                        agent.setServiceCodeId(reqBody.has("serviceCodeId") ? reqBody.getInt("serviceCodeId") : agent.getServiceCodeId());
+                        agent.setPhysicalAddress(reqBody.has("physicalAddress") ? reqBody.getString("physicalAddress") : agent.getPhysicalAddress());
+                        agent.setLatitude(reqBody.has("latitude") ? reqBody.getString("latitude") : agent.getLatitude());
+                        agent.setLongitude(reqBody.has("longitude") ? reqBody.getString("longitude") : agent.getLongitude());
+                        agentRepository.save(agent);
+                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                .put("statusDescription", "success")
+                                .put("statusMessage", "success");
+                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                .put("statusDescription", "success")
+                                .put("statusMessage", "success");
+                    }, () -> {
+                        responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                                .put("statusDescription", "failed to process request")
+                                .put("statusMessage", "internal system error");
+                    });
+        } catch (Exception e) {
+            log.log(Level.WARNING, "CUSTOMER DELIVERY ADDRESS INFO : " + e.getMessage());
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("statusMessage", "internal system error");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
+    }
+
+    @RequestMapping(value = "/get-delivery-address", method = RequestMethod.POST)
+    public ResponseEntity<?> getDeliveryAddress() {
+        JSONObject responseMap = new JSONObject();
+        try {
+            LoginValidation user = globalMethods.fetchUserDetails();
+            agentRepository.findAgentByEmailAddress(user.getEmailAddress())
+                    .ifPresentOrElse(agent -> {
+                        JSONObject payload = new JSONObject();
+                        payload.put("country", agent.getCountry());
+                        payload.put("city", agent.getCity());
+                        payload.put("regionId", agent.getRegionId());
+                        payload.put("serviceCodeId", agent.getServiceCodeId());
+                        payload.put("physicalAddress", agent.getPhysicalAddress());
+                        payload.put("latitude", agent.getLatitude());
+                        payload.put("longitude", agent.getLongitude());
+                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                .put("data", payload)
+                                .put("statusDescription", "success")
+                                .put("statusMessage", "Request Successful");
+                    }, () -> {
+                        responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                                .put("statusDescription", "failed to process request")
+                                .put("statusMessage", "internal system error");
+                    });
+        } catch (Exception e) {
+            log.log(Level.WARNING, "CUSTOMER DELIVERY ADDRESS INFO : " + e.getMessage());
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
                     .put("statusDescription", "failed to process request")
                     .put("statusMessage", "internal system error");
         }
