@@ -48,6 +48,7 @@ public class ProductDatabaseService {
             query.registerStoredProcedureParameter("SoldQuantity", String.class, ParameterMode.IN);
             query.registerStoredProcedureParameter("CountryOfOrigin", String.class, ParameterMode.IN);
             query.registerStoredProcedureParameter("Manufucturer", String.class, ParameterMode.IN);
+            query.registerStoredProcedureParameter("ProductType", String.class, ParameterMode.IN);
             query.registerStoredProcedureParameter("IsDiscounted", String.class, ParameterMode.IN);
             query.registerStoredProcedureParameter("IsPromoted", String.class, ParameterMode.IN);
             query.registerStoredProcedureParameter("IsPrioritized", String.class, ParameterMode.IN);
@@ -73,6 +74,7 @@ public class ProductDatabaseService {
             query.setParameter("SoldQuantity", regHm.getString("soldQuantity"));
             query.setParameter("CountryOfOrigin", regHm.getString("countryOfOrigin"));
             query.setParameter("Manufucturer", regHm.getString("manufucturer"));
+            query.setParameter("ProductType", regHm.getString("productType"));
             query.setParameter("IsDiscounted", regHm.getString("isDiscounted"));
             query.setParameter("IsPromoted", regHm.getString("isPromoted"));
             query.setParameter("IsPrioritized", regHm.getString("isPrioritized"));

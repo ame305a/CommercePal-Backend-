@@ -17,4 +17,6 @@ public interface BusinessRepository extends JpaRepository<Business, Long> {
     Optional<Business> findBusinessByOwnerIdAndOwnerTypeAndBusinessId(Integer owner, String ownerType, Long id);
 
     Integer countByOwnerIdAndOwnerType(Integer owner, String ownerType);
+
+    Optional<Business> findBusinessByBusinessIdAndEmailAddress(Long id,String email);
 }

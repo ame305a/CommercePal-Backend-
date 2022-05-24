@@ -27,7 +27,6 @@ public class OrderItem {
     @Basic
     @Column(name = "SubProductId")
     private Long subProductId;
-
     @Basic
     @Column(name = "MerchantId")
     private Long merchantId;

@@ -50,7 +50,7 @@ public class SubProduct {
     private String discountType;
     @Basic
     @Column(name = "DiscountValue")
-    private Long discountValue;
+    private BigDecimal discountValue;
     @Basic
     @Column(name = "DiscountExpiryDate")
     private Timestamp discountExpiryDate;
