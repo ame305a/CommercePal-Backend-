@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 
 @Log
 @CrossOrigin(origins = {"*"}, maxAge = 3600L)
@@ -141,5 +142,73 @@ public class MerchantController {
     }
 
 
+    @RequestMapping(value = "/update-delivery-address", method = RequestMethod.POST)
+    public ResponseEntity<?> updateDeliveryAddress(@RequestBody String request) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            JSONObject reqBody = new JSONObject(request);
+            LoginValidation user = globalMethods.fetchUserDetails();
 
+            merchantRepository.findMerchantByEmailAddress(user.getEmailAddress())
+                    .ifPresentOrElse(merchant -> {
+                        merchant.setRegionId(reqBody.has("regionId") ? reqBody.getInt("regionId") : merchant.getRegionId());
+                        merchant.setCountry(reqBody.has("country") ? reqBody.getString("country") : merchant.getCountry());
+                        merchant.setCity(reqBody.has("city") ? reqBody.getString("city") : merchant.getCity());
+                        merchant.setServiceCodeId(reqBody.has("serviceCodeId") ? reqBody.getInt("serviceCodeId") : merchant.getServiceCodeId());
+                        merchant.setPhysicalAddress(reqBody.has("physicalAddress") ? reqBody.getString("physicalAddress") : merchant.getPhysicalAddress());
+                        merchant.setLatitude(reqBody.has("latitude") ? reqBody.getString("latitude") : merchant.getLatitude());
+                        merchant.setLongitude(reqBody.has("longitude") ? reqBody.getString("longitude") : merchant.getLongitude());
+                        merchantRepository.save(merchant);
+                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                .put("statusDescription", "success")
+                                .put("statusMessage", "success");
+                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                .put("statusDescription", "success")
+                                .put("statusMessage", "success");
+                    }, () -> {
+                        responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                                .put("statusDescription", "failed to process request")
+                                .put("statusMessage", "internal system error");
+                    });
+        } catch (Exception e) {
+            log.log(Level.WARNING, "CUSTOMER DELIVERY ADDRESS INFO : " + e.getMessage());
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("statusMessage", "internal system error");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
+    }
+
+    @RequestMapping(value = "/get-delivery-address", method = RequestMethod.POST)
+    public ResponseEntity<?> getDeliveryAddress() {
+        JSONObject responseMap = new JSONObject();
+        try {
+            LoginValidation user = globalMethods.fetchUserDetails();
+            merchantRepository.findMerchantByEmailAddress(user.getEmailAddress())
+                    .ifPresentOrElse(merchant -> {
+                        JSONObject payload = new JSONObject();
+                        payload.put("country", merchant.getCountry());
+                        payload.put("city", merchant.getCity());
+                        payload.put("regionId", merchant.getRegionId());
+                        payload.put("serviceCodeId", merchant.getServiceCodeId());
+                        payload.put("physicalAddress", merchant.getPhysicalAddress());
+                        payload.put("latitude", merchant.getLatitude());
+                        payload.put("longitude", merchant.getLongitude());
+                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                .put("data", payload)
+                                .put("statusDescription", "success")
+                                .put("statusMessage", "Request Successful");
+                    }, () -> {
+                        responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                                .put("statusDescription", "failed to process request")
+                                .put("statusMessage", "internal system error");
+                    });
+        } catch (Exception e) {
+            log.log(Level.WARNING, "CUSTOMER DELIVERY ADDRESS INFO : " + e.getMessage());
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("statusMessage", "internal system error");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
+    }
 }

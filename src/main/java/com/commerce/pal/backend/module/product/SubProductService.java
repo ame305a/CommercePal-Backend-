@@ -185,7 +185,7 @@ public class SubProductService {
             subProduct.get().setUnitPrice(new BigDecimal(subPayload.getString("unitPrice")));
             subProduct.get().setIsDiscounted(Integer.valueOf(subPayload.getString("isDiscounted")));
             subProduct.get().setDiscountType(subPayload.getString("discountType"));
-            subProduct.get().setDiscountValue(Long.valueOf(subPayload.getString("discountValue")));
+            subProduct.get().setDiscountValue(new BigDecimal(subPayload.getString("discountValue")));
             subProduct.get().setIsPromoted(0);
             subProduct.get().setIsPrioritized(0);
             subProduct.get().setStatus(1);
@@ -219,7 +219,7 @@ public class SubProductService {
                         subProduct.setUnitPrice(subPayload.has("unitPrice") ? new BigDecimal(subPayload.getString("unitPrice")) : subProduct.getUnitPrice());
                         subProduct.setIsDiscounted(subPayload.has("isDiscounted") ? Integer.valueOf(subPayload.getString("isDiscounted")) : subProduct.getIsDiscounted());
                         subProduct.setDiscountType(subPayload.has("discountType") ? subPayload.getString("discountType") : subProduct.getDiscountType());
-                        subProduct.setDiscountValue(subPayload.has("discountValue") ? Long.valueOf(subPayload.getString("discountValue")) : subProduct.getDiscountValue());
+                        subProduct.setDiscountValue(subPayload.has("discountValue") ? new BigDecimal(subPayload.getString("discountValue")) : subProduct.getDiscountValue());
                         if (subPayload.has("productFeature")) {
                             updateInsertFeatures(subProduct.getSubProductId(), subPayload.getJSONArray("productFeature"));
                         }

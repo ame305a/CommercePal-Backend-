@@ -380,27 +380,39 @@ public class CustomerOrderController {
                     .ifPresentOrElse(customer -> {
                         orderRepository.findOrderByOrderRef(reqBody.getString("orderRef"))
                                 .ifPresentOrElse(order -> {
-                                    if (reqBody.getString("PreferredLocationType").equals("C")) {
-                                        customerAddressRepository.findCustomerAddressByCustomerIdAndId(customer.getCustomerId(), Long.valueOf(reqBody.getString("AddressId")))
-                                                .ifPresentOrElse(customerAddress -> {
-                                                    order.setPreferredLocationType("C");
-                                                    order.setUserAddressId(customerAddress.getId());
-                                                    order.setIsUserAddressAssigned(1);
-                                                    orderRepository.save(order);
-                                                }, () -> {
-                                                    responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
-                                                            .put("statusDescription", "The Address does not belong to the customer")
-                                                            .put("statusMessage", "The Address does not belong to the customer");
-                                                });
-                                    } else {
-                                        order.setPreferredLocationType("C");
-                                        order.setUserAddressId(Long.valueOf(reqBody.getString("AddressId")));
-                                        order.setIsUserAddressAssigned(1);
-                                        orderRepository.save(order);
-                                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
-                                                .put("statusDescription", "success")
-                                                .put("statusMessage", "success");
+                                    if (order.getIsUserAddressAssigned().equals(0)){
+                                        if (reqBody.getString("PreferredLocationType").equals("C")) {
+                                            customerAddressRepository.findCustomerAddressByCustomerIdAndId(customer.getCustomerId(), reqBody.getLong("AddressId"))
+                                                    .ifPresentOrElse(customerAddress -> {
+                                                        order.setPreferredLocationType("C");
+                                                        order.setUserAddressId(customerAddress.getId());
+                                                        order.setIsUserAddressAssigned(1);
+                                                        orderRepository.save(order);
+                                                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                                                .put("statusDescription", "success")
+                                                                .put("statusMessage", "success");
+
+                                                    }, () -> {
+                                                        responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
+                                                                .put("statusDescription", "The Address does not belong to the customer")
+                                                                .put("statusMessage", "The Address does not belong to the customer");
+                                                    });
+                                        }
+                                        else {
+                                            order.setPreferredLocationType(reqBody.getString("PreferredLocationType"));
+                                            order.setUserAddressId(reqBody.getLong("AddressId"));
+                                            order.setIsUserAddressAssigned(1);
+                                            orderRepository.save(order);
+                                            responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                                    .put("statusDescription", "success")
+                                                    .put("statusMessage", "success");
+                                        }
+                                    }else{
+                                        responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
+                                                .put("statusDescription", "The Order has already been assigned the address")
+                                                .put("statusMessage", "The Order does has already been assigned the address");
                                     }
+
                                 }, () -> {
                                     responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
                                             .put("statusDescription", "The Order does not belong to the customer")

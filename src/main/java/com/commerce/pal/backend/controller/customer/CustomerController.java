@@ -139,7 +139,6 @@ public class CustomerController {
         return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
     }
 
-
     @RequestMapping(value = "/update-delivery-address", method = RequestMethod.POST)
     public ResponseEntity<?> updateDeliveryAddress(@RequestBody String request) {
         JSONObject responseMap = new JSONObject();
@@ -186,7 +185,7 @@ public class CustomerController {
         return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
     }
 
-    @RequestMapping(value = "/get-delivery-address", method = RequestMethod.POST)
+    @RequestMapping(value = "/get-delivery-address", method = RequestMethod.GET)
     public ResponseEntity<?> getDeliveryAddress() {
         JSONObject responseMap = new JSONObject();
         try {

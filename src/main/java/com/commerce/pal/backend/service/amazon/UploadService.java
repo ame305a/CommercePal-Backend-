@@ -6,6 +6,7 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.module.database.ImageService;
 import lombok.extern.java.Log;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +48,11 @@ public class UploadService {
             String bucketLocation = bucketName + "/" + platform + "/Images";
             String imageUrl = baseUrl + "/" + platform + "/" + "Images" + "/" + fileName;
             uploadFileToS3Bucket(bucketLocation, file, fileName);
+
+            try {
+                byte[] fileContent = FileUtils.readFileToByteArray(new File(multipartFile.getOriginalFilename()));
+            } catch (IOException e) {
+            }
 
             // Update the Tables
             JSONObject uploadJson = new JSONObject();
