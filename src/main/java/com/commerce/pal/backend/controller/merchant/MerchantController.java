@@ -141,7 +141,6 @@ public class MerchantController {
         return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
     }
 
-
     @RequestMapping(value = "/update-delivery-address", method = RequestMethod.POST)
     public ResponseEntity<?> updateDeliveryAddress(@RequestBody String request) {
         JSONObject responseMap = new JSONObject();
@@ -162,16 +161,13 @@ public class MerchantController {
                         responseMap.put("statusCode", ResponseCodes.SUCCESS)
                                 .put("statusDescription", "success")
                                 .put("statusMessage", "success");
-                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
-                                .put("statusDescription", "success")
-                                .put("statusMessage", "success");
                     }, () -> {
                         responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
                                 .put("statusDescription", "failed to process request")
                                 .put("statusMessage", "internal system error");
                     });
         } catch (Exception e) {
-            log.log(Level.WARNING, "CUSTOMER DELIVERY ADDRESS INFO : " + e.getMessage());
+            log.log(Level.WARNING, "MERCHANT DELIVERY ADDRESS INFO : " + e.getMessage());
             responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
                     .put("statusDescription", "failed to process request")
                     .put("statusMessage", "internal system error");
@@ -179,7 +175,7 @@ public class MerchantController {
         return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
     }
 
-    @RequestMapping(value = "/get-delivery-address", method = RequestMethod.POST)
+    @RequestMapping(value = "/get-delivery-address", method = RequestMethod.GET)
     public ResponseEntity<?> getDeliveryAddress() {
         JSONObject responseMap = new JSONObject();
         try {
@@ -204,7 +200,7 @@ public class MerchantController {
                                 .put("statusMessage", "internal system error");
                     });
         } catch (Exception e) {
-            log.log(Level.WARNING, "CUSTOMER DELIVERY ADDRESS INFO : " + e.getMessage());
+            log.log(Level.WARNING, "MERCHANT DELIVERY ADDRESS INFO : " + e.getMessage());
             responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
                     .put("statusDescription", "failed to process request")
                     .put("statusMessage", "internal system error");

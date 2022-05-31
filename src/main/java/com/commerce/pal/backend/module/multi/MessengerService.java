@@ -8,6 +8,8 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -95,6 +97,10 @@ public class MessengerService {
                         messenger.setNextKinPhone(payload.has("nextKinPhone") ? payload.getString("nextKinPhone") : messenger.getNextKinPhone());
                         messenger.setNextKinEmail(payload.has("nextKinEmail") ? payload.getString("nextKinEmail") : messenger.getNextKinEmail());
                         messenger.setNextKinId(payload.has("nextKinId") ? payload.getString("nextKinId") : messenger.getNextKinId());
+                        messenger.setAvailabilityStatus(payload.has("availabilityStatus") ? payload.getInt("availabilityStatus") : messenger.getAvailabilityStatus());
+                        messenger.setAvailabilityComment(payload.has("availabilityComment") ? payload.getString("availabilityComment") : messenger.getAvailabilityComment());
+
+                        messenger.setAvailabityUpdateDate(payload.has("availabilityStatus") ? Timestamp.from(Instant.now()) : messenger.getCreatedDate());
                         messengerRepository.save(messenger);
                         responseMap.put("statusCode", ResponseCodes.SUCCESS)
                                 .put("statusDescription", "success")

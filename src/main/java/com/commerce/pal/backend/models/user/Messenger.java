@@ -4,6 +4,7 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.Objects;
 
 @Data
@@ -40,6 +41,15 @@ public class Messenger {
     @Basic
     @Column(name = "Location")
     private String location;
+    @Basic
+    @Column(name = "RegionId")
+    private Integer regionId;
+    @Basic
+    @Column(name = "ServiceCodeId")
+    private Integer serviceCodeId;
+    @Basic
+    @Column(name = "PhysicalAddress")
+    private String physicalAddress;
     @Basic
     @Column(name = "Longitude")
     private String longitude;
@@ -104,20 +114,29 @@ public class Messenger {
     @Column(name = "TermsOfServiceDate")
     private Date termsOfServiceDate;
     @Basic
+    @Column(name = "AvailabilityStatus")
+    private Integer availabilityStatus;
+    @Basic
+    @Column(name = "AvailabilityComment")
+    private String availabilityComment;
+    @Basic
+    @Column(name = "AvailabityUpdateDate")
+    private Timestamp availabityUpdateDate;
+    @Basic
     @Column(name = "RegisteredBy")
     private String registeredBy;
     @Basic
     @Column(name = "RegisteredDate")
-    private Date registeredDate;
+    private Timestamp registeredDate;
     @Basic
     @Column(name = "AuthorizedBy")
     private String authorizedBy;
     @Basic
     @Column(name = "AuthorizedDate")
-    private Date authorizedDate;
+    private Timestamp authorizedDate;
     @Basic
     @Column(name = "CreatedDate")
-    private Date createdDate;
+    private Timestamp createdDate;
     @Basic
     @Column(name = "DeactivatedBy")
     private String deactivatedBy;
@@ -126,7 +145,7 @@ public class Messenger {
     private String deactivatedComment;
     @Basic
     @Column(name = "DeactivatedDate")
-    private Date deactivatedDate;
+    private Timestamp deactivatedDate;
     @Basic
     @Column(name = "ActivatedBy")
     private String activatedBy;
@@ -135,6 +154,6 @@ public class Messenger {
     private String activatedComment;
     @Basic
     @Column(name = "ActivatedDate")
-    private Date activatedDate;
+    private Timestamp activatedDate;
 
 }

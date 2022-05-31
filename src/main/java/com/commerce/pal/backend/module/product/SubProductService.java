@@ -85,10 +85,10 @@ public class SubProductService {
                                     featureValue.put("ValueUnitOfMeasure", feaValue.getUnitOfMeasure());
                                     productFeatureRepository.findById(feaValue.getProductFeatureId())
                                             .ifPresent(productFeature -> {
-                                                featureValue.put("FeatureId", productFeature.getId());
-                                                featureValue.put("FeatureName", productFeature.getFeatureName());
-                                                featureValue.put("FeatureVariableType", productFeature.getVariableType());
-                                                featureValue.put("FeatureUnitOfMeasure", productFeature.getUnitOfMeasure());
+                                                featureValue.put("featureId", productFeature.getId());
+                                                featureValue.put("featureName", productFeature.getFeatureName());
+                                                featureValue.put("variableType", productFeature.getVariableType());
+                                                featureValue.put("unitOfMeasure", productFeature.getUnitOfMeasure());
                                             });
                                     features.add(featureValue);
                                 });
