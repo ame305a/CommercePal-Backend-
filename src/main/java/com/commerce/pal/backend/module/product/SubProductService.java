@@ -81,7 +81,7 @@ public class SubProductService {
                                 .forEach(feaValue -> {
                                     JSONObject featureValue = new JSONObject();
                                     featureValue.put("ValueId", feaValue.getId());
-                                    featureValue.put("Value", feaValue.getValue());
+                                    featureValue.put("featureValue", feaValue.getValue());
                                     featureValue.put("ValueUnitOfMeasure", feaValue.getUnitOfMeasure());
                                     productFeatureRepository.findById(feaValue.getProductFeatureId())
                                             .ifPresent(productFeature -> {

@@ -218,7 +218,6 @@ public class MessengerService {
                     nextOfKin.put("nextKinPhoto", messenger.getNextKinPhoto());
                     payload.put("nextOfKin", nextOfKin);
                     payload.put("Status", messenger.getStatus().toString());
-
                 });
         return payload;
     }

@@ -63,8 +63,14 @@ public class DataAccessController {
                 case "MERCHANT":
                     responseMap = merchantService.getMerchantInfo(jsonObject.getLong("TypeId"));
                     break;
+                case "MERCHANT-ADDRESS":
+                    responseMap = merchantService.getMerchantAddressInfo(jsonObject.getLong("TypeId"));
+                    break;
                 case "CUSTOMER-ADDRESS":
                     responseMap = customerService.getCustomerAddressById(jsonObject.getLong("TypeId"));
+                    break;
+                case "MESSENGER":
+                    responseMap = messengerService.getMessengerInfo(jsonObject.getLong("TypeId"));
                     break;
             }
             responseMap.put("statusCode", ResponseCodes.SUCCESS)

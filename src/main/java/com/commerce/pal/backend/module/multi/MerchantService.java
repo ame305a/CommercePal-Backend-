@@ -207,15 +207,30 @@ public class MerchantService {
                     payload.put("city", merchant.getCity());
                     payload.put("longitude", merchant.getLongitude());
                     payload.put("latitude", merchant.getLatitude());
-
                     payload.put("ownerPhoto", merchant.getOwnerPhoto());
                     payload.put("businessRegistrationPhoto", merchant.getBusinessRegistrationPhoto());
                     payload.put("taxPhoto", merchant.getTaxPhoto());
-
                     payload.put("Status", merchant.getStatus().toString());
                     payload.put("termOfService", merchant.getTermsOfServiceStatus());
                 });
         return payload;
     }
+    public JSONObject getMerchantAddressInfo(Long merchantId) {
+        JSONObject payload = new JSONObject();
+        merchantRepository.findMerchantByMerchantId(merchantId)
+                .ifPresent(merchant -> {
+                    payload.put("country", merchant.getCountry());
+                    payload.put("city", merchant.getCity());
+                    payload.put("regionId", merchant.getRegionId());
+                    payload.put("serviceCodeId", merchant.getServiceCodeId());
+                    payload.put("physicalAddress", merchant.getPhysicalAddress());
+                    payload.put("latitude", merchant.getLatitude());
+                    payload.put("longitude", merchant.getLongitude());
+                });
+        return payload;
+    }
+
+
+
 
 }
