@@ -76,9 +76,8 @@ public class AWSS3Ctrl {
 
     @RequestMapping(value = "/upload-pick-up", method = RequestMethod.POST)
     public ResponseEntity<String> uploadPickUp(@RequestPart(value = "file") MultipartFile file,
-                                              @RequestPart(value = "id") String id,
-                                              @RequestPart(value = "orderItemId") String orderItemId
-    ) {
+                                               @RequestPart(value = "id") String id,
+                                               @RequestPart(value = "orderItemId") String orderItemId) {
         log.log(Level.INFO, "File Name :" + file.getName());
         JSONObject response = uploadService.uploadPickUpPhoto(file, id, orderItemId);
         return new ResponseEntity<>(response.toString(), HttpStatus.OK);

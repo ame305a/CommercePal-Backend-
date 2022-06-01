@@ -70,7 +70,7 @@ public class ImageService {
             query.registerStoredProcedureParameter(3, String.class, ParameterMode.IN);
 
             query.setParameter(1, data.getBigInteger("Id"));
-            query.setParameter(2, data.getString("OrderItemId"));
+            query.setParameter(2, data.getBigInteger("OrderItemId"));
             query.setParameter(3, data.getString("ImageUrl"));
 
             List response = query.getResultList();
