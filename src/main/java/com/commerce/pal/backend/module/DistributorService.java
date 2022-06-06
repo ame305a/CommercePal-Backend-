@@ -152,6 +152,10 @@ public class DistributorService {
                         payload.get().put("distributorType", distributor.getDistributorType());
                         payload.get().put("idImage", distributor.getIdImage());
                         payload.get().put("photoImage", distributor.getPhotoImage());
+
+                        payload.get().put("IdImage", distributor.getIdImage());
+                        payload.get().put("PhotoImage", distributor.getPhotoImage());
+                        
                         payload.get().put("district", distributor.getDistrict());
                         payload.get().put("location", distributor.getLocation());
                         payload.get().put("idNumber", distributor.getIdNumber());
