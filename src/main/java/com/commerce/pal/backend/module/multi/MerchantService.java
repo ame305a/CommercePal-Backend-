@@ -2,6 +2,7 @@ package com.commerce.pal.backend.module.multi;
 
 import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.repo.user.MerchantRepository;
+import com.commerce.pal.backend.utils.GlobalMethods;
 import lombok.extern.java.Log;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,16 +10,19 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Log
 @Service
 @SuppressWarnings("Duplicates")
 public class MerchantService {
-
+    private final GlobalMethods globalMethods;
     private final MerchantRepository merchantRepository;
 
     @Autowired
-    public MerchantService(MerchantRepository merchantRepository) {
+    public MerchantService(GlobalMethods globalMethods,
+                           MerchantRepository merchantRepository) {
+        this.globalMethods = globalMethods;
         this.merchantRepository = merchantRepository;
     }
 
@@ -185,36 +189,39 @@ public class MerchantService {
     }
 
     public JSONObject getMerchantInfo(Long merchantId) {
-        JSONObject payload = new JSONObject();
+        AtomicReference<JSONObject> payload = new AtomicReference<>(new JSONObject());
         merchantRepository.findMerchantByMerchantId(merchantId)
                 .ifPresent(merchant -> {
-                    payload.put("userId", merchant.getMerchantId());
-                    payload.put("ownerPhoneNumber", merchant.getOwnerPhoneNumber());
-                    payload.put("ownerType", merchant.getOwnerType());
-                    payload.put("email", merchant.getEmailAddress());
-                    payload.put("name", merchant.getMerchantName());
-                    payload.put("businessType", merchant.getBusinessType());
-                    payload.put("businessCategory", merchant.getBusinessCategory());
-                    payload.put("businessLicense", merchant.getBusinessLicense());
-                    payload.put("commercialCertNo", merchant.getCommercialCertNo());
-                    payload.put("tillNumber", merchant.getTillNumber());
-                    payload.put("taxNumber", merchant.getTaxNumber());
-                    payload.put("bankCode", merchant.getBankCode());
-                    payload.put("bankAccountNumber", merchant.getBankAccountNumber());
-                    payload.put("branch", merchant.getBranch());
-                    payload.put("language", merchant.getLanguage());
-                    payload.put("country", merchant.getCountry());
-                    payload.put("city", merchant.getCity());
-                    payload.put("longitude", merchant.getLongitude());
-                    payload.put("latitude", merchant.getLatitude());
-                    payload.put("ownerPhoto", merchant.getOwnerPhoto());
-                    payload.put("businessRegistrationPhoto", merchant.getBusinessRegistrationPhoto());
-                    payload.put("taxPhoto", merchant.getTaxPhoto());
-                    payload.put("Status", merchant.getStatus().toString());
-                    payload.put("termOfService", merchant.getTermsOfServiceStatus());
+                    payload.get().put("userId", merchant.getMerchantId());
+                    payload.get().put("ownerPhoneNumber", merchant.getOwnerPhoneNumber());
+                    payload.get().put("ownerType", merchant.getOwnerType());
+                    payload.get().put("email", merchant.getEmailAddress());
+                    payload.get().put("name", merchant.getMerchantName());
+                    payload.get().put("businessType", merchant.getBusinessType());
+                    payload.get().put("businessCategory", merchant.getBusinessCategory());
+                    payload.get().put("businessLicense", merchant.getBusinessLicense());
+                    payload.get().put("commercialCertNo", merchant.getCommercialCertNo());
+                    payload.get().put("tillNumber", merchant.getTillNumber());
+                    payload.get().put("taxNumber", merchant.getTaxNumber());
+                    payload.get().put("bankCode", merchant.getBankCode());
+                    payload.get().put("bankAccountNumber", merchant.getBankAccountNumber());
+                    payload.get().put("branch", merchant.getBranch());
+                    payload.get().put("language", merchant.getLanguage());
+                    payload.get().put("country", merchant.getCountry());
+                    payload.get().put("city", merchant.getCity());
+                    payload.get().put("longitude", merchant.getLongitude());
+                    payload.get().put("latitude", merchant.getLatitude());
+                    payload.get().put("ownerPhoto", merchant.getOwnerPhoto());
+                    payload.get().put("businessRegistrationPhoto", merchant.getBusinessRegistrationPhoto());
+                    payload.get().put("taxPhoto", merchant.getTaxPhoto());
+                    payload.get().put("Status", merchant.getStatus().toString());
+                    payload.get().put("termOfService", merchant.getTermsOfServiceStatus());
+                    JSONObject customer = globalMethods.getMultiUserCustomer(merchant.getEmailAddress());
+                    payload.set(globalMethods.mergeJSONObjects(payload.get(), customer));
                 });
-        return payload;
+        return payload.get();
     }
+
     public JSONObject getMerchantAddressInfo(Long merchantId) {
         JSONObject payload = new JSONObject();
         merchantRepository.findMerchantByMerchantId(merchantId)
@@ -229,8 +236,6 @@ public class MerchantService {
                 });
         return payload;
     }
-
-
 
 
 }

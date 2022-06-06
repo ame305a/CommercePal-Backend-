@@ -76,6 +76,13 @@ public class SubProductService {
                             detail.put("offerPrice", sub.getUnitPrice());
                             detail.put("discountDescription", sub.getDiscountValue() + " " + "ETB");
                         }
+                        ArrayList<String> images = new ArrayList<String>();
+                        subProductImageRepository.findSubProductImagesBySubProductId(sub.getSubProductId()).forEach(
+                                image -> {
+                                    images.add(image.getImageUrl());
+                                }
+                        );
+                        detail.put("subProductImages", images);
                         List<JSONObject> features = new ArrayList<>();
                         productFeatureValueRepository.findAllByProductId(sub.getSubProductId())
                                 .forEach(feaValue -> {

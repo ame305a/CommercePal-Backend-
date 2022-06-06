@@ -247,6 +247,7 @@ public class MultiUserService {
                     break;
             }
         } catch (Exception e) {
+            log.log(Level.WARNING, e.getMessage());
             responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
                     .put("statusDescription", "failed to process request")
                     .put("statusMessage", "internal system error");

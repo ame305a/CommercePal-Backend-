@@ -42,6 +42,7 @@ public class DistributorMerchantController {
                                                 @RequestParam("category ") Optional<String> category,
                                                 @RequestParam("subCat") Optional<String> subCat,
                                                 @RequestParam("brand") Optional<String> brand,
+                                                @RequestParam("name") Optional<String> name,
                                                 @RequestParam("product") Optional<String> product) {
         JSONObject responseMap = new JSONObject();
 
@@ -63,6 +64,9 @@ public class DistributorMerchantController {
                 });
                 brand.ifPresent(value -> {
                     params.add(new SearchCriteria("manufucturer", ":", value));
+                });
+                name.ifPresent(value -> {
+                    params.add(new SearchCriteria("productName", ":", value));
                 });
                 product.ifPresent(value -> {
                     params.add(new SearchCriteria("productId", ":", value));
