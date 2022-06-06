@@ -2,7 +2,7 @@ package com.commerce.pal.backend.module.multi;
 
 import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.repo.user.AgentRepository;
-import com.commerce.pal.backend.repo.user.BusinessRepository;
+import com.commerce.pal.backend.utils.GlobalMethods;
 import lombok.extern.java.Log;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,17 +10,20 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 
 @Log
 @Service
 @SuppressWarnings("Duplicates")
 public class AgentService {
-
+    private final GlobalMethods globalMethods;
     private final AgentRepository agentRepository;
 
     @Autowired
-    public AgentService(AgentRepository agentRepository) {
+    public AgentService(GlobalMethods globalMethods,
+                        AgentRepository agentRepository) {
+        this.globalMethods = globalMethods;
         this.agentRepository = agentRepository;
     }
 
@@ -183,29 +186,43 @@ public class AgentService {
     }
 
     public JSONObject getAgentInfo(Long agentId) {
-        JSONObject payload = new JSONObject();
+        AtomicReference<JSONObject> payload = new AtomicReference<>(new JSONObject());
         agentRepository.findAgentByAgentId(agentId)
                 .ifPresent(agent -> {
-                    payload.put("userId", agent.getAgentId());
-                    payload.put("ownerType", agent.getOwnerType());
-                    payload.put("ownerPhoneNumber", agent.getOwnerPhoneNumber());
-                    payload.put("businessPhoneNumber", agent.getBusinessPhoneNumber());
-                    payload.put("email", agent.getEmailAddress());
-                    payload.put("name", agent.getAgentName());
-                    payload.put("commercialCertNo", agent.getCommercialCertNo());
-                    payload.put("tillNumber", agent.getTillNumber());
-                    payload.put("language", agent.getLanguage());
-                    payload.put("country", agent.getCountry());
-                    payload.put("city", agent.getCity());
-                    payload.put("longitude", agent.getLongitude());
-                    payload.put("latitude", agent.getLatitude());
-                    payload.put("ownerPhoto", agent.getOwnerPhoto());
-                    payload.put("businessRegistrationPhoto", agent.getBusinessRegistrationPhoto());
-                    payload.put("taxPhoto", agent.getTaxPhoto());
-                    payload.put("Status", agent.getStatus().toString());
-                    payload.put("termOfService", agent.getTermsOfServiceStatus());
+                    try {
+                        payload.get().put("userId", agent.getAgentId());
+                        payload.get().put("ownerType", agent.getOwnerType());
+                        payload.get().put("ownerPhoneNumber", agent.getOwnerPhoneNumber());
+                        payload.get().put("businessPhoneNumber", agent.getBusinessPhoneNumber());
+                        payload.get().put("email", agent.getEmailAddress());
+                        payload.get().put("name", agent.getAgentName());
+                        payload.get().put("commercialCertNo", agent.getCommercialCertNo());
+                        payload.get().put("tillNumber", agent.getTillNumber());
+                        payload.get().put("language", agent.getLanguage());
+                        payload.get().put("country", agent.getCountry());
+                        payload.get().put("city", agent.getCity());
+                        payload.get().put("longitude", agent.getLongitude());
+                        payload.get().put("latitude", agent.getLatitude());
+                        payload.get().put("ownerPhoto", agent.getOwnerPhoto());
+                        payload.get().put("businessRegistrationPhoto", agent.getBusinessRegistrationPhoto());
+                        payload.get().put("taxPhoto", agent.getTaxPhoto());
+                        payload.get().put("Status", agent.getStatus().toString());
+                        payload.get().put("termOfService", agent.getTermsOfServiceStatus());
+
+                        payload.get().put("OwnerPhoto", agent.getOwnerPhoto());
+                        payload.get().put("BusinessRegistrationPhoto", agent.getBusinessRegistrationPhoto());
+                        payload.get().put("TaxPhoto", agent.getTaxPhoto());
+                        payload.get().put("TillNumberImage", agent.getTillNumberImage());
+                        payload.get().put("CommercialCertImage", agent.getCommercialCertImage());
+                        payload.get().put("ShopImage", agent.getShopImage());
+
+                        JSONObject customer = globalMethods.getMultiUserCustomer(agent.getEmailAddress());
+                        payload.set(globalMethods.mergeJSONObjects(payload.get(), customer));
+                    } catch (Exception ex) {
+                        log.log(Level.WARNING, ex.getMessage());
+                    }
                 });
-        return payload;
+        return payload.get();
     }
 
 }

@@ -2,6 +2,7 @@ package com.commerce.pal.backend.module.multi;
 
 import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.repo.user.BusinessRepository;
+import com.commerce.pal.backend.utils.GlobalMethods;
 import lombok.extern.java.Log;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,17 +10,20 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 
 @Log
 @Service
 @SuppressWarnings("Duplicates")
 public class BusinessService {
-
+    private final GlobalMethods globalMethods;
     private final BusinessRepository businessRepository;
 
     @Autowired
-    public BusinessService(BusinessRepository businessRepository) {
+    public BusinessService(GlobalMethods globalMethods,
+                           BusinessRepository businessRepository) {
+        this.globalMethods = globalMethods;
         this.businessRepository = businessRepository;
     }
 
@@ -179,30 +183,40 @@ public class BusinessService {
     }
 
     public JSONObject getBusinessInfo(Long businessId) {
-        JSONObject payload = new JSONObject();
+        AtomicReference<JSONObject> payload = new AtomicReference<>(new JSONObject());
         businessRepository.findBusinessByBusinessId(businessId)
                 .ifPresent(business -> {
-                    payload.put("userId", business.getBusinessId());
-                    payload.put("ownerType", business.getOwnerType());
-                    payload.put("ownerPhoneNumber", business.getOwnerPhoneNumber());
-                    payload.put("businessPhoneNumber", business.getBusinessPhoneNumber());
-                    payload.put("email", business.getEmailAddress());
-                    payload.put("name", business.getBusinessName());
-                    payload.put("commercialCertNo", business.getCommercialCertNo());
-                    payload.put("tillNumber", business.getTillNumber());
-                    payload.put("language", business.getLanguage());
-                    payload.put("country", business.getCountry());
-                    payload.put("city", business.getCity());
-                    payload.put("longitude", business.getLongitude());
-                    payload.put("latitude", business.getLatitude());
-                    payload.put("ownerPhoto", business.getOwnerPhoto());
-                    payload.put("businessRegistrationPhoto", business.getBusinessRegistrationPhoto());
-                    payload.put("taxPhoto", business.getTaxPhoto());
+                    try {
+                        payload.get().put("userId", business.getBusinessId());
+                        payload.get().put("ownerType", business.getOwnerType());
+                        payload.get().put("ownerPhoneNumber", business.getOwnerPhoneNumber());
+                        payload.get().put("businessPhoneNumber", business.getBusinessPhoneNumber());
+                        payload.get().put("email", business.getEmailAddress());
+                        payload.get().put("name", business.getBusinessName());
+                        payload.get().put("commercialCertNo", business.getCommercialCertNo());
+                        payload.get().put("tillNumber", business.getTillNumber());
+                        payload.get().put("language", business.getLanguage());
+                        payload.get().put("country", business.getCountry());
+                        payload.get().put("city", business.getCity());
+                        payload.get().put("longitude", business.getLongitude());
+                        payload.get().put("latitude", business.getLatitude());
 
-                    payload.put("Status", business.getStatus().toString());
-                    payload.put("termOfService", business.getTermsOfServiceStatus());
+                        payload.get().put("OwnerPhoto", business.getOwnerPhoto());
+                        payload.get().put("BusinessRegistrationPhoto", business.getBusinessRegistrationPhoto());
+                        payload.get().put("TaxPhoto", business.getTaxPhoto());
+                        payload.get().put("TillNumberImage", business.getTillNumberImage());
+                        payload.get().put("CommercialCertImage", business.getCommercialCertImage());
+                        payload.get().put("ShopImage", business.getShopImage());
+
+                        payload.get().put("Status", business.getStatus().toString());
+                        payload.get().put("termOfService", business.getTermsOfServiceStatus());
+                        JSONObject customer = globalMethods.getMultiUserCustomer(business.getEmailAddress());
+                        payload.set(globalMethods.mergeJSONObjects(payload.get(), customer));
+                    } catch (Exception ex) {
+                        log.log(Level.WARNING, ex.getMessage());
+                    }
                 });
-        return payload;
+        return payload.get();
     }
 
 }

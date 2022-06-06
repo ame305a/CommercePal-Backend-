@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 
 @Log
 @Service
@@ -192,32 +193,45 @@ public class MerchantService {
         AtomicReference<JSONObject> payload = new AtomicReference<>(new JSONObject());
         merchantRepository.findMerchantByMerchantId(merchantId)
                 .ifPresent(merchant -> {
-                    payload.get().put("userId", merchant.getMerchantId());
-                    payload.get().put("ownerPhoneNumber", merchant.getOwnerPhoneNumber());
-                    payload.get().put("ownerType", merchant.getOwnerType());
-                    payload.get().put("email", merchant.getEmailAddress());
-                    payload.get().put("name", merchant.getMerchantName());
-                    payload.get().put("businessType", merchant.getBusinessType());
-                    payload.get().put("businessCategory", merchant.getBusinessCategory());
-                    payload.get().put("businessLicense", merchant.getBusinessLicense());
-                    payload.get().put("commercialCertNo", merchant.getCommercialCertNo());
-                    payload.get().put("tillNumber", merchant.getTillNumber());
-                    payload.get().put("taxNumber", merchant.getTaxNumber());
-                    payload.get().put("bankCode", merchant.getBankCode());
-                    payload.get().put("bankAccountNumber", merchant.getBankAccountNumber());
-                    payload.get().put("branch", merchant.getBranch());
-                    payload.get().put("language", merchant.getLanguage());
-                    payload.get().put("country", merchant.getCountry());
-                    payload.get().put("city", merchant.getCity());
-                    payload.get().put("longitude", merchant.getLongitude());
-                    payload.get().put("latitude", merchant.getLatitude());
-                    payload.get().put("ownerPhoto", merchant.getOwnerPhoto());
-                    payload.get().put("businessRegistrationPhoto", merchant.getBusinessRegistrationPhoto());
-                    payload.get().put("taxPhoto", merchant.getTaxPhoto());
-                    payload.get().put("Status", merchant.getStatus().toString());
-                    payload.get().put("termOfService", merchant.getTermsOfServiceStatus());
-                    JSONObject customer = globalMethods.getMultiUserCustomer(merchant.getEmailAddress());
-                    payload.set(globalMethods.mergeJSONObjects(payload.get(), customer));
+                    try {
+                        payload.get().put("userId", merchant.getMerchantId());
+                        payload.get().put("ownerPhoneNumber", merchant.getOwnerPhoneNumber());
+                        payload.get().put("ownerType", merchant.getOwnerType());
+                        payload.get().put("email", merchant.getEmailAddress());
+                        payload.get().put("name", merchant.getMerchantName());
+                        payload.get().put("businessType", merchant.getBusinessType());
+                        payload.get().put("businessCategory", merchant.getBusinessCategory());
+                        payload.get().put("businessLicense", merchant.getBusinessLicense());
+                        payload.get().put("commercialCertNo", merchant.getCommercialCertNo());
+                        payload.get().put("tillNumber", merchant.getTillNumber());
+                        payload.get().put("taxNumber", merchant.getTaxNumber());
+                        payload.get().put("bankCode", merchant.getBankCode());
+                        payload.get().put("bankAccountNumber", merchant.getBankAccountNumber());
+                        payload.get().put("branch", merchant.getBranch());
+                        payload.get().put("language", merchant.getLanguage());
+                        payload.get().put("country", merchant.getCountry());
+                        payload.get().put("city", merchant.getCity());
+                        payload.get().put("longitude", merchant.getLongitude());
+                        payload.get().put("latitude", merchant.getLatitude());
+                        payload.get().put("ownerPhoto", merchant.getOwnerPhoto());
+                        payload.get().put("businessRegistrationPhoto", merchant.getBusinessRegistrationPhoto());
+                        payload.get().put("taxPhoto", merchant.getTaxPhoto());
+
+                        payload.get().put("OwnerPhoto", merchant.getOwnerPhoto());
+                        payload.get().put("BusinessRegistrationPhoto", merchant.getBusinessRegistrationPhoto());
+                        payload.get().put("TaxPhoto", merchant.getTaxPhoto());
+                        payload.get().put("TillNumberImage", merchant.getTillNumberImage());
+                        payload.get().put("CommercialCertImage", merchant.getCommercialCertImage());
+                        payload.get().put("ShopImage", merchant.getShopImage());
+
+
+                        payload.get().put("Status", merchant.getStatus().toString());
+                        payload.get().put("termOfService", merchant.getTermsOfServiceStatus());
+                        JSONObject customer = globalMethods.getMultiUserCustomer(merchant.getEmailAddress());
+                        payload.set(globalMethods.mergeJSONObjects(payload.get(), customer));
+                    } catch (Exception ex) {
+                        log.log(Level.WARNING, ex.getMessage());
+                    }
                 });
         return payload.get();
     }
