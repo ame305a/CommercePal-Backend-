@@ -33,6 +33,9 @@ public class Business {
     @Column(name = "OwnerPhoneNumber")
     private String ownerPhoneNumber;
     @Basic
+    @Column(name = "BusinessSector")
+    private Integer businessSector;
+    @Basic
     @Column(name = "Status")
     private Integer status;
     @Basic
