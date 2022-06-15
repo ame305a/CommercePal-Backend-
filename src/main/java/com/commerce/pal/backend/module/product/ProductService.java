@@ -163,7 +163,7 @@ public class ProductService {
                         detail.put("ShipmentType", pro.getShipmentType());
                         detail.put("UnitPrice", pro.getUnitPrice());
                         detail.put("actualPrice", pro.getUnitPrice());
-                        detail.put("PrimarySubCategory", pro.getPrimarySubProduct());
+                        detail.put("PrimarySubProduct", pro.getPrimarySubProduct());
                         List<JSONObject> subProducts = subProductService.getSubByProduct(pro.getProductId());
                         detail.put("subProducts", subProducts);
                         if (pro.getIsDiscounted().equals(1)) {
@@ -189,7 +189,7 @@ public class ProductService {
                             detail.put("discountDescription", pro.getDiscountValue() + " " + pro.getCurrency());
                         }
                         ArrayList<String> images = new ArrayList<String>();
-                        productImageRepository.findProductImagesByProductId(pro.getProductId()).forEach(
+                        productImageRepository.findProductImagesByProductIdAndStatus(pro.getProductId(), 1).forEach(
                                 image -> {
                                     images.add(image.getFilePath());
                                 }

@@ -302,13 +302,36 @@ public class ProductManagementController {
             responseMap.put("statusCode", ResponseCodes.SUCCESS)
                     .put("statusDescription", "success")
                     .put("statusMessage", "Request Successful");
-//            if (res.equals(1)) {
-//
-//            } else {
-//                responseMap.put("statusCode", ResponseCodes.TRANSACTION_FAILED)
-//                        .put("statusDescription", "failed")
-//                        .put("statusMessage", "Request failed");
-//            }
+        } catch (Exception ex) {
+            log.log(Level.WARNING, "Delete Product Image : " + ex.getMessage());
+            responseMap.put("statusCode", ResponseCodes.TRANSACTION_FAILED)
+                    .put("errorDescription", ex.getMessage())
+                    .put("statusDescription", "failed")
+                    .put("statusMessage", "Request failed");
+        }
+        return ResponseEntity.ok(responseMap.toString());
+    }
+
+    @RequestMapping(value = {"/approve-product-image"}, method = {RequestMethod.POST}, produces = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<?> approveProductImage(@RequestBody String proBody) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            JSONObject jsonObject = new JSONObject(proBody);
+            productImageRepository.findProductImageById(jsonObject.getLong("imageId"))
+                    .ifPresentOrElse(productImage -> {
+                        productImage.setStatus(1);
+                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                .put("statusDescription", "success")
+                                .put("statusMessage", "Request Successful");
+                    }, () -> {
+                        responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
+                                .put("statusDescription", "failed")
+                                .put("statusMessage", "Request Failed");
+                    });
+            responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                    .put("statusDescription", "success")
+                    .put("statusMessage", "Request Successful");
         } catch (Exception ex) {
             log.log(Level.WARNING, "Delete Product Image : " + ex.getMessage());
             responseMap.put("statusCode", ResponseCodes.TRANSACTION_FAILED)

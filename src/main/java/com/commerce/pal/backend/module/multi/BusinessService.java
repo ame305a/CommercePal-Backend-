@@ -88,6 +88,7 @@ public class BusinessService {
                         business.setCity(payload.has("city") ? payload.getString("city") : business.getCity());
                         business.setLongitude(payload.has("longitude") ? payload.getString("longitude") : business.getLongitude());
                         business.setLatitude(payload.has("latitude") ? payload.getString("latitude") : business.getLatitude());
+                        business.setBusinessSector(payload.has("businessSector") ? payload.getInt("businessSector") : business.getBusinessSector());
                         businessRepository.save(business);
 
                         responseMap.put("statusCode", ResponseCodes.SUCCESS)

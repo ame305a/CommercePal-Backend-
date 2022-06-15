@@ -51,6 +51,18 @@ public class AWSS3Ctrl {
         return new ResponseEntity<>(response.toString(), HttpStatus.OK);
     }
 
+    @RequestMapping(value = "/upload-image", method = RequestMethod.POST)
+    public ResponseEntity<String> uploadStageImage(@RequestPart(value = "file") MultipartFile file,
+                                                   @RequestPart(value = "platform") String platform,
+                                                   @RequestPart(value = "type") String type,
+                                                   @RequestPart(value = "imageType") String imageType,
+                                                   @RequestPart(value = "id") String id
+    ) {
+        log.log(Level.INFO, "File Name :" + file.getName());
+        JSONObject response = uploadService.uploadStageFile(file, platform, id, type, imageType);
+        return new ResponseEntity<>(response.toString(), HttpStatus.OK);
+    }
+
     @PostMapping("/multi-upload")
     public ResponseEntity<String> uploadFiles(@RequestParam("files") MultipartFile[] files,
                                               @RequestPart(value = "platform") String platform,
