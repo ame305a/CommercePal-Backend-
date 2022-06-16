@@ -124,54 +124,6 @@ public class UploadService {
         return responseMap;
     }
 
-    public JSONObject uploadStageFile(MultipartFile multipartFile, String platform, String id, String type, String imageType) {
-        JSONObject responseMap = new JSONObject();
-
-        try {
-
-            final File file = convertMultiPartFileToFile(multipartFile);
-            String fileName = type + "_" + String.valueOf(System.currentTimeMillis()) + "_" + getRandomNumber() + "." + getFileExtension(file.getName());
-            String bucketLocation = bucketName + "/" + platform + "/Images";
-            String imageUrl = baseUrl + "/" + platform + "/" + "Images" + "/" + fileName;
-            uploadFileToS3Bucket(bucketLocation, file, fileName);
-
-            try {
-                byte[] fileContent = FileUtils.readFileToByteArray(new File(multipartFile.getOriginalFilename()));
-            } catch (IOException e) {
-            }
-
-            // Update the Tables
-            JSONObject uploadJson = new JSONObject();
-            uploadJson.put("Id", id);
-            uploadJson.put("Type", type);
-            uploadJson.put("ImageType", imageType);
-            uploadJson.put("Platform", platform);
-            uploadJson.put("ImageUrl", imageUrl);
-
-            JSONObject upRes = imageService.uploadStageImage(uploadJson);
-
-            if (upRes.getString("Status").equals("00")) {
-                responseMap.put("statusCode", ResponseCodes.SUCCESS)
-                        .put("statusDescription", "success")
-                        .put("imageUrl", imageUrl)
-                        .put("statusMessage", "Request Successful");
-            } else {
-                responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
-                        .put("statusDescription", upRes.getString("Narration"))
-                        .put("statusMessage", upRes.getString("Narration"));
-            }
-            log.log(Level.INFO, "File upload is completed.");
-            file.delete();    // To remove the file locally created in the project folder.
-        } catch (final AmazonServiceException ex) {
-            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
-                    .put("statusDescription", "Error =" + ex.getMessage())
-                    .put("statusMessage", "Error=" + ex.getMessage());
-            log.log(Level.WARNING, "Error= {} while uploading file.", ex.getMessage());
-        }
-        return responseMap;
-    }
-
-
     public String uploadFileAlone(MultipartFile multipartFile, String platform, String type) {
         String responseMap = new String();
         try {
@@ -189,7 +141,6 @@ public class UploadService {
         }
         return responseMap;
     }
-
 
     private File convertMultiPartFileToFile(MultipartFile multipartFile) {
         final File file = new File(multipartFile.getOriginalFilename());
