@@ -31,7 +31,7 @@ public class DistributorBusinessController {
     }
 
     @RequestMapping(value = "/add-collateral", method = RequestMethod.POST)
-    public ResponseEntity<?> changeAccountStatus(@RequestBody String request) {
+    public ResponseEntity<?> addCollateral(@RequestBody String request) {
         JSONObject responseMap = new JSONObject();
         try {
             JSONObject reqBody = new JSONObject(request);
@@ -135,6 +135,36 @@ public class DistributorBusinessController {
             responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
                     .put("statusDescription", "failed to process request")
                     .put("statusMessage", "internal system error");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
+    }
+
+    @RequestMapping(value = "/update-loan-limit", method = RequestMethod.POST)
+    public ResponseEntity<?> updateBusinessLoanLimit(@RequestBody String request) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            JSONObject reqBody = new JSONObject(request);
+            LoginValidation user = globalMethods.fetchUserDetails();
+            if (!globalMethods.getDistributorId(user.getEmailAddress()).equals(0)) {
+                if (globalMethods.validateDistUser(
+                        globalMethods.getDistributorId(user.getEmailAddress()),
+                        "BUSINESS", String.valueOf(reqBody.getLong("BusinessId")))) {
+                    responseMap = businessCollateralService.updateLoanLimit(reqBody);
+                } else {
+                    responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
+                            .put("statusDescription", "The User does not belong to distributor")
+                            .put("statusMessage", "The User does not belong to distributor");
+                }
+            } else {
+                responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
+                        .put("statusDescription", "The User is not a distributor")
+                        .put("statusMessage", "The User is not a distributor");
+            }
+        } catch (Exception e) {
+            log.log(Level.WARNING, e.getMessage());
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("statusMessage", e.getMessage());
         }
         return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
     }

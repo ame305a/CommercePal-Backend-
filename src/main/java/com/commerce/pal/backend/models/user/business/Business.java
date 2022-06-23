@@ -3,7 +3,9 @@ package com.commerce.pal.backend.models.user.business;
 import lombok.*;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.sql.Date;
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Objects;
 
@@ -89,6 +91,21 @@ public class Business {
     @Basic
     @Column(name = "TaxPhoto")
     private String taxPhoto;
+    @Basic
+    @Column(name = "LoanLimit")
+    private BigDecimal loanLimit;
+    @Basic
+    @Column(name = "LimitStatus")
+    private Integer limitStatus;
+    @Basic
+    @Column(name = "LimitBy")
+    private long limitBy;
+    @Basic
+    @Column(name = "LimitComment")
+    private String limitComment;
+    @Basic
+    @Column(name = "LimitDate")
+    private Timestamp limitDate;
     @Basic
     @Column(name = "CreatedBy")
     private String createdBy;

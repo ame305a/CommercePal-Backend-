@@ -173,5 +173,32 @@ public class BusinessCollateralService {
         return responseMap;
     }
 
+    public JSONObject updateLoanLimit(JSONObject reqBody) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            businessRepository.findBusinessByBusinessId(reqBody.getLong("BusinessId"))
+                    .ifPresentOrElse(business -> {
+                        business.setLoanLimit(new BigDecimal(reqBody.getString("LoanLimit")));
+                        business.setLimitStatus(0);
+                        business.setLimitComment(reqBody.getString("Comments"));
+                        business.setLimitDate(Timestamp.from(Instant.now()));
+                        businessRepository.save(business);
+                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                .put("statusDescription", "success")
+                                .put("statusMessage", "Request Successful");
+                    }, () -> {
+                        responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                                .put("statusDescription", "Business does not exist")
+                                .put("statusMessage", "Business does not exist");
+                    });
+        } catch (Exception e) {
+            log.log(Level.WARNING, e.getMessage());
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", e.getMessage())
+                    .put("statusMessage", "internal system error");
+        }
+        return responseMap;
+    }
+
 
 }
