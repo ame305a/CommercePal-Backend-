@@ -38,6 +38,7 @@ public class CategoryService {
                 .ifPresent(data -> {
                     detail.put("id", data.getId());
                     detail.put("name", data.getBrand());
+                    detail.put("parentCategoryId", data.getParentCategoryId());
                     detail.put("mobileImage", data.getMobileImage() != null ? data.getMobileImage() : "");
                     detail.put("webImage", data.getWebImage() != null ? data.getWebImage() : "");
                     detail.put("webThumbnail", data.getWebThumbnail() != null ? data.getWebThumbnail() : "");

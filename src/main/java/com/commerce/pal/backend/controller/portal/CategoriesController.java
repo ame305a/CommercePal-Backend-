@@ -290,6 +290,7 @@ public class CategoriesController {
                     }, () -> {
                         BrandImage brandImage = new BrandImage();
                         brandImage.setBrand(jsonObject.getString("brandName"));
+                        brandImage.setParentCategoryId(jsonObject.getLong("parentCategoryId"));
                         brandImage.setStatus(1);
                         brandImage.setCreatedDate(Timestamp.from(Instant.now()));
                         brandImageRepository.save(brandImage);
@@ -315,6 +316,7 @@ public class CategoriesController {
             brandImageRepository.findById(jsonObject.getLong("id"))
                     .ifPresentOrElse(par -> {
                         par.setBrand(jsonObject.getString("name"));
+                        par.setParentCategoryId(jsonObject.getLong("parentCategoryId"));
                         responseMap.put("statusCode", ResponseCodes.SUCCESS)
                                 .put("statusDescription", "success")
                                 .put("statusMessage", "Request Successful");

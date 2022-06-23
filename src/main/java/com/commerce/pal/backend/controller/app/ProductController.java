@@ -61,14 +61,23 @@ public class ProductController {
 
     @RequestMapping(value = {"/get-brands"}, method = {RequestMethod.GET}, produces = {"application/json"})
     @ResponseBody
-    public ResponseEntity<?> getBrands() {
+    public ResponseEntity<?> getBrands(@RequestParam("parentCat") Optional<String> parentCat) {
         JSONObject responseMap = new JSONObject();
         List<JSONObject> details = new ArrayList<>();
-        brandImageRepository.findAll()
-                .forEach(cat -> {
-                    JSONObject detail = categoryService.getBrandInfo(cat.getId());
-                    details.add(detail);
-                });
+        parentCat.ifPresentOrElse(parCat -> {
+            brandImageRepository.findBrandImagesByParentCategoryId(Long.valueOf(parCat))
+                    .forEach(cat -> {
+                        JSONObject detail = categoryService.getBrandInfo(cat.getId());
+                        details.add(detail);
+                    });
+        }, () -> {
+            brandImageRepository.findAll()
+                    .forEach(cat -> {
+                        JSONObject detail = categoryService.getBrandInfo(cat.getId());
+                        details.add(detail);
+                    });
+        });
+
         responseMap.put("statusCode", ResponseCodes.SUCCESS)
                 .put("statusDescription", "success")
                 .put("details", details)

@@ -50,6 +50,8 @@ public class ProductDatabaseService {
             query.registerStoredProcedureParameter("Manufucturer", String.class, ParameterMode.IN);
             query.registerStoredProcedureParameter("ProductType", String.class, ParameterMode.IN);
             query.registerStoredProcedureParameter("IsDiscounted", String.class, ParameterMode.IN);
+            query.registerStoredProcedureParameter("DiscountType", String.class, ParameterMode.IN);
+            query.registerStoredProcedureParameter("DiscountValue", String.class, ParameterMode.IN);
             query.registerStoredProcedureParameter("IsPromoted", String.class, ParameterMode.IN);
             query.registerStoredProcedureParameter("IsPrioritized", String.class, ParameterMode.IN);
             query.registerStoredProcedureParameter("CreatedBy", String.class, ParameterMode.IN);
@@ -76,6 +78,8 @@ public class ProductDatabaseService {
             query.setParameter("Manufucturer", regHm.getString("manufucturer"));
             query.setParameter("ProductType", regHm.getString("productType"));
             query.setParameter("IsDiscounted", regHm.getString("isDiscounted"));
+            query.setParameter("DiscountType", regHm.getString("discountType"));
+            query.setParameter("DiscountValue", regHm.getString("discountValue"));
             query.setParameter("IsPromoted", regHm.getString("isPromoted"));
             query.setParameter("IsPrioritized", regHm.getString("isPrioritized"));
             query.setParameter("CreatedBy", regHm.getString("createdBy"));

@@ -16,6 +16,9 @@ public class BrandImage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Basic
+    @Column(name = "ParentCategoryId")
+    private long parentCategoryId;
+    @Basic
     @Column(name = "Brand")
     private String brand;
     @Basic

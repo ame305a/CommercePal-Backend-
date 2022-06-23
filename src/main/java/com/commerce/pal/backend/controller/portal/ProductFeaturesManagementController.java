@@ -2,7 +2,9 @@ package com.commerce.pal.backend.controller.portal;
 
 import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.models.product.ProductFeature;
+import com.commerce.pal.backend.models.product.UoM;
 import com.commerce.pal.backend.repo.product.ProductFeatureRepository;
+import com.commerce.pal.backend.repo.product.UoMRepository;
 import lombok.extern.java.Log;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,11 +24,13 @@ import java.util.logging.Level;
 @RequestMapping({"/prime/api/v1/portal/product/features"})
 @SuppressWarnings("Duplicates")
 public class ProductFeaturesManagementController {
-
+    private final UoMRepository uoMRepository;
     private final ProductFeatureRepository productFeatureRepository;
 
     @Autowired
-    public ProductFeaturesManagementController(ProductFeatureRepository productFeatureRepository) {
+    public ProductFeaturesManagementController(UoMRepository uoMRepository,
+                                               ProductFeatureRepository productFeatureRepository) {
+        this.uoMRepository = uoMRepository;
         this.productFeatureRepository = productFeatureRepository;
     }
 
@@ -111,6 +115,75 @@ public class ProductFeaturesManagementController {
                 detail.put("variableType", productFeature.getVariableType());
                 details.add(detail);
             });
+        });
+        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                .put("statusDescription", "success")
+                .put("details", details)
+                .put("statusMessage", "Request Successful");
+        return ResponseEntity.ok(responseMap.toString());
+    }
+
+    @RequestMapping(value = {"/add-uom"}, method = {RequestMethod.POST}, produces = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<?> addUnitOfMeasure(@RequestBody String request) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            JSONObject jsonObject = new JSONObject(request);
+            UoM uom = new UoM();
+            uom.setUoM(jsonObject.getString("UoM"));
+            uom.setDescription(jsonObject.getString("Description"));
+            uom.setCreatedDate(Timestamp.from(Instant.now()));
+            uoMRepository.save(uom);
+            responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                    .put("statusDescription", "success")
+                    .put("statusMessage", "Request Successful");
+        } catch (Exception ex) {
+            log.log(Level.WARNING, ex.getMessage());
+            responseMap.put("statusCode", ResponseCodes.TRANSACTION_FAILED)
+                    .put("statusDescription", "failed")
+                    .put("statusMessage", "Request failed");
+        }
+        return ResponseEntity.ok(responseMap.toString());
+    }
+
+    @RequestMapping(value = {"/update-uom"}, method = {RequestMethod.POST}, produces = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<?> updateUnitOfMeasure(@RequestBody String parent) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            JSONObject jsonObject = new JSONObject(parent);
+            uoMRepository.findById(jsonObject.getInt("Id"))
+                    .ifPresentOrElse(uom -> {
+                        uom.setUoM(jsonObject.getString("UoM"));
+                        uom.setDescription(jsonObject.getString("Description"));
+                        uoMRepository.save(uom);
+                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                .put("statusDescription", "success")
+                                .put("statusMessage", "Request Successful");
+                    }, () -> {
+                        responseMap.put("statusCode", ResponseCodes.TRANSACTION_FAILED)
+                                .put("statusDescription", "failed")
+                                .put("statusMessage", "Request failed");
+                    });
+        } catch (Exception ex) {
+            responseMap.put("statusCode", ResponseCodes.TRANSACTION_FAILED)
+                    .put("statusDescription", "failed")
+                    .put("statusMessage", "Request failed");
+        }
+        return ResponseEntity.ok(responseMap.toString());
+    }
+
+    @RequestMapping(value = {"/get-uom"}, method = {RequestMethod.GET}, produces = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<?> getUnitOfMeasure() {
+        JSONObject responseMap = new JSONObject();
+        List<JSONObject> details = new ArrayList<>();
+        uoMRepository.findAll().forEach(uom -> {
+            JSONObject detail = new JSONObject();
+            detail.put("Id", uom.getId());
+            detail.put("UoM", uom.getUoM());
+            detail.put("Description", uom.getDescription());
+            details.add(detail);
         });
         responseMap.put("statusCode", ResponseCodes.SUCCESS)
                 .put("statusDescription", "success")
