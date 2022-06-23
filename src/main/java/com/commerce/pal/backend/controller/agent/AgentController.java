@@ -3,7 +3,7 @@ package com.commerce.pal.backend.controller.agent;
 import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.integ.notification.email.EmailClient;
 import com.commerce.pal.backend.models.LoginValidation;
-import com.commerce.pal.backend.module.multi.AgentService;
+import com.commerce.pal.backend.module.users.AgentService;
 import com.commerce.pal.backend.repo.user.AgentRepository;
 import com.commerce.pal.backend.service.amazon.UploadService;
 import com.commerce.pal.backend.utils.GlobalMethods;
@@ -17,8 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 

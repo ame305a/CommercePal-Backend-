@@ -4,6 +4,7 @@ import com.commerce.pal.backend.models.LoginValidation;
 import com.commerce.pal.backend.repo.LoginValidationRepository;
 import com.commerce.pal.backend.repo.product.ProductRepository;
 import com.commerce.pal.backend.repo.user.*;
+import com.commerce.pal.backend.repo.user.business.BusinessRepository;
 import lombok.extern.java.Log;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.json.JSONException;

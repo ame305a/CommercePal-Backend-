@@ -1,7 +1,6 @@
-package com.commerce.pal.backend.module.multi;
+package com.commerce.pal.backend.module.users;
 
 import com.commerce.pal.backend.common.ResponseCodes;
-import com.commerce.pal.backend.repo.user.MerchantRepository;
 import com.commerce.pal.backend.repo.user.MessengerRepository;
 import lombok.extern.java.Log;
 import org.json.JSONObject;

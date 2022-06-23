@@ -1,6 +1,6 @@
-package com.commerce.pal.backend.repo.user;
+package com.commerce.pal.backend.repo.user.business;
 
-import com.commerce.pal.backend.models.user.Business;
+import com.commerce.pal.backend.models.user.business.Business;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

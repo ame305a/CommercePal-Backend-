@@ -6,7 +6,7 @@ import com.commerce.pal.backend.module.product.CategoryService;
 import com.commerce.pal.backend.module.product.ProductService;
 import com.commerce.pal.backend.repo.product.categories.ProductCategoryRepository;
 import com.commerce.pal.backend.repo.product.categories.ProductSubCategoryRepository;
-import com.commerce.pal.backend.repo.user.BusinessRepository;
+import com.commerce.pal.backend.repo.user.business.BusinessRepository;
 import com.commerce.pal.backend.service.specification.SpecificationsDao;
 import com.commerce.pal.backend.service.specification.utils.SearchCriteria;
 import com.commerce.pal.backend.utils.GlobalMethods;

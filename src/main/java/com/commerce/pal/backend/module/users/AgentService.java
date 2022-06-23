@@ -1,7 +1,7 @@
-package com.commerce.pal.backend.module.multi;
+package com.commerce.pal.backend.module.users;
 
 import com.commerce.pal.backend.common.ResponseCodes;
-import com.commerce.pal.backend.repo.user.BusinessRepository;
+import com.commerce.pal.backend.repo.user.AgentRepository;
 import com.commerce.pal.backend.utils.GlobalMethods;
 import lombok.extern.java.Log;
 import org.json.JSONObject;
@@ -16,43 +16,43 @@ import java.util.logging.Level;
 @Log
 @Service
 @SuppressWarnings("Duplicates")
-public class BusinessService {
+public class AgentService {
     private final GlobalMethods globalMethods;
-    private final BusinessRepository businessRepository;
+    private final AgentRepository agentRepository;
 
     @Autowired
-    public BusinessService(GlobalMethods globalMethods,
-                           BusinessRepository businessRepository) {
+    public AgentService(GlobalMethods globalMethods,
+                        AgentRepository agentRepository) {
         this.globalMethods = globalMethods;
-        this.businessRepository = businessRepository;
+        this.agentRepository = agentRepository;
     }
 
-    public JSONObject uploadDocs(String businessId, String fileType, String imageFileUrl) {
+    public JSONObject uploadDocs(String agentId, String fileType, String imageFileUrl) {
         JSONObject responseMap = new JSONObject();
         try {
-            businessRepository.findBusinessByBusinessId(Long.valueOf(businessId))
-                    .ifPresentOrElse(business -> {
+            agentRepository.findAgentByAgentId(Long.valueOf(agentId))
+                    .ifPresentOrElse(agent -> {
                         responseMap.put("statusCode", ResponseCodes.SUCCESS)
                                 .put("statusDescription", "success")
                                 .put("statusMessage", "Request Successful");
                         switch (fileType) {
                             case "ShopImage":
-                                business.setShopImage(imageFileUrl);
+                                agent.setShopImage(imageFileUrl);
                                 break;
                             case "CommercialCertImage":
-                                business.setCommercialCertImage(imageFileUrl);
+                                agent.setCommercialCertImage(imageFileUrl);
                                 break;
                             case "TillNumberImage":
-                                business.setTillNumberImage(imageFileUrl);
+                                agent.setTillNumberImage(imageFileUrl);
                                 break;
                             case "OwnerPhoto":
-                                business.setOwnerPhoto(imageFileUrl);
+                                agent.setOwnerPhoto(imageFileUrl);
                                 break;
                             case "BusinessRegistrationPhoto":
-                                business.setBusinessRegistrationPhoto(imageFileUrl);
+                                agent.setBusinessRegistrationPhoto(imageFileUrl);
                                 break;
                             case "TaxPhoto":
-                                business.setTaxPhoto(imageFileUrl);
+                                agent.setTaxPhoto(imageFileUrl);
                                 break;
                             default:
                                 responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
@@ -60,7 +60,7 @@ public class BusinessService {
                                         .put("statusMessage", "The file type does not exist");
                                 break;
                         }
-                        businessRepository.save(business);
+                        agentRepository.save(agent);
                     }, () -> {
                         responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
                                 .put("statusDescription", "The User does not exist")
@@ -74,13 +74,13 @@ public class BusinessService {
         return responseMap;
     }
 
-    public JSONObject updateBusiness(String businessId, JSONObject payload) {
+    public JSONObject updateAgent(String agentId, JSONObject payload) {
         JSONObject responseMap = new JSONObject();
         try {
-            businessRepository.findBusinessByBusinessId(Long.valueOf(businessId))
+            agentRepository.findAgentByAgentId(Long.valueOf(agentId))
                     .ifPresentOrElse(business -> {
                         business.setBusinessPhoneNumber(payload.has("businessPhoneNumber") ? payload.getString("businessPhoneNumber") : business.getBusinessPhoneNumber());
-                        business.setBusinessName(payload.has("businessName") ? payload.getString("businessName") : business.getBusinessName());
+                        business.setAgentName(payload.has("agentName") ? payload.getString("agentName") : business.getAgentName());
                         business.setCommercialCertNo(payload.has("commercialCertNo") ? payload.getString("commercialCertNo") : business.getCommercialCertNo());
                         business.setDistrict(payload.has("district") ? payload.getString("district") : business.getDistrict());
                         business.setLanguage(payload.has("language") ? payload.getString("language") : business.getLanguage());
@@ -88,8 +88,7 @@ public class BusinessService {
                         business.setCity(payload.has("city") ? payload.getString("city") : business.getCity());
                         business.setLongitude(payload.has("longitude") ? payload.getString("longitude") : business.getLongitude());
                         business.setLatitude(payload.has("latitude") ? payload.getString("latitude") : business.getLatitude());
-                        business.setBusinessSector(payload.has("businessSector") ? payload.getInt("businessSector") : business.getBusinessSector());
-                        businessRepository.save(business);
+                        agentRepository.save(business);
 
                         responseMap.put("statusCode", ResponseCodes.SUCCESS)
                                 .put("statusDescription", "success")
@@ -112,17 +111,18 @@ public class BusinessService {
     public JSONObject getUsers(JSONObject req) {
         JSONObject responseMap = new JSONObject();
         try {
-            List<JSONObject> businesss = new ArrayList<>();
-            businessRepository.findBusinessByOwnerIdAndOwnerType(req.getInt("ownerId"), req.getString("ownerType"))
-                    .forEach(business -> {
-                        JSONObject payload = getBusinessInfo(business.getBusinessId());
-                        businesss.add(payload);
+            List<JSONObject> agents = new ArrayList<>();
+            agentRepository.findAgentsByOwnerIdAndOwnerType(req.getInt("ownerId"), req.getString("ownerType"))
+                    .forEach(agent -> {
+                        JSONObject payload = getAgentInfo(agent.getAgentId());
+                        agents.add(payload);
                     });
             responseMap.put("statusCode", ResponseCodes.SUCCESS)
-                    .put("list", businesss)
+                    .put("list", agents)
                     .put("statusDescription", "success")
                     .put("statusMessage", "Request Successful");
         } catch (Exception e) {
+            log.log(Level.WARNING, "ERROR IN GET USERS : " + e.getMessage());
             responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
                     .put("statusDescription", "failed to process request")
                     .put("statusMessage", "internal system error");
@@ -134,17 +134,18 @@ public class BusinessService {
     public JSONObject getAllUsers(JSONObject req) {
         JSONObject responseMap = new JSONObject();
         try {
-            List<JSONObject> businesss = new ArrayList<>();
-            businessRepository.findAll()
-                    .forEach(business -> {
-                        JSONObject payload = getBusinessInfo(business.getBusinessId());
-                        businesss.add(payload);
+            List<JSONObject> agents = new ArrayList<>();
+            agentRepository.findAll()
+                    .forEach(agent -> {
+                        JSONObject payload = getAgentInfo(agent.getAgentId());
+                        agents.add(payload);
                     });
             responseMap.put("statusCode", ResponseCodes.SUCCESS)
-                    .put("list", businesss)
+                    .put("list", agents)
                     .put("statusDescription", "success")
                     .put("statusMessage", "Request Successful");
         } catch (Exception e) {
+            log.log(Level.WARNING, "ERROR IN GET USERS : " + e.getMessage());
             responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
                     .put("statusDescription", "failed to process request")
                     .put("statusMessage", "internal system error");
@@ -155,10 +156,10 @@ public class BusinessService {
     public JSONObject getUser(JSONObject req) {
         JSONObject responseMap = new JSONObject();
         try {
-            businessRepository.findBusinessByOwnerIdAndOwnerTypeAndBusinessId(
+            agentRepository.findAgentByOwnerIdAndOwnerTypeAndAgentId(
                             req.getInt("ownerId"), req.getString("ownerType"), req.getLong("userId"))
-                    .ifPresentOrElse(business -> {
-                        JSONObject payload = getBusinessInfo(business.getBusinessId());
+                    .ifPresentOrElse(agent -> {
+                        JSONObject payload = getAgentInfo(agent.getAgentId());
                         responseMap.put("statusCode", ResponseCodes.SUCCESS)
                                 .put("data", payload)
                                 .put("statusDescription", "success")
@@ -170,6 +171,7 @@ public class BusinessService {
                     });
 
         } catch (Exception e) {
+            log.log(Level.WARNING, "ERROR IN GET USER : " + e.getMessage());
             responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
                     .put("statusDescription", "failed to process request")
                     .put("statusMessage", "internal system error");
@@ -179,39 +181,42 @@ public class BusinessService {
 
     public Integer countUser(JSONObject payload) {
         Integer count = 0;
-        count = businessRepository.countByOwnerIdAndOwnerType(payload.getInt("ownerId"), payload.getString("ownerType"));
+        count = agentRepository.countByOwnerIdAndOwnerType(payload.getInt("ownerId"), payload.getString("ownerType"));
         return count;
     }
 
-    public JSONObject getBusinessInfo(Long businessId) {
+    public JSONObject getAgentInfo(Long agentId) {
         AtomicReference<JSONObject> payload = new AtomicReference<>(new JSONObject());
-        businessRepository.findBusinessByBusinessId(businessId)
-                .ifPresent(business -> {
+        agentRepository.findAgentByAgentId(agentId)
+                .ifPresent(agent -> {
                     try {
-                        payload.get().put("userId", business.getBusinessId());
-                        payload.get().put("ownerType", business.getOwnerType());
-                        payload.get().put("ownerPhoneNumber", business.getOwnerPhoneNumber());
-                        payload.get().put("businessPhoneNumber", business.getBusinessPhoneNumber());
-                        payload.get().put("email", business.getEmailAddress());
-                        payload.get().put("name", business.getBusinessName());
-                        payload.get().put("commercialCertNo", business.getCommercialCertNo());
-                        payload.get().put("tillNumber", business.getTillNumber());
-                        payload.get().put("language", business.getLanguage());
-                        payload.get().put("country", business.getCountry());
-                        payload.get().put("city", business.getCity());
-                        payload.get().put("longitude", business.getLongitude());
-                        payload.get().put("latitude", business.getLatitude());
+                        payload.get().put("userId", agent.getAgentId());
+                        payload.get().put("ownerType", agent.getOwnerType());
+                        payload.get().put("ownerPhoneNumber", agent.getOwnerPhoneNumber());
+                        payload.get().put("businessPhoneNumber", agent.getBusinessPhoneNumber());
+                        payload.get().put("email", agent.getEmailAddress());
+                        payload.get().put("name", agent.getAgentName());
+                        payload.get().put("commercialCertNo", agent.getCommercialCertNo());
+                        payload.get().put("tillNumber", agent.getTillNumber());
+                        payload.get().put("language", agent.getLanguage());
+                        payload.get().put("country", agent.getCountry());
+                        payload.get().put("city", agent.getCity());
+                        payload.get().put("longitude", agent.getLongitude());
+                        payload.get().put("latitude", agent.getLatitude());
+                        payload.get().put("ownerPhoto", agent.getOwnerPhoto());
+                        payload.get().put("businessRegistrationPhoto", agent.getBusinessRegistrationPhoto());
+                        payload.get().put("taxPhoto", agent.getTaxPhoto());
+                        payload.get().put("Status", agent.getStatus().toString());
+                        payload.get().put("termOfService", agent.getTermsOfServiceStatus());
 
-                        payload.get().put("OwnerPhoto", business.getOwnerPhoto());
-                        payload.get().put("BusinessRegistrationPhoto", business.getBusinessRegistrationPhoto());
-                        payload.get().put("TaxPhoto", business.getTaxPhoto());
-                        payload.get().put("TillNumberImage", business.getTillNumberImage());
-                        payload.get().put("CommercialCertImage", business.getCommercialCertImage());
-                        payload.get().put("ShopImage", business.getShopImage());
+                        payload.get().put("OwnerPhoto", agent.getOwnerPhoto());
+                        payload.get().put("BusinessRegistrationPhoto", agent.getBusinessRegistrationPhoto());
+                        payload.get().put("TaxPhoto", agent.getTaxPhoto());
+                        payload.get().put("TillNumberImage", agent.getTillNumberImage());
+                        payload.get().put("CommercialCertImage", agent.getCommercialCertImage());
+                        payload.get().put("ShopImage", agent.getShopImage());
 
-                        payload.get().put("Status", business.getStatus().toString());
-                        payload.get().put("termOfService", business.getTermsOfServiceStatus());
-                        JSONObject customer = globalMethods.getMultiUserCustomer(business.getEmailAddress());
+                        JSONObject customer = globalMethods.getMultiUserCustomer(agent.getEmailAddress());
                         payload.set(globalMethods.mergeJSONObjects(payload.get(), customer));
                     } catch (Exception ex) {
                         log.log(Level.WARNING, ex.getMessage());

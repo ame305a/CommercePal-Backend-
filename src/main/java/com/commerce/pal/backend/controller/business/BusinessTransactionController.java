@@ -3,7 +3,7 @@ package com.commerce.pal.backend.controller.business;
 import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.models.LoginValidation;
 import com.commerce.pal.backend.module.transaction.TransactionProcessingService;
-import com.commerce.pal.backend.repo.user.BusinessRepository;
+import com.commerce.pal.backend.repo.user.business.BusinessRepository;
 import com.commerce.pal.backend.utils.GlobalMethods;
 import lombok.extern.java.Log;
 import org.json.JSONObject;

@@ -1,9 +1,8 @@
 package com.commerce.pal.backend.controller.portal;
 
 import com.commerce.pal.backend.common.ResponseCodes;
-import com.commerce.pal.backend.models.LoginValidation;
 import com.commerce.pal.backend.module.product.ProductService;
-import com.commerce.pal.backend.module.multi.MerchantService;
+import com.commerce.pal.backend.module.users.MerchantService;
 import com.commerce.pal.backend.module.product.SubProductService;
 import com.commerce.pal.backend.repo.product.ProductImageRepository;
 import com.commerce.pal.backend.repo.product.ProductRepository;
@@ -17,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -114,6 +115,10 @@ public class ProductManagementController {
                     .ifPresentOrElse(product -> {
                         if (subProductService.validateFeature(product.getProductSubCategoryId(), request.getJSONArray("productFeature")).equals(1)) {
                             responseMap.set(subProductService.addSubProduct(request));
+                            product.setStatus(0);
+                            product.setStatusComment("Added SubProduct - " + request.getString("shortDescription"));
+                            product.setStatusUpdatedDate(Timestamp.from(Instant.now()));
+                            productRepository.save(product);
                         } else {
                             responseMap.get().put("statusCode", ResponseCodes.REQUEST_FAILED)
                                     .put("statusDescription", "Product features not defined well")

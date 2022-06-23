@@ -1,4 +1,4 @@
-package com.commerce.pal.backend.module.multi;
+package com.commerce.pal.backend.module.users;
 
 import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.repo.user.MerchantRepository;

@@ -12,9 +12,8 @@ import com.commerce.pal.backend.repo.order.OrderRepository;
 import com.commerce.pal.backend.repo.order.ShipmentPricingRepository;
 import com.commerce.pal.backend.repo.product.ProductRepository;
 import com.commerce.pal.backend.repo.product.SubProductRepository;
-import com.commerce.pal.backend.repo.user.BusinessRepository;
+import com.commerce.pal.backend.repo.user.business.BusinessRepository;
 import com.commerce.pal.backend.repo.user.CustomerAddressRepository;
-import com.commerce.pal.backend.repo.user.CustomerRepository;
 import com.commerce.pal.backend.utils.GlobalMethods;
 import lombok.extern.java.Log;
 import org.json.JSONArray;
@@ -33,7 +32,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 
 import static com.commerce.pal.backend.common.ResponseCodes.MERCHANT_TO_BUSINESS;
-import static com.commerce.pal.backend.common.ResponseCodes.MERCHANT_TO_CUSTOMER;
 
 @Log
 @CrossOrigin(origins = {"*"}, maxAge = 3600L)

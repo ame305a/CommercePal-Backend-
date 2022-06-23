@@ -2,7 +2,7 @@ package com.commerce.pal.backend.controller.messenger;
 
 import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.models.LoginValidation;
-import com.commerce.pal.backend.module.multi.MessengerService;
+import com.commerce.pal.backend.module.users.MessengerService;
 import com.commerce.pal.backend.repo.user.MessengerRepository;
 import com.commerce.pal.backend.service.amazon.UploadService;
 import com.commerce.pal.backend.utils.GlobalMethods;

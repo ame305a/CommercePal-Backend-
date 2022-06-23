@@ -1,4 +1,4 @@
-package com.commerce.pal.backend.models.user;
+package com.commerce.pal.backend.models.user.business;
 
 import lombok.*;
 

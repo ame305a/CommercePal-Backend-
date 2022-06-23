@@ -1,4 +1,4 @@
-package com.commerce.pal.backend.controller.multi;
+package com.commerce.pal.backend.controller.distributor;
 
 import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.models.LoginValidation;
