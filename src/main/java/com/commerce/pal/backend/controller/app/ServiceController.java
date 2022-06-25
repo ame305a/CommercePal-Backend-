@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 
 @Log
@@ -76,26 +77,30 @@ public class ServiceController {
 
     @RequestMapping(value = {"/payment-method"}, method = {RequestMethod.GET}, produces = {"application/json"})
     @ResponseBody
-    public ResponseEntity<?> paymentMethodList() {
+    public ResponseEntity<?> paymentMethodList(@RequestParam("userType") String userType) {
         List<JSONObject> paymentMethods = new ArrayList<>();
         paymentMethodRepository.findPaymentMethodByStatus(1).forEach(paymentMethod -> {
-            JSONObject payMed = new JSONObject();
-            payMed.put("name", paymentMethod.getName());
-            payMed.put("paymentMethod", paymentMethod.getPaymentMethod());
-            payMed.put("iconUrl", paymentMethod.getIconUrl());
-            List<JSONObject> items = new ArrayList<>();
-            paymentMethodItemRepository.findPaymentMethodItemsByPaymentMethodIdAndStatus(
-                    paymentMethod.getId(), 1
-            ).forEach(paymentMethodItem -> {
-                JSONObject item = new JSONObject();
-                item.put("paymentMethod", paymentMethod.getPaymentMethod());
-                item.put("name", paymentMethodItem.getName());
-                item.put("paymentType", paymentMethodItem.getPaymentType());
-                item.put("iconUrl", paymentMethodItem.getIconUrl());
-                items.add(item);
-            });
-            payMed.put("items", items);
-            paymentMethods.add(payMed);
+            if (paymentMethod.getUserType().contains(userType)) {
+                JSONObject payMed = new JSONObject();
+                payMed.put("name", paymentMethod.getName());
+                payMed.put("paymentMethod", paymentMethod.getPaymentMethod());
+                payMed.put("iconUrl", paymentMethod.getIconUrl());
+                List<JSONObject> items = new ArrayList<>();
+                paymentMethodItemRepository.findPaymentMethodItemsByPaymentMethodIdAndStatus(
+                        paymentMethod.getId(), 1
+                ).forEach(paymentMethodItem -> {
+                    if (paymentMethodItem.getUserType().contains(userType)) {
+                        JSONObject item = new JSONObject();
+                        item.put("paymentMethod", paymentMethod.getPaymentMethod());
+                        item.put("name", paymentMethodItem.getName());
+                        item.put("paymentType", paymentMethodItem.getPaymentType());
+                        item.put("iconUrl", paymentMethodItem.getIconUrl());
+                        items.add(item);
+                    }
+                });
+                payMed.put("items", items);
+                paymentMethods.add(payMed);
+            }
         });
         JSONObject paymentMeds = new JSONObject();
         paymentMeds.put("paymentMethods", paymentMethods);

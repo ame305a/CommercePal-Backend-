@@ -99,7 +99,7 @@ public class Business {
     private Integer limitStatus;
     @Basic
     @Column(name = "LimitBy")
-    private long limitBy;
+    private Long limitBy;
     @Basic
     @Column(name = "LimitComment")
     private String limitComment;

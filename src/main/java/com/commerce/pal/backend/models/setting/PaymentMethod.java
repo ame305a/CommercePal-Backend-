@@ -23,6 +23,9 @@ public class PaymentMethod {
     @Column(name = "PaymentMethod")
     private String paymentMethod;
     @Basic
+    @Column(name = "UserType")
+    private String userType;
+    @Basic
     @Column(name = "IconUrl")
     private String iconUrl;
     @Basic

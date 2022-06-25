@@ -17,7 +17,7 @@ public class BrandImage {
     private Long id;
     @Basic
     @Column(name = "ParentCategoryId")
-    private long parentCategoryId;
+    private Long parentCategoryId;
     @Basic
     @Column(name = "Brand")
     private String brand;

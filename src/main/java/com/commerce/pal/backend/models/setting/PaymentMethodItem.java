@@ -19,6 +19,10 @@ public class PaymentMethodItem {
     @Basic
     @Column(name = "PaymentMethodId")
     private Integer paymentMethodId;
+
+    @Basic
+    @Column(name = "UserType")
+    private String userType;
     @Basic
     @Column(name = "Name")
     private String name;

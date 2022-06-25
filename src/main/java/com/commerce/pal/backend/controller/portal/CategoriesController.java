@@ -335,14 +335,22 @@ public class CategoriesController {
 
     @RequestMapping(value = {"/GetBrands"}, method = {RequestMethod.GET}, produces = {"application/json"})
     @ResponseBody
-    public ResponseEntity<?> GetBrands() {
+    public ResponseEntity<?> GetBrands(@RequestParam("parentCat") Optional<String> parentCat) {
         JSONObject responseMap = new JSONObject();
         List<JSONObject> details = new ArrayList<>();
-        brandImageRepository.findAll()
-                .forEach(cat -> {
-                    JSONObject detail = categoryService.getBrandInfo(cat.getId());
-                    details.add(detail);
-                });
+        parentCat.ifPresentOrElse(parCat -> {
+            brandImageRepository.findBrandImagesByParentCategoryId(Long.valueOf(parCat))
+                    .forEach(cat -> {
+                        JSONObject detail = categoryService.getBrandInfo(cat.getId());
+                        details.add(detail);
+                    });
+        }, () -> {
+            brandImageRepository.findAll()
+                    .forEach(cat -> {
+                        JSONObject detail = categoryService.getBrandInfo(cat.getId());
+                        details.add(detail);
+                    });
+        });
         responseMap.put("statusCode", ResponseCodes.SUCCESS)
                 .put("statusDescription", "success")
                 .put("details", details)
