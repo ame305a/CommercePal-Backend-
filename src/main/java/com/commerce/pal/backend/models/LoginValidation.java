@@ -46,6 +46,10 @@ public class LoginValidation {
     @Column(name = "PasswordResetTokenExpire")
     private Timestamp passwordResetTokenExpire;
     @Basic
+    @Column(name = "UserOneSignalId")
+    private String userOneSignalId;
+
+    @Basic
     @Column(name = "Status")
     private Integer status;
     @Basic

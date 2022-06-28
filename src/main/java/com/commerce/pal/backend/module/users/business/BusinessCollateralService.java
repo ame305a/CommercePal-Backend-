@@ -48,6 +48,7 @@ public class BusinessCollateralService {
                     .ifPresentOrElse(business -> {
                         AtomicReference<BusinessCollateral> collateral = new AtomicReference<>(new BusinessCollateral());
                         collateral.get().setBusinessId(reqBody.getLong("BusinessId"));
+                        collateral.get().setFinancialInstitution(reqBody.getLong("FinancialInstitution"));
                         collateral.get().setCollateralName(reqBody.getString("CollateralName"));
                         collateral.get().setCollateralType(reqBody.getString("CollateralType"));
                         collateral.get().setCollateralDescription(reqBody.getString("Description"));
@@ -81,6 +82,7 @@ public class BusinessCollateralService {
             businessCollateralRepository.findById(reqBody.getInt("CollateralId"))
                     .ifPresentOrElse(collateral -> {
                         collateral.setCollateralName(reqBody.getString("CollateralName"));
+                        collateral.setFinancialInstitution(reqBody.getLong("FinancialInstitution"));
                         collateral.setCollateralType(reqBody.getString("CollateralType"));
                         collateral.setCollateralDescription(reqBody.getString("Description"));
                         collateral.setEstimateWorth(new BigDecimal(reqBody.getString("EstimateWorth")));
@@ -145,6 +147,7 @@ public class BusinessCollateralService {
                         collateral.put("CollateralId", businessCollateral.getId());
                         collateral.put("CollateralName", businessCollateral.getCollateralName());
                         collateral.put("CollateralType", businessCollateral.getCollateralType());
+                        collateral.put("FinancialInstitution", businessCollateral.getFinancialInstitution());
                         collateral.put("Description", businessCollateral.getCollateralDescription());
                         collateral.put("EstimateWorth", businessCollateral.getEstimateWorth());
                         collateral.put("ApprovedAmount", businessCollateral.getApprovedAmount());

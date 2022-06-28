@@ -5,6 +5,7 @@ import com.commerce.pal.backend.module.users.*;
 import com.commerce.pal.backend.module.product.ProductService;
 import com.commerce.pal.backend.module.product.SubProductService;
 import com.commerce.pal.backend.module.users.business.BusinessService;
+import com.commerce.pal.backend.repo.LoginValidationRepository;
 import lombok.extern.java.Log;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,7 @@ public class DataAccessController {
     private final MerchantService merchantService;
     private final MessengerService messengerService;
     private final SubProductService subProductService;
+    private final LoginValidationRepository loginValidationRepository;
 
     @Autowired
     public DataAccessController(AgentService agentService,
@@ -32,7 +34,8 @@ public class DataAccessController {
                                 CustomerService customerService,
                                 MerchantService merchantService,
                                 MessengerService messengerService,
-                                SubProductService subProductService) {
+                                SubProductService subProductService,
+                                LoginValidationRepository loginValidationRepository) {
         this.agentService = agentService;
         this.productService = productService;
         this.businessService = businessService;
@@ -40,6 +43,7 @@ public class DataAccessController {
         this.merchantService = merchantService;
         this.messengerService = messengerService;
         this.subProductService = subProductService;
+        this.loginValidationRepository = loginValidationRepository;
     }
 
     @RequestMapping(value = {"/request"}, method = {RequestMethod.POST}, produces = {"application/json"})

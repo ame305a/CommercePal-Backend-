@@ -19,6 +19,9 @@ public class BusinessCollateral {
     @Column(name = "BusinessId")
     private long businessId;
     @Basic
+    @Column(name = "FinancialInstitution")
+    private Long financialInstitution;
+    @Basic
     @Column(name = "CollateralName")
     private String collateralName;
     @Basic

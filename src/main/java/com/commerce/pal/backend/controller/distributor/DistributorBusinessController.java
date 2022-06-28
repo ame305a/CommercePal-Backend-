@@ -37,8 +37,7 @@ public class DistributorBusinessController {
             JSONObject reqBody = new JSONObject(request);
             LoginValidation user = globalMethods.fetchUserDetails();
             if (!globalMethods.getDistributorId(user.getEmailAddress()).equals(0)) {
-                if (globalMethods.validateDistUser(
-                        globalMethods.getDistributorId(user.getEmailAddress()),
+                if (globalMethods.validateDistUser(globalMethods.getDistributorId(user.getEmailAddress()),
                         "BUSINESS", String.valueOf(reqBody.getLong("BusinessId")))) {
                     responseMap = businessCollateralService.addCollateral(reqBody);
                 } else {

@@ -199,7 +199,6 @@ public class AuthenticationController {
     @RequestMapping(value = {"/password-reset"}, method = {RequestMethod.POST}, produces = {"application/json"})
     @ResponseBody
     public ResponseEntity<?> passwordReset(@RequestBody String requestBody) {
-        log.log(Level.INFO, "REQUEST DATA : " + requestBody);
         JSONObject responseMap = new JSONObject();
         try {
             JSONObject jsonObject = new JSONObject(requestBody);
@@ -229,9 +228,7 @@ public class AuthenticationController {
                     .put("statusMessage", "internal system error");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseMap.toString());
         }
-        log.log(Level.INFO, "RESPONSE DATA : " + responseMap.toString());
         return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
-
     }
 
     @RequestMapping(value = {"/confirm-code"}, method = {RequestMethod.POST}, produces = {"application/json"})
@@ -275,11 +272,9 @@ public class AuthenticationController {
         return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
     }
 
-
     @RequestMapping(value = {"/reset-password"}, method = {RequestMethod.POST}, produces = {"application/json"})
     @ResponseBody
     public ResponseEntity<?> resetPassword(@RequestBody String requestBody) {
-        log.log(Level.INFO, "REQUEST DATA : " + requestBody);
         JSONObject responseMap = new JSONObject();
         try {
             JSONObject jsonObject = new JSONObject(requestBody);
@@ -299,7 +294,6 @@ public class AuthenticationController {
                     .put("statusMessage", "internal system error");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseMap.toString());
         }
-        log.log(Level.INFO, "RESPONSE DATA : " + responseMap.toString());
         return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
     }
 
@@ -325,6 +319,7 @@ public class AuthenticationController {
                         customerData.put("country", customer.getCountry());
                         customerData.put("district", customer.getDistrict());
                         customerData.put("location", customer.getLocation());
+                        customerData.put("oneSignalToken", user.getUserOneSignalId() != null ? user.getUserOneSignalId() : "12WEQWE21313");
                         responseMap.put("Details", customerData);
                     });
             merchantRepository.findMerchantByEmailAddress(user.getEmailAddress())
@@ -370,6 +365,28 @@ public class AuthenticationController {
                     });
         } catch (Exception ex) {
             log.log(Level.INFO, ex.getMessage());
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("errorDescription", ex.getMessage())
+                    .put("statusMessage", "internal system error");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseMap.toString());
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
+    }
+
+    @RequestMapping(value = {"/update-one-signal"}, method = {RequestMethod.POST}, produces = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<?> updateOneSignalId(@RequestBody String requestBody) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            JSONObject jsonObject = new JSONObject(requestBody);
+            LoginValidation user = globalMethods.fetchUserDetails();
+            user.setUserOneSignalId(bcryptEncoder.encode(jsonObject.getString("UserId")));
+            loginValidationRepository.save(user);
+            responseMap.put("Status", "00");
+            responseMap.put("Message", "Password changed successfully");
+        } catch (Exception ex) {
+            log.log(Level.WARNING, "Change Password Error : " + ex.getMessage());
             responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
                     .put("statusDescription", "failed to process request")
                     .put("errorDescription", ex.getMessage())
