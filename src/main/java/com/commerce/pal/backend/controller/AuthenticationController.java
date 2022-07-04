@@ -150,6 +150,7 @@ public class AuthenticationController {
                         responseMap.put("statusCode", ResponseCodes.SUCCESS)
                                 .put("statusDescription", "success")
                                 .put("userToken", token)
+                                .put("refreshToken", token)
                                 .put("changePin", userLogin.getPinChange())
                                 .put("statusMessage", "login successful");
                     });
@@ -381,7 +382,7 @@ public class AuthenticationController {
         try {
             JSONObject jsonObject = new JSONObject(requestBody);
             LoginValidation user = globalMethods.fetchUserDetails();
-            user.setUserOneSignalId(bcryptEncoder.encode(jsonObject.getString("UserId")));
+            user.setUserOneSignalId(jsonObject.getString("UserId"));
             loginValidationRepository.save(user);
             responseMap.put("Status", "00");
             responseMap.put("Message", "Password changed successfully");

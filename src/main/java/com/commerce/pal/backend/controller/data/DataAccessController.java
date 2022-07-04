@@ -59,6 +59,9 @@ public class DataAccessController {
                 case "SUB-PRODUCT":
                     responseMap = subProductService.getSubProductInfo(jsonObject.getLong("TypeId"));
                     break;
+                case "PRODUCT-AND-SUB":
+                    responseMap = productService.getSubProductInfo(jsonObject.getLong("TypeId"), jsonObject.getLong("SubProductId"));
+                    break;
                 case "AGENT":
                     responseMap = agentService.getAgentInfo(jsonObject.getLong("TypeId"));
                     break;
@@ -77,6 +80,7 @@ public class DataAccessController {
                 case "MESSENGER":
                     responseMap = messengerService.getMessengerInfo(jsonObject.getLong("TypeId"));
                     break;
+
             }
             responseMap.put("statusCode", ResponseCodes.SUCCESS)
                     .put("statusDescription", "success")

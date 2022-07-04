@@ -333,4 +333,27 @@ public class ProductService {
         }
         return detail;
     }
+
+
+    public JSONObject getSubProductInfo(Long product, Long subProduct) {
+        JSONObject detail = new JSONObject();
+        try {
+            productRepository.findProductByProductId(product)
+                    .ifPresent(pro -> {
+                        detail.put("ProductId", pro.getProductId());
+                        detail.put("ProductName", pro.getProductName());
+                        detail.put("ShortDescription", pro.getShortDescription() != null ? pro.getShortDescription() : "");
+                        detail.put("mobileImage", pro.getProductMobileImage() != null ? pro.getProductMobileImage() : "");
+                        detail.put("webImage", pro.getProductImage() != null ? pro.getProductImage() : "");
+                        detail.put("webThumbnail", pro.getWebThumbnail() != null ? pro.getWebThumbnail() : "");
+                        detail.put("mobileThumbnail", pro.getMobileThumbnail() != null ? pro.getMobileThumbnail() : "");
+                        detail.put("ProductParentCategoryId", pro.getProductParentCateoryId());
+                        detail.put("ProductDescription", pro.getProductDescription());
+                        detail.put("subProductInfo", subProductService.getSubProductInfo(subProduct));
+                    });
+        } catch (Exception e) {
+            log.log(Level.WARNING, e.getMessage());
+        }
+        return detail;
+    }
 }
