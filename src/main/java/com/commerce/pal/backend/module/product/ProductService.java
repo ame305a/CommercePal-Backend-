@@ -163,6 +163,9 @@ public class ProductService {
                         detail.put("ShipmentType", pro.getShipmentType());
                         detail.put("UnitPrice", pro.getUnitPrice());
                         detail.put("actualPrice", pro.getUnitPrice());
+                        detail.put("maxOrder", pro.getMaxOrder());
+                        detail.put("minOrder", pro.getMinOrder());
+                        detail.put("moq_value", pro.getMinOrder());
                         detail.put("PrimarySubProduct", pro.getPrimarySubProduct());
                         List<JSONObject> subProducts = subProductService.getSubByProduct(pro.getProductId());
                         detail.put("subProducts", subProducts);
