@@ -311,6 +311,7 @@ public class AuthenticationController {
             customerRepository.findCustomerByEmailAddress(user.getEmailAddress())
                     .ifPresent(customer -> {
                         JSONObject customerData = new JSONObject();
+                        customerData.put("userId", customer.getCustomerId());
                         customerData.put("firstName", customer.getFirstName());
                         customerData.put("lastName", customer.getLastName());
                         customerData.put("language", customer.getLanguage());

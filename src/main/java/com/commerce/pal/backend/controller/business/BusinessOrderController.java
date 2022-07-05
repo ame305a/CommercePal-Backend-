@@ -190,20 +190,20 @@ public class BusinessOrderController {
                         }
                     }, () -> {
                         responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
-                                .put("statusDescription", "Customer Does not exists")
-                                .put("statusMessage", "Customer Does not exists");
+                                .put("statusDescription", "Business Does not exists")
+                                .put("statusMessage", "Business Does not exists");
                     });
         } catch (Exception e) {
             log.log(Level.WARNING, e.getMessage());
             responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
-                    .put("statusDescription", "failed to process request")
-                    .put("statusMessage", "internal system error");
+                    .put("statusDescription", e.getMessage())
+                    .put("statusMessage", e.getMessage());
         }
         return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
     }
 
     @RequestMapping(value = "/get-pricing", method = RequestMethod.POST)
-    public ResponseEntity<?> updatePricing(@RequestBody String checkOut) {
+    public ResponseEntity<?> getPricing(@RequestBody String checkOut) {
         JSONObject responseMap = new JSONObject();
         try {
             JSONObject request = new JSONObject(checkOut);
