@@ -92,6 +92,9 @@ public class Business {
     @Column(name = "TaxPhoto")
     private String taxPhoto;
     @Basic
+    @Column(name = "FinancialInstitution")
+    private Integer financialInstitution;
+    @Basic
     @Column(name = "LoanLimit")
     private BigDecimal loanLimit;
     @Basic

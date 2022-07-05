@@ -176,16 +176,59 @@ public class BusinessCollateralService {
         return responseMap;
     }
 
+    public JSONObject collateralLoanLimit(Long businessId) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            AtomicReference<BigDecimal> limit = new AtomicReference<>(new BigDecimal(0));
+            businessCollateralRepository.findBusinessCollateralsByBusinessIdAndStatus(businessId, 3)
+                    .forEach(businessCollateral -> {
+                        limit.set(new BigDecimal(businessCollateral.getApprovedAmount().doubleValue() + limit.get().doubleValue()));
+                    });
+            responseMap.put("Limit", limit.get());
+        } catch (Exception e) {
+            responseMap.put("Limit", 0.00);
+        }
+        return responseMap;
+    }
+
     public JSONObject updateLoanLimit(JSONObject reqBody) {
         JSONObject responseMap = new JSONObject();
         try {
             businessRepository.findBusinessByBusinessId(reqBody.getLong("BusinessId"))
                     .ifPresentOrElse(business -> {
+                        business.setFinancialInstitution(reqBody.getInt("FinancialInstitution"));
                         business.setLoanLimit(new BigDecimal(reqBody.getString("LoanLimit")));
                         business.setLimitStatus(0);
                         business.setLimitComment(reqBody.getString("Comments"));
                         business.setLimitDate(Timestamp.from(Instant.now()));
                         businessRepository.save(business);
+                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                .put("statusDescription", "success")
+                                .put("statusMessage", "Request Successful");
+                    }, () -> {
+                        responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                                .put("statusDescription", "Business does not exist")
+                                .put("statusMessage", "Business does not exist");
+                    });
+        } catch (Exception e) {
+            log.log(Level.WARNING, e.getMessage());
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", e.getMessage())
+                    .put("statusMessage", "internal system error");
+        }
+        return responseMap;
+    }
+
+    public JSONObject getLoanLimit(Long businessId) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            businessRepository.findBusinessByBusinessId(businessId)
+                    .ifPresentOrElse(business -> {
+                        responseMap.put("LoanLimit", business.getLoanLimit());
+                        responseMap.put("FinancialInstitution", business.getFinancialInstitution());
+                        responseMap.put("Comments", business.getLimitComment());
+                        responseMap.put("Status", business.getStatus());
+                        responseMap.put("LimitDate", business.getLimitDate());
                         responseMap.put("statusCode", ResponseCodes.SUCCESS)
                                 .put("statusDescription", "success")
                                 .put("statusMessage", "Request Successful");
