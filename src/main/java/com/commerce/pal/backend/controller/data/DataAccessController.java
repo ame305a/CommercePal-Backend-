@@ -4,6 +4,7 @@ import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.module.users.*;
 import com.commerce.pal.backend.module.product.ProductService;
 import com.commerce.pal.backend.module.product.SubProductService;
+import com.commerce.pal.backend.module.users.business.BusinessCollateralService;
 import com.commerce.pal.backend.module.users.business.BusinessService;
 import com.commerce.pal.backend.repo.LoginValidationRepository;
 import lombok.extern.java.Log;
@@ -25,6 +26,7 @@ public class DataAccessController {
     private final MerchantService merchantService;
     private final MessengerService messengerService;
     private final SubProductService subProductService;
+    private final BusinessCollateralService businessCollateralService;
     private final LoginValidationRepository loginValidationRepository;
 
     @Autowired
@@ -35,6 +37,7 @@ public class DataAccessController {
                                 MerchantService merchantService,
                                 MessengerService messengerService,
                                 SubProductService subProductService,
+                                BusinessCollateralService businessCollateralService,
                                 LoginValidationRepository loginValidationRepository) {
         this.agentService = agentService;
         this.productService = productService;
@@ -43,6 +46,7 @@ public class DataAccessController {
         this.merchantService = merchantService;
         this.messengerService = messengerService;
         this.subProductService = subProductService;
+        this.businessCollateralService = businessCollateralService;
         this.loginValidationRepository = loginValidationRepository;
     }
 
@@ -67,6 +71,15 @@ public class DataAccessController {
                     break;
                 case "CUSTOMER":
                     responseMap = customerService.getCustomerInfo(jsonObject.getLong("TypeId"));
+                    break;
+                case "BUSINESS":
+                    responseMap = businessService.getBusinessInfo(jsonObject.getLong("TypeId"));
+                    break;
+                case "BUSINESS-LOAN-LIMIT":
+                    responseMap = businessCollateralService.getLoanLimit(jsonObject.getLong("TypeId"));
+                    break;
+                case "BUSINESS-COLLATERAL":
+                    responseMap = businessCollateralService.getBusinessCollateral(jsonObject.getLong("TypeId"));
                     break;
                 case "MERCHANT":
                     responseMap = merchantService.getMerchantInfo(jsonObject.getLong("TypeId"));
