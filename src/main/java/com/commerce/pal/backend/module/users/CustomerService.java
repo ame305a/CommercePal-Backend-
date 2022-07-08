@@ -2,22 +2,27 @@ package com.commerce.pal.backend.module.users;
 
 import com.commerce.pal.backend.repo.user.CustomerAddressRepository;
 import com.commerce.pal.backend.repo.user.CustomerRepository;
+import com.commerce.pal.backend.utils.GlobalMethods;
 import lombok.extern.java.Log;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 @Log
 @Service
 @SuppressWarnings("Duplicates")
 public class CustomerService {
-
+    private final GlobalMethods globalMethods;
     private final CustomerRepository customerRepository;
     private final CustomerAddressRepository customerAddressRepository;
 
     @Autowired
-    public CustomerService(CustomerRepository customerRepository,
+    public CustomerService(GlobalMethods globalMethods,
+                           CustomerRepository customerRepository,
                            CustomerAddressRepository customerAddressRepository) {
+        this.globalMethods = globalMethods;
         this.customerRepository = customerRepository;
         this.customerAddressRepository = customerAddressRepository;
     }
@@ -50,19 +55,20 @@ public class CustomerService {
     }
 
     public JSONObject getCustomerAddressById(Long addressId) {
-        JSONObject payload = new JSONObject();
+        AtomicReference<JSONObject> payload = new AtomicReference<>(new JSONObject());
         customerAddressRepository.findById(addressId)
                 .ifPresent(customerAddress -> {
-                    payload.put("id", customerAddress.getId());
-                    payload.put("regionId", customerAddress.getRegionId());
-                    payload.put("country", customerAddress.getCountry());
-                    payload.put("city", customerAddress.getCity());
-                    payload.put("subCity", customerAddress.getSubCity());
-                    payload.put("physicalAddress", customerAddress.getPhysicalAddress());
-                    payload.put("latitude", customerAddress.getLatitude());
-                    payload.put("longitude", customerAddress.getLongitude());
-                    payload.put("addressId", customerAddress.getId());
+                    payload.get().put("id", customerAddress.getId());
+                    payload.get().put("regionId", customerAddress.getRegionId());
+                    payload.get().put("country", customerAddress.getCountry());
+                    payload.get().put("city", customerAddress.getCity());
+                    payload.get().put("subCity", customerAddress.getSubCity());
+                    payload.get().put("physicalAddress", customerAddress.getPhysicalAddress());
+                    payload.get().put("latitude", customerAddress.getLatitude());
+                    payload.get().put("longitude", customerAddress.getLongitude());
+                    payload.get().put("addressId", customerAddress.getId());
+                    payload.set(globalMethods.mergeJSONObjects(payload.get(), getCustomerInfo(customerAddress.getCustomerId())));
                 });
-        return payload;
+        return payload.get();
     }
 }

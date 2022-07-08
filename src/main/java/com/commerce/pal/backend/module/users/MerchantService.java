@@ -240,6 +240,9 @@ public class MerchantService {
         JSONObject payload = new JSONObject();
         merchantRepository.findMerchantByMerchantId(merchantId)
                 .ifPresent(merchant -> {
+                    payload.put("phoneNumber", merchant.getOwnerPhoneNumber());
+                    payload.put("email", merchant.getEmailAddress());
+                    payload.put("name", merchant.getMerchantName());
                     payload.put("country", merchant.getCountry());
                     payload.put("city", merchant.getCity());
                     payload.put("regionId", merchant.getRegionId());
