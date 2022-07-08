@@ -386,6 +386,9 @@ public class BusinessOrderController {
                                     order.setUserAddressId(business.getBusinessId());
                                     order.setIsUserAddressAssigned(1);
                                     orderRepository.save(order);
+                                    responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                            .put("statusDescription", "success")
+                                            .put("statusMessage", "success");
                                 }, () -> {
                                     responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
                                             .put("statusDescription", "The Address does not belong to the business")
