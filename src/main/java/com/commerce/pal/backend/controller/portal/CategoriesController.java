@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 
 @Log
 @CrossOrigin(origins = {"*"}, maxAge = 3600L)
@@ -300,9 +301,10 @@ public class CategoriesController {
                     });
 
         } catch (Exception ex) {
+            log.log(Level.WARNING, ex.getMessage());
             responseMap.put("statusCode", ResponseCodes.TRANSACTION_FAILED)
-                    .put("statusDescription", "failed")
-                    .put("statusMessage", "Request failed");
+                    .put("statusDescription", ex.getMessage())
+                    .put("statusMessage", ex.getMessage());
         }
         return ResponseEntity.ok(responseMap.toString());
     }
