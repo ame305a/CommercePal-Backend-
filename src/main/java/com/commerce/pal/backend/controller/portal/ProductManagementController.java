@@ -298,7 +298,7 @@ public class ProductManagementController {
         JSONObject responseMap = new JSONObject();
         try {
             JSONObject jsonObject = new JSONObject(proBody);
-            productRepository.findById(jsonObject.getLong("productId"))
+            productRepository.findById(jsonObject.getLong("ProductId"))
                     .ifPresentOrElse(product -> {
                         product.setMerchantId(jsonObject.getLong("MerchantId"));
                         productRepository.save(product);
