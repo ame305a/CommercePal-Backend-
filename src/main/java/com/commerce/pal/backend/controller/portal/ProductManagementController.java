@@ -300,6 +300,7 @@ public class ProductManagementController {
             JSONObject jsonObject = new JSONObject(proBody);
             productRepository.findById(jsonObject.getLong("ProductId"))
                     .ifPresentOrElse(product -> {
+                        product.setOwnerType("MERCHANT");
                         product.setMerchantId(jsonObject.getLong("MerchantId"));
                         productRepository.save(product);
                         responseMap.put("statusCode", ResponseCodes.SUCCESS)
