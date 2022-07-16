@@ -160,6 +160,7 @@ public class ProductService {
                         detail.put("ProductDescription", pro.getProductDescription());
                         detail.put("SpecialInstruction", pro.getSpecialInstruction());
                         detail.put("IsDiscounted", pro.getIsDiscounted());
+                        detail.put("manufacturer", pro.getManufucturer());
                         detail.put("ShipmentType", pro.getShipmentType());
                         detail.put("unitOfMeasure", pro.getUnitOfMeasure());
                         detail.put("discountType", pro.getDiscountType());
