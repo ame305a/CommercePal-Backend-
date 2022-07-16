@@ -290,7 +290,7 @@ public class CategoriesController {
                                 .put("statusMessage", "Request failed. Brand Already Exist");
                     }, () -> {
                         BrandImage brandImage = new BrandImage();
-                        brandImage.setBrand(jsonObject.getString("brandName"));
+                        brandImage.setBrand(jsonObject.getString("name"));
                         brandImage.setParentCategoryId(jsonObject.getLong("parentCategoryId"));
                         brandImage.setStatus(1);
                         brandImage.setCreatedDate(Timestamp.from(Instant.now()));
