@@ -161,7 +161,11 @@ public class ProductService {
                         detail.put("SpecialInstruction", pro.getSpecialInstruction());
                         detail.put("IsDiscounted", pro.getIsDiscounted());
                         detail.put("ShipmentType", pro.getShipmentType());
+                        detail.put("unitOfMeasure", pro.getUnitOfMeasure());
+                        detail.put("discountType", pro.getDiscountType());
                         detail.put("UnitPrice", pro.getUnitPrice());
+                        detail.put("quantity", pro.getQuantity());
+                        detail.put("productType", pro.getProductType());
                         detail.put("actualPrice", pro.getUnitPrice());
                         detail.put("maxOrder", pro.getMaxOrder());
                         detail.put("minOrder", pro.getMinOrder());
