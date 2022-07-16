@@ -292,6 +292,32 @@ public class ProductManagementController {
         return ResponseEntity.ok(responseMap.toString());
     }
 
+    @RequestMapping(value = {"/link-merchant"}, method = {RequestMethod.POST}, produces = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<?> linkProductToMerchant(@RequestBody String proBody) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            JSONObject jsonObject = new JSONObject(proBody);
+            productRepository.findById(jsonObject.getLong("productId"))
+                    .ifPresentOrElse(product -> {
+                        product.setMerchantId(jsonObject.getLong("MerchantId"));
+                        productRepository.save(product);
+                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                .put("statusDescription", "success")
+                                .put("statusMessage", "Request Successful");
+                    }, () -> {
+                        responseMap.put("statusCode", ResponseCodes.TRANSACTION_FAILED)
+                                .put("statusDescription", "failed")
+                                .put("statusMessage", "Request failed");
+                    });
+        } catch (Exception ex) {
+            responseMap.put("statusCode", ResponseCodes.TRANSACTION_FAILED)
+                    .put("statusDescription", "failed")
+                    .put("statusMessage", "Request failed");
+        }
+        return ResponseEntity.ok(responseMap.toString());
+    }
+
     @RequestMapping(value = {"/delete-product"}, method = {RequestMethod.POST}, produces = {"application/json"})
     @ResponseBody
     @Transactional

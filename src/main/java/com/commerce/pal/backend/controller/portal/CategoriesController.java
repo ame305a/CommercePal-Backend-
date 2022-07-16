@@ -300,7 +300,6 @@ public class CategoriesController {
                                 .put("id", brandImage.get().getId())
                                 .put("statusMessage", "Request Successful");
                     });
-
         } catch (Exception ex) {
             log.log(Level.WARNING, ex.getMessage());
             responseMap.put("statusCode", ResponseCodes.TRANSACTION_FAILED)
