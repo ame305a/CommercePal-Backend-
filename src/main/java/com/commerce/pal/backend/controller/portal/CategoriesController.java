@@ -289,14 +289,15 @@ public class CategoriesController {
                                 .put("statusDescription", "Request failed. Brand Already Exist")
                                 .put("statusMessage", "Request failed. Brand Already Exist");
                     }, () -> {
-                        BrandImage brandImage = new BrandImage();
-                        brandImage.setBrand(jsonObject.getString("name"));
-                        brandImage.setParentCategoryId(jsonObject.getLong("parentCategoryId"));
-                        brandImage.setStatus(1);
-                        brandImage.setCreatedDate(Timestamp.from(Instant.now()));
-                        brandImageRepository.save(brandImage);
+                        AtomicReference<BrandImage> brandImage = new AtomicReference<>(new BrandImage());
+                        brandImage.get().setBrand(jsonObject.getString("name"));
+                        brandImage.get().setParentCategoryId(jsonObject.getLong("parentCategoryId"));
+                        brandImage.get().setStatus(1);
+                        brandImage.get().setCreatedDate(Timestamp.from(Instant.now()));
+                        brandImage.set(brandImageRepository.save(brandImage.get()));
                         responseMap.put("statusCode", ResponseCodes.SUCCESS)
                                 .put("statusDescription", "success")
+                                .put("id", brandImage.get().getId())
                                 .put("statusMessage", "Request Successful");
                     });
 
