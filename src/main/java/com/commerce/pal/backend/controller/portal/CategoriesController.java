@@ -283,7 +283,7 @@ public class CategoriesController {
         JSONObject responseMap = new JSONObject();
         try {
             JSONObject jsonObject = new JSONObject(parent);
-            brandImageRepository.findBrandImageByBrand(jsonObject.getString("brandName"))
+            brandImageRepository.findBrandImageByBrand(jsonObject.getString("name"))
                     .ifPresentOrElse(brandImage -> {
                         responseMap.put("statusCode", ResponseCodes.TRANSACTION_FAILED)
                                 .put("statusDescription", "Request failed. Brand Already Exist")
