@@ -292,7 +292,7 @@ public class ProductManagementController {
         return ResponseEntity.ok(responseMap.toString());
     }
 
-    @RequestMapping(value = {"/link-merchant"}, method = {RequestMethod.POST}, produces = {"application/json"})
+    @RequestMapping(value = {"/link-to-merchant"}, method = {RequestMethod.POST}, produces = {"application/json"})
     @ResponseBody
     public ResponseEntity<?> linkProductToMerchant(@RequestBody String proBody) {
         JSONObject responseMap = new JSONObject();
