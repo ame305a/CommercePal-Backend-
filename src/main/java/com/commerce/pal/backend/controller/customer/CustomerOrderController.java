@@ -185,7 +185,7 @@ public class CustomerOrderController {
                             responseMap.put("statusCode", ResponseCodes.SUCCESS)
                                     .put("statusDescription", "Order was successful")
                                     .put("OrderRef", transRef)
-                                    .put("checkoutSummary ", checkoutSummary)
+                                    .put("checkoutSummary", checkoutSummary)
                                     .put("statusMessage", "Order was successful");
                         }
                     }, () -> {
