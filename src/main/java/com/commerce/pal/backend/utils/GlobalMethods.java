@@ -155,6 +155,11 @@ public class GlobalMethods {
         return Long.valueOf(getUserId("DISTRIBUTOR", email));
     }
 
+    public Long getCustomerId(String email) {
+        return Long.valueOf(getUserId("CUSTOMER", email));
+    }
+
+
     public Long getMerchantId(String email) {
         return Long.valueOf(getUserId("MERCHANT", email));
     }
