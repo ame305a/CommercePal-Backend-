@@ -4,6 +4,7 @@ import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.models.LoginValidation;
 import com.commerce.pal.backend.models.order.SpecialProductOrder;
 import com.commerce.pal.backend.repo.order.SpecialProductOrderRepository;
+import com.commerce.pal.backend.service.amazon.UploadService;
 import com.commerce.pal.backend.utils.GlobalMethods;
 import lombok.extern.java.Log;
 import org.json.JSONObject;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -26,12 +28,15 @@ import java.util.logging.Level;
 @SuppressWarnings("Duplicates")
 public class SpecialOrderController {
     private final GlobalMethods globalMethods;
+    private final UploadService uploadService;
     private final SpecialProductOrderRepository specialProductOrderRepository;
 
     @Autowired
     public SpecialOrderController(GlobalMethods globalMethods,
+                                  UploadService uploadService,
                                   SpecialProductOrderRepository specialProductOrderRepository) {
         this.globalMethods = globalMethods;
+        this.uploadService = uploadService;
         this.specialProductOrderRepository = specialProductOrderRepository;
     }
 
@@ -62,6 +67,36 @@ public class SpecialOrderController {
                     .put("statusMessage", e.getMessage());
         }
         return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
+    }
+
+    @RequestMapping(value = "/upload-image", method = RequestMethod.POST)
+    public ResponseEntity<String> uploadOrderImage(@RequestPart(value = "file") MultipartFile file,
+                                               @RequestPart(value = "orderId") String orderId) {
+        JSONObject response = new JSONObject();
+        log.log(Level.INFO, "File Name :" + file.getName());
+        specialProductOrderRepository.findById(Long.valueOf(orderId))
+                .ifPresentOrElse(specialProductOrder -> {
+                    String productUrl = uploadService.uploadFileAlone(file, "Web", "SpecialOrder");
+                    if (specialProductOrder.getImageOne().isEmpty()) {
+                        specialProductOrder.setImageOne(productUrl);
+                    } else if (specialProductOrder.getImageTwo().isEmpty()) {
+                        specialProductOrder.setImageTwo(productUrl);
+                    } else if (specialProductOrder.getImageThree().isEmpty()) {
+                        specialProductOrder.setImageThree(productUrl);
+                    }
+                    specialProductOrderRepository.save(specialProductOrder);
+                    response.put("statusCode", ResponseCodes.SUCCESS)
+                            .put("productUrl", productUrl)
+                            .put("statusDescription", "success")
+                            .put("statusMessage", "Request Successful");
+                }, () -> {
+                    response.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                            .put("statusDescription", "failed to process request")
+                            .put("statusMessage", "internal system error");
+                });
+
+
+        return new ResponseEntity<>(response.toString(), HttpStatus.OK);
     }
 
     @RequestMapping(value = "/my-request-order", method = RequestMethod.GET)
