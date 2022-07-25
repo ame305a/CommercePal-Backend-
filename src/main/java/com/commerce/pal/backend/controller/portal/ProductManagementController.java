@@ -99,9 +99,10 @@ public class ProductManagementController {
             JSONObject request = new JSONObject(req);
             responseMap = productService.updateProduct(request);
         } catch (Exception e) {
+            log.log(Level.WARNING, e.getMessage());
             responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
                     .put("statusDescription", "failed to process request")
-                    .put("statusMessage", "internal system error");
+                    .put("statusMessage", e.getMessage());
         }
         return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
     }
