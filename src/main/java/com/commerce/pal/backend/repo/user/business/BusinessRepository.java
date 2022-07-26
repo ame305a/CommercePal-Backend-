@@ -20,5 +20,5 @@ public interface BusinessRepository extends JpaRepository<Business, Long> {
 
     Optional<Business> findBusinessByBusinessIdAndEmailAddress(Long id,String email);
 
-    List<Business> findBusinessByFinancialInstitution(Long finance);
+    List<Business> findBusinessByFinancialInstitution(Integer finance);
 }

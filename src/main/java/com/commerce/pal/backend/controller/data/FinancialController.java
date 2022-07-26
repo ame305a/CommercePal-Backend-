@@ -35,7 +35,7 @@ public class FinancialController {
                     responseMap = businessService.getBusinessInfo(jsonObject.getLong("TypeId"));
                     break;
                 case "BUSINESSES":
-                    responseMap = businessService.getCollateralBusiness(jsonObject.getLong("TypeId"));
+                    responseMap = businessService.getCollateralBusiness(jsonObject.getInt("TypeId"));
                     break;
                 case "BUSINESS-LOAN-LIMIT":
                     responseMap = businessCollateralService.getLoanLimit(jsonObject.getLong("TypeId"));

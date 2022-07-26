@@ -201,7 +201,7 @@ public class BusinessService {
                         payload.get().put("city", business.getCity());
                         payload.get().put("longitude", business.getLongitude());
                         payload.get().put("latitude", business.getLatitude());
-
+                        payload.get().put("businessSector", business.getBusinessSector());
                         payload.get().put("OwnerPhoto", business.getOwnerPhoto());
                         payload.get().put("BusinessRegistrationPhoto", business.getBusinessRegistrationPhoto());
                         payload.get().put("TaxPhoto", business.getTaxPhoto());
@@ -220,7 +220,7 @@ public class BusinessService {
         return payload.get();
     }
 
-    public JSONObject getCollateralBusiness(Long finance) {
+    public JSONObject getCollateralBusiness(Integer finance) {
         JSONObject responseMap = new JSONObject();
         try {
             List<JSONObject> businesss = new ArrayList<>();
@@ -234,9 +234,10 @@ public class BusinessService {
                     .put("statusDescription", "success")
                     .put("statusMessage", "Request Successful");
         } catch (Exception e) {
+            log.log(Level.WARNING, e.getMessage());
             responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
-                    .put("statusDescription", "failed to process request")
-                    .put("statusMessage", "internal system error");
+                    .put("statusDescription", e.getMessage())
+                    .put("statusMessage", e.getMessage());
         }
         return responseMap;
     }
