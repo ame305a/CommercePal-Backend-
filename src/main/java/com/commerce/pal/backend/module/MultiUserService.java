@@ -96,6 +96,8 @@ public class MultiUserService {
                         .put("userId", userId)
                         .put("statusDescription", "success. Use current login details")
                         .put("statusMessage", "registration successful. Use current login details");
+                String msg = "Registration successful. Use current login details";
+                emailClient.emailSender(msg, request.getString("email").trim(), "REGISTRATION");
             } else {
                 responseMap.put("statusCode", ResponseCodes.SUCCESS)
                         .put("userId", userId)

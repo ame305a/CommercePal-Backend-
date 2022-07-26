@@ -126,7 +126,7 @@ public class RegistrationStoreService {
             query.setParameter("CommercialCertNo", regHm.getString("commercialCertNo"));
             query.setParameter("Branch", regHm.getString("branch"));
             query.setParameter("BusinessSector", regHm.getInt("businessSector"));
-            query.setParameter("BusinessLicence", regHm.getInt("businessLicence"));
+            query.setParameter("BusinessLicence", regHm.getString("businessLicence"));
             query.setParameter("RegisteredBy", regHm.getString("registeredBy"));
             query.registerStoredProcedureParameter("RegistrationExist", Integer.class, ParameterMode.OUT);
             query.execute();
