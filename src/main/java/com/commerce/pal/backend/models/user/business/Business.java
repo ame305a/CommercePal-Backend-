@@ -109,6 +109,17 @@ public class Business {
     @Basic
     @Column(name = "LimitDate")
     private Timestamp limitDate;
+
+    @Basic
+    @Column(name = "ReviewedBy")
+    private Long reviewedBy;
+    @Basic
+    @Column(name = "ReviewComment")
+    private String reviewComment;
+    @Basic
+    @Column(name = "ReviewedDate")
+    private Timestamp reviewedDate;
+
     @Basic
     @Column(name = "CreatedBy")
     private String createdBy;

@@ -8,4 +8,5 @@ import java.util.List;
 public interface BusinessCollateralRepository extends JpaRepository<BusinessCollateral, Integer> {
     List<BusinessCollateral> findBusinessCollateralsByBusinessId(Long business);
     List<BusinessCollateral> findBusinessCollateralsByBusinessIdAndStatus (Long business, Integer status);
+    List<BusinessCollateral> findBusinessCollateralsByFinancialInstitution(Long finance);
 }
