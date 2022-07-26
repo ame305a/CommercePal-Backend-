@@ -107,6 +107,7 @@ public class RegistrationStoreService {
             query.registerStoredProcedureParameter("CommercialCertNo", String.class, ParameterMode.IN);
             query.registerStoredProcedureParameter("Branch", String.class, ParameterMode.IN);
             query.registerStoredProcedureParameter("BusinessSector", Integer.class, ParameterMode.IN);
+            query.registerStoredProcedureParameter("BusinessLicence", Integer.class, ParameterMode.IN);
             query.registerStoredProcedureParameter("RegisteredBy", String.class, ParameterMode.IN);
             query.setParameter("OwnerType", regHm.getString("ownerType"));
             query.setParameter("OwnerId", regHm.getString("ownerId"));
@@ -125,6 +126,7 @@ public class RegistrationStoreService {
             query.setParameter("CommercialCertNo", regHm.getString("commercialCertNo"));
             query.setParameter("Branch", regHm.getString("branch"));
             query.setParameter("BusinessSector", regHm.getInt("businessSector"));
+            query.setParameter("BusinessLicence", regHm.getInt("businessLicence"));
             query.setParameter("RegisteredBy", regHm.getString("registeredBy"));
             query.registerStoredProcedureParameter("RegistrationExist", Integer.class, ParameterMode.OUT);
             query.execute();
