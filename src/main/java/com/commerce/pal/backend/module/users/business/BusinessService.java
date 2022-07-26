@@ -202,6 +202,7 @@ public class BusinessService {
                         payload.get().put("longitude", business.getLongitude());
                         payload.get().put("latitude", business.getLatitude());
                         payload.get().put("businessSector", business.getBusinessSector());
+                        payload.get().put("businessLicense", business.getCommercialCertNo());
                         payload.get().put("OwnerPhoto", business.getOwnerPhoto());
                         payload.get().put("BusinessRegistrationPhoto", business.getBusinessRegistrationPhoto());
                         payload.get().put("TaxPhoto", business.getTaxPhoto());
