@@ -45,5 +45,22 @@ public class BusinessCollateral {
     @Basic
     @Column(name = "CreatedDate")
     private Timestamp createdDate;
-
+    @Basic
+    @Column(name = "ReviewedBy")
+    private Integer reviewedBy;
+    @Basic
+    @Column(name = "ReviewComments")
+    private String reviewComments;
+    @Basic
+    @Column(name = "ReviewedDate")
+    private Timestamp reviewedDate;
+    @Basic
+    @Column(name = "ApprovedBy")
+    private Integer approvedBy;
+    @Basic
+    @Column(name = "ApprovalRemarks")
+    private String approvalRemarks;
+    @Basic
+    @Column(name = "ApprovalDate")
+    private Timestamp approvalDate;
 }

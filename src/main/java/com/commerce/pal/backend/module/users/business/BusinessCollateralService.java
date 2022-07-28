@@ -154,6 +154,12 @@ public class BusinessCollateralService {
                         collateral.put("Comments", businessCollateral.getComments());
                         collateral.put("Status", businessCollateral.getStatus());
                         collateral.put("CreatedDate", businessCollateral.getCreatedDate());
+                        collateral.put("ReviewComments", businessCollateral.getReviewComments());
+                        collateral.put("ReviewedDate", businessCollateral.getReviewedDate());
+                        collateral.put("ReviewedBy", businessCollateral.getReviewedBy());
+                        collateral.put("ApprovalRemarks", businessCollateral.getApprovalRemarks());
+                        collateral.put("ApprovalDate", businessCollateral.getApprovalDate());
+                        collateral.put("ApprovalBy", businessCollateral.getApprovedBy());
                         ArrayList<String> documents = new ArrayList<String>();
                         businessCollateralDocumentRepository.findBusinessCollateralDocumentsByCollateralId(
                                 businessCollateral.getId()
@@ -187,6 +193,67 @@ public class BusinessCollateralService {
             responseMap.put("Limit", limit.get());
         } catch (Exception e) {
             responseMap.put("Limit", 0.00);
+        }
+        return responseMap;
+    }
+
+    public JSONObject reviewCollateralLimit(JSONObject reqBody) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            businessRepository.findBusinessByBusinessId(reqBody.getLong("BusinessId"))
+                    .ifPresentOrElse(business -> {
+                        businessCollateralRepository.findById(reqBody.getInt("CollateralId"))
+                                .ifPresent(businessCollateral -> {
+                                    businessCollateral.setStatus(1);
+                                    businessCollateral.setReviewedBy(reqBody.getInt("UserId"));
+                                    businessCollateral.setReviewComments(reqBody.getString("Comments"));
+                                    businessCollateral.setReviewedDate(Timestamp.from(Instant.now()));
+                                    businessCollateralRepository.save(businessCollateral);
+                                });
+                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                .put("statusDescription", "success")
+                                .put("statusMessage", "Request Successful");
+                    }, () -> {
+                        responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                                .put("statusDescription", "Business does not exist")
+                                .put("statusMessage", "Business does not exist");
+                    });
+        } catch (Exception e) {
+            log.log(Level.WARNING, e.getMessage());
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", e.getMessage())
+                    .put("statusMessage", "internal system error");
+        }
+        return responseMap;
+    }
+
+    public JSONObject approveCollateralLimit(JSONObject reqBody) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            businessRepository.findBusinessByBusinessId(reqBody.getLong("BusinessId"))
+                    .ifPresentOrElse(business -> {
+                        businessCollateralRepository.findById(reqBody.getInt("CollateralId"))
+                                .ifPresent(businessCollateral -> {
+                                    businessCollateral.setStatus(reqBody.getInt("Status"));
+                                    businessCollateral.setApprovedAmount(reqBody.getBigDecimal("ApprovedAmount"));
+                                    businessCollateral.setApprovedBy(reqBody.getInt("UserId"));
+                                    businessCollateral.setApprovalRemarks(reqBody.getString("Comments"));
+                                    businessCollateral.setApprovalDate(Timestamp.from(Instant.now()));
+                                    businessCollateralRepository.save(businessCollateral);
+                                });
+                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                .put("statusDescription", "success")
+                                .put("statusMessage", "Request Successful");
+                    }, () -> {
+                        responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                                .put("statusDescription", "Business does not exist")
+                                .put("statusMessage", "Business does not exist");
+                    });
+        } catch (Exception e) {
+            log.log(Level.WARNING, e.getMessage());
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", e.getMessage())
+                    .put("statusMessage", "internal system error");
         }
         return responseMap;
     }
@@ -226,9 +293,11 @@ public class BusinessCollateralService {
                     .ifPresentOrElse(business -> {
                         responseMap.put("LoanLimit", business.getLoanLimit());
                         responseMap.put("FinancialInstitution", business.getFinancialInstitution());
-                        responseMap.put("Comments", business.getLimitComment());
-                        responseMap.put("Status", business.getStatus());
+                        responseMap.put("LimitStatus", business.getLimitStatus());
                         responseMap.put("LimitDate", business.getLimitDate());
+                        responseMap.put("LimitComment", business.getLimitComment());
+                        responseMap.put("ReviewComment", business.getReviewComment());
+                        responseMap.put("ReviewedDate", business.getReviewedDate());
                         responseMap.put("statusCode", ResponseCodes.SUCCESS)
                                 .put("statusDescription", "success")
                                 .put("statusMessage", "Request Successful");
@@ -251,11 +320,10 @@ public class BusinessCollateralService {
         try {
             businessRepository.findBusinessByBusinessId(reqBody.getLong("BusinessId"))
                     .ifPresentOrElse(business -> {
-                        business.setFinancialInstitution(reqBody.getInt("FinancialInstitution"));
-                        business.setLoanLimit(new BigDecimal(reqBody.getString("LoanLimit")));
-                        business.setLimitStatus(0);
-                        business.setLimitComment(reqBody.getString("Comments"));
-                        business.setLimitDate(Timestamp.from(Instant.now()));
+                        business.setLoanLimit(reqBody.getBigDecimal("LoanLimit"));
+                        business.setLimitStatus(reqBody.getInt("Status"));
+                        business.setReviewComment(reqBody.getString("Comments"));
+                        business.setReviewedDate(Timestamp.from(Instant.now()));
                         businessRepository.save(business);
                         responseMap.put("statusCode", ResponseCodes.SUCCESS)
                                 .put("statusDescription", "success")

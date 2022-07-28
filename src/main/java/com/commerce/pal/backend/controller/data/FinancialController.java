@@ -47,10 +47,10 @@ public class FinancialController {
                     responseMap = businessCollateralService.getBusinessCollateral(jsonObject.getLong("TypeId"));
                     break;
                 case "REVIEW-COLLATERAL":
-                    responseMap = businessCollateralService.getBusinessCollateral(jsonObject.getLong("TypeId"));
+                    responseMap = businessCollateralService.reviewCollateralLimit(jsonObject);
                     break;
                 case "APPROVE-COLLATERAL":
-                    responseMap = businessCollateralService.getBusinessCollateral(jsonObject.getLong("TypeId"));
+                    responseMap = businessCollateralService.approveCollateralLimit(jsonObject);
                     break;
             }
             responseMap.put("statusCode", ResponseCodes.SUCCESS)
