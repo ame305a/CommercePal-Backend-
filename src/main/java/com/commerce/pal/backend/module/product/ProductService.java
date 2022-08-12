@@ -199,7 +199,7 @@ public class ProductService {
                             detail.put("discountDescription", pro.getDiscountValue() + " " + pro.getCurrency());
                         }
                         ArrayList<String> images = new ArrayList<String>();
-                        productImageRepository.findProductImagesByProductId(pro.getProductId(), 1).forEach(
+                        productImageRepository.findProductImagesByProductId(pro.getProductId()).forEach(
                                 image -> {
                                     images.add(image.getFilePath());
                                 }
