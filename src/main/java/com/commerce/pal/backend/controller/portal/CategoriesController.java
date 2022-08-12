@@ -186,6 +186,7 @@ public class CategoriesController {
                     .ifPresentOrElse(par -> {
                         par.setCategoryName(jsonObject.getString("name"));
                         par.setParentCategoryId(jsonObject.getLong("parentCategoryId"));
+                        productCategoryRepository.save(par);
                         responseMap.put("statusCode", ResponseCodes.SUCCESS)
                                 .put("statusDescription", "success")
                                 .put("statusMessage", "Request Successful");
@@ -262,6 +263,7 @@ public class CategoriesController {
                     .ifPresentOrElse(par -> {
                         par.setSubCategoryName(jsonObject.getString("name"));
                         par.setProductCategoryId(jsonObject.getLong("categoryId"));
+                        productSubCategoryRepository.save(par);
                         responseMap.put("statusCode", ResponseCodes.SUCCESS)
                                 .put("statusDescription", "success")
                                 .put("statusMessage", "Request Successful");
@@ -320,6 +322,7 @@ public class CategoriesController {
                     .ifPresentOrElse(par -> {
                         par.setBrand(jsonObject.getString("name"));
                         par.setParentCategoryId(jsonObject.getLong("parentCategoryId"));
+                        brandImageRepository.save(par);
                         responseMap.put("statusCode", ResponseCodes.SUCCESS)
                                 .put("statusDescription", "success")
                                 .put("statusMessage", "Request Successful");
