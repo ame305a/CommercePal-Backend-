@@ -110,6 +110,7 @@ public class CategoriesController {
             productParentCategoryRepository.findById(jsonObject.getLong("id"))
                     .ifPresentOrElse(par -> {
                         par.setParentCategoryName(jsonObject.getString("name"));
+                        productParentCategoryRepository.save(par);
                         responseMap.put("statusCode", ResponseCodes.SUCCESS)
                                 .put("statusDescription", "success")
                                 .put("statusMessage", "Request Successful");
