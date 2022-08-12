@@ -1,6 +1,7 @@
 package com.commerce.pal.backend.controller.portal;
 
 import com.commerce.pal.backend.common.ResponseCodes;
+import com.commerce.pal.backend.models.product.ProductFeatureValue;
 import com.commerce.pal.backend.module.product.ProductService;
 import com.commerce.pal.backend.module.users.MerchantService;
 import com.commerce.pal.backend.module.product.SubProductService;
@@ -16,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.EntityManager;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -30,6 +32,8 @@ import java.util.logging.Level;
 @RequestMapping({"/prime/api/v1/portal/product"})
 @SuppressWarnings("Duplicates")
 public class ProductManagementController {
+    @Autowired
+    private EntityManager entityManager;
 
     private final ProductService productService;
     private final MerchantService merchantService;
@@ -319,6 +323,73 @@ public class ProductManagementController {
         }
         return ResponseEntity.ok(responseMap.toString());
     }
+
+    @RequestMapping(value = {"/reuse-to-merchant"}, method = {RequestMethod.POST}, produces = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<?> reuseProductToMerchant(@RequestBody String proBody) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            JSONObject jsonObject = new JSONObject(proBody);
+            productRepository.findById(jsonObject.getLong("productId"))
+                    .ifPresentOrElse(product -> {
+                        JSONObject proBdy = productService.getProductLimitedDetails(product.getProductId());
+                        JSONObject retDet = productService.doAddProduct(proBdy);
+                        int returnValue = retDet.getInt("productId");
+                        if (returnValue == 0) {
+                            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                                    .put("statusDescription", "failed to process request")
+                                    .put("statusMessage", "internal system error");
+                        } else {
+                            responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                    .put("statusDescription", "success")
+                                    .put("productId", retDet.getInt("productId"))
+                                    .put("subProductId", retDet.getInt("subProductId"))
+                                    .put("statusMessage", "Product successful");
+
+                            subProductService.replicateSubFeatures(Long.valueOf(retDet.getInt("subProductId")), jsonObject.getLong("reuseSubProduct"));
+                        }
+                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                .put("statusDescription", "success")
+                                .put("statusMessage", "Request Successful");
+                    }, () -> {
+                        responseMap.put("statusCode", ResponseCodes.TRANSACTION_FAILED)
+                                .put("statusDescription", "failed")
+                                .put("statusMessage", "Request failed");
+                    });
+        } catch (Exception ex) {
+            responseMap.put("statusCode", ResponseCodes.TRANSACTION_FAILED)
+                    .put("statusDescription", "failed")
+                    .put("statusMessage", "Request failed");
+        }
+        return ResponseEntity.ok(responseMap.toString());
+    }
+
+
+    @RequestMapping(value = {"/replicate-product-image"}, method = {RequestMethod.POST}, produces = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<?> replicateProductImage(@RequestBody String proBody) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            JSONObject jsonObject = new JSONObject(proBody);
+            productRepository.findById(jsonObject.getLong("productId"))
+                    .ifPresentOrElse(product -> {
+
+                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                .put("statusDescription", "success")
+                                .put("statusMessage", "Request Successful");
+                    }, () -> {
+                        responseMap.put("statusCode", ResponseCodes.TRANSACTION_FAILED)
+                                .put("statusDescription", "failed")
+                                .put("statusMessage", "Request failed");
+                    });
+        } catch (Exception ex) {
+            responseMap.put("statusCode", ResponseCodes.TRANSACTION_FAILED)
+                    .put("statusDescription", "failed")
+                    .put("statusMessage", "Request failed");
+        }
+        return ResponseEntity.ok(responseMap.toString());
+    }
+
 
     @RequestMapping(value = {"/delete-product"}, method = {RequestMethod.POST}, produces = {"application/json"})
     @ResponseBody

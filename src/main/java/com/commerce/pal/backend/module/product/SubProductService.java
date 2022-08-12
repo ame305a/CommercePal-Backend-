@@ -183,6 +183,23 @@ public class SubProductService {
                 });
     }
 
+    public void replicateSubFeatures(Long subProductId, Long reuseSub) {
+        subProductRepository.findById(reuseSub)
+                .ifPresent(subProduct -> {
+                    productFeatureValueRepository.findAllByProductId(reuseSub)
+                            .forEach(featureValue -> {
+                                ProductFeatureValue productFeatureValue = new ProductFeatureValue();
+                                productFeatureValue.setProductId(subProductId);
+                                productFeatureValue.setProductFeatureId(featureValue.getProductFeatureId());
+                                productFeatureValue.setValue(featureValue.getValue());
+                                productFeatureValue.setUnitOfMeasure(featureValue.getUnitOfMeasure());
+                                productFeatureValue.setStatus(1);
+                                productFeatureValue.setCreatedDate(Timestamp.from(Instant.now()));
+                                productFeatureValueRepository.save(productFeatureValue);
+                            });
+                });
+    }
+
     public JSONObject addSubProduct(JSONObject subPayload) {
         JSONObject response = new JSONObject();
         try {
