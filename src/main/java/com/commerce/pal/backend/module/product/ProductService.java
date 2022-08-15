@@ -341,7 +341,6 @@ public class ProductService {
         return detail;
     }
 
-
     public JSONObject getSubProductInfo(Long product, Long subProduct) {
         JSONObject detail = new JSONObject();
         try {

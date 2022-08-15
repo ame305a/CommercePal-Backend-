@@ -80,6 +80,7 @@ public class CustomerOrderController {
     @RequestMapping(value = "/check-out", method = RequestMethod.POST)
     public ResponseEntity<?> customerCheckOut(@RequestBody String checkOut) {
         JSONObject responseMap = new JSONObject();
+        log.log(Level.INFO, checkOut);
         try {
             JSONObject request = new JSONObject(checkOut);
             JSONArray items = request.getJSONArray("items");
@@ -380,7 +381,7 @@ public class CustomerOrderController {
                     .ifPresentOrElse(customer -> {
                         orderRepository.findOrderByOrderRef(reqBody.getString("orderRef"))
                                 .ifPresentOrElse(order -> {
-                                    if (order.getIsUserAddressAssigned().equals(0)){
+                                    if (order.getIsUserAddressAssigned().equals(0)) {
                                         if (reqBody.getString("PreferredLocationType").equals("C")) {
                                             customerAddressRepository.findCustomerAddressByCustomerIdAndId(customer.getCustomerId(), reqBody.getLong("AddressId"))
                                                     .ifPresentOrElse(customerAddress -> {
@@ -397,8 +398,7 @@ public class CustomerOrderController {
                                                                 .put("statusDescription", "The Address does not belong to the customer")
                                                                 .put("statusMessage", "The Address does not belong to the customer");
                                                     });
-                                        }
-                                        else {
+                                        } else {
                                             order.setPreferredLocationType(reqBody.getString("PreferredLocationType"));
                                             order.setUserAddressId(reqBody.getLong("AddressId"));
                                             order.setIsUserAddressAssigned(1);
@@ -407,7 +407,7 @@ public class CustomerOrderController {
                                                     .put("statusDescription", "success")
                                                     .put("statusMessage", "success");
                                         }
-                                    }else{
+                                    } else {
                                         responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
                                                 .put("statusDescription", "The Order has already been assigned the address")
                                                 .put("statusMessage", "The Order does has already been assigned the address");
