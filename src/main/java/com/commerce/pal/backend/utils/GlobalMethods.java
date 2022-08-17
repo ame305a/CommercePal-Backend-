@@ -1,6 +1,7 @@
 package com.commerce.pal.backend.utils;
 
 import com.commerce.pal.backend.models.LoginValidation;
+import com.commerce.pal.backend.module.transaction.AccountService;
 import com.commerce.pal.backend.repo.LoginValidationRepository;
 import com.commerce.pal.backend.repo.product.ProductRepository;
 import com.commerce.pal.backend.repo.user.*;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 @Component
 @SuppressWarnings("Duplicates")
 public class GlobalMethods {
+    private final AccountService accountService;
     private final AgentRepository agentRepository;
     private final ProductRepository productRepository;
     private final CustomerRepository customerRepository;
@@ -36,7 +38,7 @@ public class GlobalMethods {
 
 
     @Autowired
-    public GlobalMethods(AgentRepository agentRepository,
+    public GlobalMethods(AccountService accountService, AgentRepository agentRepository,
                          ProductRepository productRepository,
                          CustomerRepository customerRepository,
                          MerchantRepository merchantRepository,
@@ -44,6 +46,7 @@ public class GlobalMethods {
                          MessengerRepository messengerRepository,
                          DistributorRepository distributorRepository,
                          LoginValidationRepository loginValidationRepository) {
+        this.accountService = accountService;
         this.agentRepository = agentRepository;
         this.productRepository = productRepository;
         this.customerRepository = customerRepository;
@@ -59,6 +62,10 @@ public class GlobalMethods {
         String username = user.getUsername();
         LoginValidation principalDetails = loginValidationRepository.findByEmailAddress(username);
         return principalDetails;
+    }
+
+    public String getAccountBalance(String account) {
+        return accountService.getAccountBalance(account);
     }
 
     public String generateTrans() {

@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -100,7 +101,7 @@ public class AgentTransactionController {
                         detail.put("TransRef", agentFloat.getTransRef());
                         detail.put("Amount", agentFloat.getAmount());
                         detail.put("Comment", agentFloat.getComment());
-                        detail.put("Status",  agentFloat.getStatus());
+                        detail.put("Status", agentFloat.getStatus());
                         detail.put("ReviewComment", agentFloat.getReview());
                         detail.put("RequestDate", agentFloat.getRequestDate());
                         detail.put("ReviewDate", agentFloat.getReviewDate());
@@ -158,4 +159,27 @@ public class AgentTransactionController {
                 });
         return ResponseEntity.ok(responseMap.toString());
     }
+
+    @RequestMapping(value = {"/float-balance"}, method = {RequestMethod.GET}, produces = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<?> getFloatBalance() {
+        JSONObject responseMap = new JSONObject();
+        LoginValidation user = globalMethods.fetchUserDetails();
+        agentRepository.findAgentByEmailAddress(user.getEmailAddress())
+                .ifPresentOrElse(agent -> {
+                    String balance = "0.00";
+                    balance = globalMethods.getAccountBalance(agent.getTillNumber());
+                    List<JSONObject> details = transactionProcessingService.getPayment(responseMap);
+                    responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                            .put("statusDescription", "success")
+                            .put("balance", new BigDecimal(balance))
+                            .put("statusMessage", "Request Successful");
+                }, () -> {
+                    responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
+                            .put("statusDescription", "Merchant Does not exists")
+                            .put("statusMessage", "Merchant Does not exists");
+                });
+        return ResponseEntity.ok(responseMap.toString());
+    }
+
 }
