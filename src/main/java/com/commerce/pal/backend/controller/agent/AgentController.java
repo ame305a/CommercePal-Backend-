@@ -144,7 +144,7 @@ public class AgentController {
                     .ifPresentOrElse(agent -> {
                         agent.setRegionId(reqBody.has("regionId") ? reqBody.getInt("regionId") : agent.getRegionId());
                         agent.setCountry(reqBody.has("country") ? reqBody.getString("country") : agent.getCountry());
-                        agent.setCity(reqBody.has("city") ? reqBody.getString("city") : agent.getCity());
+                        agent.setCity(reqBody.has("city") ? reqBody.getInt("city") : agent.getCity());
                         agent.setServiceCodeId(reqBody.has("serviceCodeId") ? reqBody.getInt("serviceCodeId") : agent.getServiceCodeId());
                         agent.setPhysicalAddress(reqBody.has("physicalAddress") ? reqBody.getString("physicalAddress") : agent.getPhysicalAddress());
                         agent.setLatitude(reqBody.has("latitude") ? reqBody.getString("latitude") : agent.getLatitude());

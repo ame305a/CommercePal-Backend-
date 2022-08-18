@@ -25,7 +25,7 @@ public class CustomerAddress {
     private String country;
     @Basic
     @Column(name = "City")
-    private String city;
+    private Integer city;
     @Basic
     @Column(name = "SubCity")
     private String subCity;

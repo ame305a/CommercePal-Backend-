@@ -115,7 +115,7 @@ public class CustomerController {
                         customerAddress.setCustomerId(customer.getCustomerId());
                         customerAddress.setRegionId(reqBody.getInt("regionId"));
                         customerAddress.setCountry(reqBody.getString("country"));
-                        customerAddress.setCity(reqBody.getString("city"));
+                        customerAddress.setCity(reqBody.getInt("city"));
                         customerAddress.setSubCity(reqBody.getString("subCity"));
                         customerAddress.setPhoneNumber(reqBody.getString("phoneNumber"));
                         customerAddress.setPhysicalAddress(reqBody.getString("physicalAddress"));
@@ -153,7 +153,7 @@ public class CustomerController {
                                 .ifPresentOrElse(customerAddress -> {
                                     customerAddress.setRegionId(reqBody.has("productName") ? reqBody.getInt("regionId") : customerAddress.getRegionId());
                                     customerAddress.setCountry(reqBody.has("country") ? reqBody.getString("country") : customerAddress.getCountry());
-                                    customerAddress.setCity(reqBody.has("city") ? reqBody.getString("city") : customerAddress.getCity());
+                                    customerAddress.setCity(reqBody.has("city") ? reqBody.getInt("city") : customerAddress.getCity());
                                     customerAddress.setSubCity(reqBody.has("subCity") ? reqBody.getString("subCity") : customerAddress.getSubCity());
                                     customerAddress.setPhoneNumber(reqBody.has("phoneNumber") ? reqBody.getString("phoneNumber") : customerAddress.getPhoneNumber());
                                     customerAddress.setPhysicalAddress(reqBody.has("physicalAddress") ? reqBody.getString("physicalAddress") : customerAddress.getPhysicalAddress());

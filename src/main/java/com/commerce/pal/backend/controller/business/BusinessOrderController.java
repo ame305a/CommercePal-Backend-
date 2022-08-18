@@ -12,6 +12,7 @@ import com.commerce.pal.backend.repo.order.OrderRepository;
 import com.commerce.pal.backend.repo.order.ShipmentPricingRepository;
 import com.commerce.pal.backend.repo.product.ProductRepository;
 import com.commerce.pal.backend.repo.product.SubProductRepository;
+import com.commerce.pal.backend.repo.setting.DeliveryFeeRepository;
 import com.commerce.pal.backend.repo.user.business.BusinessRepository;
 import com.commerce.pal.backend.repo.user.CustomerAddressRepository;
 import com.commerce.pal.backend.utils.GlobalMethods;
@@ -25,6 +26,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -53,6 +55,7 @@ public class BusinessOrderController {
     private final LoanOrderRepository loanOrderRepository;
     private final OrderItemRepository orderItemRepository;
     private final SubProductRepository subProductRepository;
+    private final DeliveryFeeRepository deliveryFeeRepository;
     private final ShipmentPricingRepository shipmentPricingRepository;
     private final CustomerAddressRepository customerAddressRepository;
 
@@ -64,6 +67,7 @@ public class BusinessOrderController {
                                    LoanOrderRepository loanOrderRepository,
                                    OrderItemRepository orderItemRepository,
                                    SubProductRepository subProductRepository,
+                                   DeliveryFeeRepository deliveryFeeRepository,
                                    ShipmentPricingRepository shipmentPricingRepository,
                                    CustomerAddressRepository customerAddressRepository) {
         this.globalMethods = globalMethods;
@@ -73,6 +77,7 @@ public class BusinessOrderController {
         this.loanOrderRepository = loanOrderRepository;
         this.orderItemRepository = orderItemRepository;
         this.subProductRepository = subProductRepository;
+        this.deliveryFeeRepository = deliveryFeeRepository;
         this.shipmentPricingRepository = shipmentPricingRepository;
         this.customerAddressRepository = customerAddressRepository;
     }
@@ -382,13 +387,37 @@ public class BusinessOrderController {
                         businessRepository.findBusinessByBusinessIdAndEmailAddress(
                                         order.getBusinessId(), user.getEmailAddress())
                                 .ifPresentOrElse(business -> {
-                                    order.setPreferredLocationType("B");
-                                    order.setUserAddressId(business.getBusinessId());
-                                    order.setIsUserAddressAssigned(1);
-                                    orderRepository.save(order);
-                                    responseMap.put("statusCode", ResponseCodes.SUCCESS)
-                                            .put("statusDescription", "success")
-                                            .put("statusMessage", "success");
+                                    if (order.getStatus().equals(0)) {
+
+
+                                        AtomicReference<BigDecimal> totalDeliveryFee = new AtomicReference<>(new BigDecimal(0));
+                                        orderItemRepository.findOrderItemsByOrderId(order.getOrderId())
+                                                .forEach(orderItem -> {
+                                                    BigDecimal itemDeliveryFee = new BigDecimal(0);
+                                                    BigDecimal itemDeliveryValue = new BigDecimal(0);
+                                                    if (business.getCity().equals(globalMethods.getMerchantCity(orderItem.getMerchantId()))) {
+                                                        itemDeliveryValue = deliveryFeeRepository.findDeliveryFeeByDeliveryTypeAndCustomerType("SC", "C").get().getAmount();
+                                                    } else {
+                                                        itemDeliveryValue = deliveryFeeRepository.findDeliveryFeeByDeliveryTypeAndCustomerType("CC", "C").get().getAmount();
+                                                    }
+                                                    itemDeliveryFee = new BigDecimal(itemDeliveryValue.doubleValue() * orderItem.getTotalAmount().doubleValue());
+                                                    itemDeliveryFee = itemDeliveryFee.setScale(2, RoundingMode.CEILING);
+                                                    orderItem.setDeliveryPrice(itemDeliveryFee);
+                                                    totalDeliveryFee.set(new BigDecimal(itemDeliveryFee.doubleValue() + totalDeliveryFee.get().doubleValue()));
+                                                });
+                                        order.setPreferredLocationType("B");
+                                        order.setUserAddressId(business.getBusinessId());
+                                        order.setIsUserAddressAssigned(1);
+                                        order.setDeliveryPrice(totalDeliveryFee.get());
+                                        orderRepository.save(order);
+                                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                                .put("statusDescription", "success")
+                                                .put("statusMessage", "success");
+                                    } else {
+                                        responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
+                                                .put("statusDescription", "The Order has already been paid. Address cannot be changed")
+                                                .put("statusMessage", "The Order has already been paid. Address cannot be changed");
+                                    }
                                 }, () -> {
                                     responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
                                             .put("statusDescription", "The Address does not belong to the business")

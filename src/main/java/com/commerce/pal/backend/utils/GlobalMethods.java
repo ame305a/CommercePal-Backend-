@@ -131,7 +131,6 @@ public class GlobalMethods {
     }
 
 
-
     public String generatePassword() {
         String upperCaseLetters = RandomStringUtils.random(2, 65, 90, true, true);
         String lowerCaseLetters = RandomStringUtils.random(2, 97, 122, true, true);

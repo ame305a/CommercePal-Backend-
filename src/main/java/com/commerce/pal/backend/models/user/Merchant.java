@@ -60,7 +60,7 @@ public class Merchant {
     private String country;
     @Basic
     @Column(name = "City")
-    private String city;
+    private Integer city;
     @Basic
     @Column(name = "District")
     private String district;

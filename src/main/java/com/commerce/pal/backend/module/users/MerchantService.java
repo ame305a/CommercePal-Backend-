@@ -92,7 +92,7 @@ public class MerchantService {
                         merchant.setBranch(payload.has("branch") ? payload.getString("branch") : merchant.getBranch());
                         merchant.setLanguage(payload.has("language") ? payload.getString("language") : merchant.getLanguage());
                         merchant.setCountry(payload.has("country") ? payload.getString("country") : merchant.getCountry());
-                        merchant.setCity(payload.has("city") ? payload.getString("city") : merchant.getCity());
+                        merchant.setCity(payload.has("city") ? payload.getInt("city") : merchant.getCity());
                         merchant.setLongitude(payload.has("longitude") ? payload.getString("longitude") : merchant.getLongitude());
                         merchant.setLatitude(payload.has("latitude") ? payload.getString("latitude") : merchant.getLatitude());
                         merchant.setLocation(payload.has("location") ? payload.getString("location") : merchant.getLocation());

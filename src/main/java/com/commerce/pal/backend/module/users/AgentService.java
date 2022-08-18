@@ -85,7 +85,7 @@ public class AgentService {
                         business.setDistrict(payload.has("district") ? payload.getString("district") : business.getDistrict());
                         business.setLanguage(payload.has("language") ? payload.getString("language") : business.getLanguage());
                         business.setCountry(payload.has("country") ? payload.getString("country") : business.getCountry());
-                        business.setCity(payload.has("city") ? payload.getString("city") : business.getCity());
+                        business.setCity(payload.has("city") ? payload.getInt("city") : business.getCity());
                         business.setLongitude(payload.has("longitude") ? payload.getString("longitude") : business.getLongitude());
                         business.setLatitude(payload.has("latitude") ? payload.getString("latitude") : business.getLatitude());
                         agentRepository.save(business);

@@ -152,7 +152,7 @@ public class MerchantController {
                     .ifPresentOrElse(merchant -> {
                         merchant.setRegionId(reqBody.has("regionId") ? reqBody.getInt("regionId") : merchant.getRegionId());
                         merchant.setCountry(reqBody.has("country") ? reqBody.getString("country") : merchant.getCountry());
-                        merchant.setCity(reqBody.has("city") ? reqBody.getString("city") : merchant.getCity());
+                        merchant.setCity(reqBody.has("city") ? reqBody.getInt("city") : merchant.getCity());
                         merchant.setServiceCodeId(reqBody.has("serviceCodeId") ? reqBody.getInt("serviceCodeId") : merchant.getServiceCodeId());
                         merchant.setPhysicalAddress(reqBody.has("physicalAddress") ? reqBody.getString("physicalAddress") : merchant.getPhysicalAddress());
                         merchant.setLatitude(reqBody.has("latitude") ? reqBody.getString("latitude") : merchant.getLatitude());
