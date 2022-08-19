@@ -155,6 +155,7 @@ public class CustomerOrderController {
                                             orderItem.setTotalAmount(new BigDecimal(product.getUnitPrice().doubleValue() * Double.valueOf(orderItem.getQuantity())));
                                             orderItem.setTotalDiscount(new BigDecimal(orderItem.getDiscountAmount().doubleValue() * Double.valueOf(orderItem.getQuantity())));
                                             orderItem.setStatus(0);
+                                            orderItem.setSettlementStatus(0);
                                             orderItem.setStatusDescription("Pending Payment and Shipping");
                                             orderItem.setCreatedDate(Timestamp.from(Instant.now()));
                                             orderItem.setDeliveryPrice(new BigDecimal(0));

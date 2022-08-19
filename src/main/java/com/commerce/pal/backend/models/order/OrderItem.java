@@ -87,4 +87,14 @@ public class OrderItem {
     @Basic
     @Column(name = "CreatedDate")
     private Timestamp createdDate;
+
+    @Basic
+    @Column(name = "SettlementStatus")
+    private Integer settlementStatus;
+    @Basic
+    @Column(name = "SettlementRef")
+    private String settlementRef;
+    @Basic
+    @Column(name = "SettlementDate")
+    private Timestamp settlementDate;
 }
