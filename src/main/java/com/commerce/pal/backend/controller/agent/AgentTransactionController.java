@@ -169,7 +169,6 @@ public class AgentTransactionController {
                 .ifPresentOrElse(agent -> {
                     String balance = "0.00";
                     balance = globalMethods.getAccountBalance(agent.getTillNumber());
-                    List<JSONObject> details = transactionProcessingService.getPayment(responseMap);
                     responseMap.put("statusCode", ResponseCodes.SUCCESS)
                             .put("statusDescription", "success")
                             .put("balance", new BigDecimal(balance))

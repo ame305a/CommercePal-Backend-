@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Log
@@ -64,6 +65,27 @@ public class MerchantTransactionController {
                     responseMap.put("statusCode", ResponseCodes.SUCCESS)
                             .put("statusDescription", "success")
                             .put("details", details)
+                            .put("statusMessage", "Request Successful");
+                }, () -> {
+                    responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
+                            .put("statusDescription", "Merchant Does not exists")
+                            .put("statusMessage", "Merchant Does not exists");
+                });
+        return ResponseEntity.ok(responseMap.toString());
+    }
+
+    @RequestMapping(value = {"/account-balance"}, method = {RequestMethod.GET}, produces = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<?> getAccountBalance() {
+        JSONObject responseMap = new JSONObject();
+        LoginValidation user = globalMethods.fetchUserDetails();
+        merchantRepository.findMerchantByEmailAddress(user.getEmailAddress())
+                .ifPresentOrElse(merchant -> {
+                    String balance = "0.00";
+                    balance = globalMethods.getAccountBalance(merchant.getTillNumber());
+                    responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                            .put("statusDescription", "success")
+                            .put("balance", new BigDecimal(balance))
                             .put("statusMessage", "Request Successful");
                 }, () -> {
                     responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
