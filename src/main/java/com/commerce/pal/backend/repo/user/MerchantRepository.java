@@ -15,6 +15,8 @@ public interface MerchantRepository extends JpaRepository<Merchant, Long> {
 
     List<Merchant> findMerchantsByOwnerIdAndOwnerType(Integer owner, String ownerType);
 
+    List<Merchant> findMerchantsByOwnerIdAndOwnerTypeOrderByCreatedDateDesc(Integer owner, String ownerType);
+
     Optional<Merchant> findMerchantByOwnerIdAndOwnerTypeAndMerchantId(Integer owner, String ownerType, Long id);
 
     Integer countByOwnerIdAndOwnerType(Integer owner, String ownerType);

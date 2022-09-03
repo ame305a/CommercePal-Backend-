@@ -99,6 +99,7 @@ public class ProductManagementController {
     @RequestMapping(value = "/update-product", method = RequestMethod.POST)
     public ResponseEntity<?> updateProduct(@RequestBody String req) {
         JSONObject responseMap = new JSONObject();
+        log.log(Level.INFO, req);
         try {
             JSONObject request = new JSONObject(req);
             responseMap = productService.updateProduct(request);
@@ -333,6 +334,8 @@ public class ProductManagementController {
             productRepository.findById(jsonObject.getLong("productId"))
                     .ifPresentOrElse(product -> {
                         JSONObject proBdy = productService.getProductLimitedDetails(product.getProductId());
+                        proBdy.put("OwnerType", "MERCHANT");
+                        proBdy.put("MerchantId", jsonObject.getString("MerchantId"));
                         JSONObject retDet = productService.doAddProduct(proBdy);
                         int returnValue = retDet.getInt("productId");
                         if (returnValue == 0) {

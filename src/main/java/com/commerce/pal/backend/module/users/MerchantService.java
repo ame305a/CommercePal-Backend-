@@ -120,7 +120,7 @@ public class MerchantService {
         JSONObject responseMap = new JSONObject();
         try {
             List<JSONObject> merchants = new ArrayList<>();
-            merchantRepository.findMerchantsByOwnerIdAndOwnerType(req.getInt("ownerId"), req.getString("ownerType"))
+            merchantRepository.findMerchantsByOwnerIdAndOwnerTypeOrderByCreatedDateDesc(req.getInt("ownerId"), req.getString("ownerType"))
                     .forEach(merchant -> {
                         JSONObject payload = getMerchantInfo(merchant.getMerchantId());
                         merchants.add(payload);

@@ -40,7 +40,6 @@ public class AccountService {
                     } else {
                         balance.set(res.toString());
                     }
-
                 } catch (Exception ex) {
                     log.log(Level.WARNING, ex.getMessage());
                 }
