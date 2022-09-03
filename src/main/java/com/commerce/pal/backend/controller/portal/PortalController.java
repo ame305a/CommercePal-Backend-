@@ -29,6 +29,7 @@ public class PortalController {
     @RequestMapping(value = "/user-registration", method = RequestMethod.POST)
     public ResponseEntity<?> userRegistration(@RequestBody String registration) {
         JSONObject responseMap = new JSONObject();
+        log.log(Level.INFO, registration);
         try {
             JSONObject request = new JSONObject(registration);
             request.put("ownerType", "WAREHOUSE");
