@@ -91,7 +91,7 @@ public class ProductDatabaseService {
             retDet.put("productId", productId);
             retDet.put("subProductId", subProductId);
         } catch (Exception e) {
-            log.log(Level.WARNING, "Error at doCustomerRegistration - " + e.getMessage());
+            log.log(Level.WARNING, "Error at DoProductRegistration - " + e.getMessage());
             retDet.put("productId", 0);
         }
         return retDet;

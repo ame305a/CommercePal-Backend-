@@ -331,11 +331,13 @@ public class ProductManagementController {
         JSONObject responseMap = new JSONObject();
         try {
             JSONObject jsonObject = new JSONObject(proBody);
-            productRepository.findById(jsonObject.getLong("productId"))
+            productRepository.findById(jsonObject.getLong("ProductId"))
                     .ifPresentOrElse(product -> {
                         JSONObject proBdy = productService.getProductLimitedDetails(product.getProductId());
-                        proBdy.put("OwnerType", "MERCHANT");
-                        proBdy.put("MerchantId", jsonObject.getString("MerchantId"));
+                        proBdy.put("ownerType", "MERCHANT");
+                        proBdy.put("merchantId", jsonObject.getString("MerchantId"));
+                        proBdy.put("isPromoted", "0");
+                        proBdy.put("isPrioritized", "0");
                         JSONObject retDet = productService.doAddProduct(proBdy);
                         int returnValue = retDet.getInt("productId");
                         if (returnValue == 0) {
@@ -349,7 +351,7 @@ public class ProductManagementController {
                                     .put("subProductId", retDet.getInt("subProductId"))
                                     .put("statusMessage", "Product successful");
 
-                            subProductService.replicateSubFeatures(Long.valueOf(retDet.getInt("subProductId")), jsonObject.getLong("reuseSubProduct"));
+                            subProductService.replicateSubFeatures(Long.valueOf(retDet.getInt("subProductId")), proBdy.getLong("primarySubProduct"));
                         }
                         responseMap.put("statusCode", ResponseCodes.SUCCESS)
                                 .put("statusDescription", "success")

@@ -300,6 +300,7 @@ public class ProductService {
                         detail.put("shortDescription", pro.getShortDescription() != null ? pro.getShortDescription() : "");
                         detail.put("mobileImage", pro.getProductMobileImage() != null ? pro.getProductMobileImage() : "");
                         detail.put("mobileVideo", pro.getProductMobileVideo() != null ? pro.getProductMobileVideo() : "");
+                        detail.put("productImage", pro.getProductImage() != null ? pro.getProductImage() : "");
                         detail.put("webImage", pro.getProductImage() != null ? pro.getProductImage() : "");
                         detail.put("webVideo", pro.getProductWebVideo() != null ? pro.getProductWebVideo() : "");
                         detail.put("webThumbnail", pro.getWebThumbnail() != null ? pro.getWebThumbnail() : "");
@@ -308,28 +309,30 @@ public class ProductService {
                         detail.put("productCategoryId", pro.getProductCategoryId().toString());
                         detail.put("productSubCategoryId", pro.getProductSubCategoryId().toString());
                         detail.put("productDescription", pro.getProductDescription());
-                        detail.put("isDiscounted", pro.getIsDiscounted());
+                        detail.put("specialInstruction", pro.getSpecialInstruction());
+                        detail.put("isDiscounted", pro.getIsDiscounted().toString());
                         detail.put("ShipmentType", pro.getShipmentType());
-                        detail.put("unitPrice", pro.getUnitPrice());
+                        detail.put("unitPrice", pro.getUnitPrice().toString());
                         detail.put("unitOfMeasure", pro.getUnitOfMeasure());
                         detail.put("countryOfOrigin", pro.getCountryOfOrigin());
                         detail.put("manufucturer", pro.getManufucturer());
                         detail.put("soldQuantity", pro.getSoldQuantity().toString());
                         detail.put("tax", "0.00");
                         detail.put("productType", pro.getProductType());
-                        detail.put("actualPrice", pro.getUnitPrice());
-                        detail.put("maxOrder", pro.getMaxOrder());
-                        detail.put("minOrder", pro.getMinOrder());
-                        detail.put("moq_value", pro.getMinOrder());
+                        detail.put("actualPrice", pro.getUnitPrice().toString());
+                        detail.put("maxOrder", pro.getMaxOrder().toString());
+                        detail.put("minOrder", pro.getMinOrder().toString());
+                        detail.put("moq_value", pro.getMinOrder().toString());
                         detail.put("quantity", pro.getQuantity().toString());
+                        detail.put("primarySubProduct", pro.getPrimarySubProduct());
 
                         detail.put("discountType", pro.getDiscountType());
                         detail.put("discountValue", pro.getDiscountValue().toString());
-                        detail.put("DiscountAmount", new BigDecimal(0));
+                        detail.put("DiscountAmount", new BigDecimal(0).toString());
                         detail.put("offerPrice", pro.getUnitPrice());
                         detail.put("discountDescription", pro.getDiscountValue() + " " + pro.getCurrency());
 
-                        detail.put("discountExpiry", pro.getDiscountExpiryDate());
+                        // detail.put("discountExpiry", pro.getDiscountExpiryDate().toString());
                         detail.put("currency", pro.getCurrency());
                         detail.put("productRating", 4.2);
                         detail.put("ratingCount", 30);
