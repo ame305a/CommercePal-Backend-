@@ -56,7 +56,9 @@ public class ServiceController {
         List<JSONObject> countries = new ArrayList<>();
         cityRepository.findAll().forEach(country -> {
             JSONObject one = new JSONObject();
-            one.put(String.valueOf(country.getCityId()), country.getCity());
+            one.put("cityName", country.getCity());
+            one.put("cityId", country.getCityId());
+            one.put("countryId", country.getCountryId());
             countries.add(one);
         });
         return ResponseEntity.status(HttpStatus.OK).body(countries.toString());
