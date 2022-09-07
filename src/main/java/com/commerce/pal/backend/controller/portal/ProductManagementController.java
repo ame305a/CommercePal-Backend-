@@ -2,6 +2,7 @@ package com.commerce.pal.backend.controller.portal;
 
 import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.models.product.ProductFeatureValue;
+import com.commerce.pal.backend.models.product.ProductImage;
 import com.commerce.pal.backend.module.product.ProductService;
 import com.commerce.pal.backend.module.users.MerchantService;
 import com.commerce.pal.backend.module.product.SubProductService;
@@ -350,6 +351,30 @@ public class ProductManagementController {
                                     .put("productId", retDet.getInt("productId"))
                                     .put("subProductId", retDet.getInt("subProductId"))
                                     .put("statusMessage", "Product successful");
+
+                            // Replicate Images
+                            productRepository.findProductByProductId(jsonObject.getLong("ProductId"))
+                                    .ifPresent(originalProduct -> {
+                                        productRepository.findProductByProductId(retDet.getLong("productId"))
+                                                .ifPresent(newProduct -> {
+                                                    newProduct.setProductMobileImage(originalProduct.getProductMobileImage() != null ? originalProduct.getProductMobileImage() : "");
+                                                    newProduct.setProductImage(originalProduct.getProductImage() != null ? originalProduct.getProductImage() : "");
+                                                    newProduct.setProductWebVideo(originalProduct.getProductWebVideo() != null ? originalProduct.getProductWebVideo() : "");
+                                                    newProduct.setMobileThumbnail(originalProduct.getWebThumbnail() != null ? originalProduct.getWebThumbnail() : "");
+                                                    newProduct.setWebThumbnail(originalProduct.getMobileThumbnail() != null ? originalProduct.getMobileThumbnail() : "");
+                                                });
+                                        productImageRepository.findProductImagesByProductId(jsonObject.getLong("ProductId"))
+                                                .forEach(imageList -> {
+                                                    ProductImage productImage = new ProductImage();
+                                                    productImage.setProductId(retDet.getLong("productId"));
+                                                    productImage.setType(imageList.getType());
+                                                    productImage.setFilePath(imageList.getFilePath());
+                                                    productImage.setMobileImage(imageList.getMobileImage());
+                                                    productImage.setStatus(imageList.getStatus());
+                                                    productImage.setCreatedDate(Timestamp.from(Instant.now()));
+                                                    productImageRepository.save(productImage);
+                                                });
+                                    });
 
                             subProductService.replicateSubFeatures(Long.valueOf(retDet.getInt("subProductId")), proBdy.getLong("primarySubProduct"));
                         }

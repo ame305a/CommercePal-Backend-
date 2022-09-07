@@ -4,6 +4,7 @@ import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.models.order.Order;
 import com.commerce.pal.backend.models.product.ProductFeatureValue;
 import com.commerce.pal.backend.models.product.SubProduct;
+import com.commerce.pal.backend.models.product.SubProductImage;
 import com.commerce.pal.backend.repo.product.*;
 import lombok.extern.java.Log;
 import org.json.JSONArray;
@@ -197,6 +198,16 @@ public class SubProductService {
                                 productFeatureValue.setCreatedDate(Timestamp.from(Instant.now()));
                                 productFeatureValueRepository.save(productFeatureValue);
                             });
+                });
+        subProductImageRepository.findSubProductImagesBySubProductId(reuseSub)
+                .forEach(reuseImage -> {
+                    SubProductImage subProductImage = new SubProductImage();
+                    subProductImage.setSubProductId(subProductId);
+                    subProductImage.setType(reuseImage.getType());
+                    subProductImage.setImageUrl(reuseImage.getImageUrl());
+                    subProductImage.setStatus(reuseImage.getStatus());
+                    subProductImage.setCreatedDate(Timestamp.from(Instant.now()));
+                    subProductImageRepository.save(subProductImage);
                 });
     }
 
