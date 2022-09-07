@@ -375,7 +375,6 @@ public class ProductManagementController {
                                                     productImageRepository.save(productImage);
                                                 });
                                     });
-
                             subProductService.replicateSubFeatures(Long.valueOf(retDet.getInt("subProductId")), proBdy.getLong("primarySubProduct"));
                         }
                         responseMap.put("statusCode", ResponseCodes.SUCCESS)
