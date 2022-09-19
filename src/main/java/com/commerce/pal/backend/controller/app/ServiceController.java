@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 
 @Log
@@ -21,6 +20,7 @@ import java.util.Optional;
 public class ServiceController {
     private final BankRepository bankRepository;
     private final CityRepository cityRepository;
+    private final RegionRepository regionRepository;
     private final CountryRepository countryRepository;
     private final PaymentMethodRepository paymentMethodRepository;
     private final PaymentMethodItemRepository paymentMethodItemRepository;
@@ -28,11 +28,13 @@ public class ServiceController {
     @Autowired
     public ServiceController(BankRepository bankRepository,
                              CityRepository cityRepository,
+                             RegionRepository regionRepository,
                              CountryRepository countryRepository,
                              PaymentMethodRepository paymentMethodRepository,
                              PaymentMethodItemRepository paymentMethodItemRepository) {
         this.bankRepository = bankRepository;
         this.cityRepository = cityRepository;
+        this.regionRepository = regionRepository;
         this.countryRepository = countryRepository;
         this.paymentMethodRepository = paymentMethodRepository;
         this.paymentMethodItemRepository = paymentMethodItemRepository;
@@ -48,6 +50,20 @@ public class ServiceController {
             countries.add(one);
         });
         return ResponseEntity.status(HttpStatus.OK).body(countries.toString());
+    }
+
+    @RequestMapping(value = {"/regions"}, method = {RequestMethod.GET}, produces = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<?> regionList() {
+        List<JSONObject> list = new ArrayList<>();
+        regionRepository.findAll().forEach(region -> {
+            JSONObject one = new JSONObject();
+            one.put("regionName", region.getRegionName());
+            one.put("regionCode", region.getRegionCode());
+            one.put("regionId", region.getId());
+            list.add(one);
+        });
+        return ResponseEntity.status(HttpStatus.OK).body(list.toString());
     }
 
     @RequestMapping(value = {"/cities"}, method = {RequestMethod.GET}, produces = {"application/json"})
