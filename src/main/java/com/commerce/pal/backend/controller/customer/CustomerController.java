@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 
 @Log
@@ -111,19 +112,20 @@ public class CustomerController {
 
             customerRepository.findCustomerByEmailAddress(user.getEmailAddress())
                     .ifPresentOrElse(customer -> {
-                        CustomerAddress customerAddress = new CustomerAddress();
-                        customerAddress.setCustomerId(customer.getCustomerId());
-                        customerAddress.setRegionId(reqBody.getInt("regionId"));
-                        customerAddress.setCountry(reqBody.getString("country"));
-                        customerAddress.setCity(reqBody.getInt("city"));
-                        customerAddress.setSubCity(reqBody.getString("subCity"));
-                        customerAddress.setPhoneNumber(reqBody.getString("phoneNumber"));
-                        customerAddress.setPhysicalAddress(reqBody.getString("physicalAddress"));
-                        customerAddress.setLatitude(reqBody.getString("latitude"));
-                        customerAddress.setLongitude(reqBody.getString("longitude"));
-                        customerAddressRepository.save(customerAddress);
+                        AtomicReference<CustomerAddress> customerAddress = new AtomicReference<>(new CustomerAddress());
+                        customerAddress.get().setCustomerId(customer.getCustomerId());
+                        customerAddress.get().setRegionId(reqBody.getInt("regionId"));
+                        customerAddress.get().setCountry(reqBody.getString("country"));
+                        customerAddress.get().setCity(reqBody.getInt("city"));
+                        customerAddress.get().setSubCity(reqBody.getString("subCity"));
+                        customerAddress.get().setPhoneNumber(reqBody.getString("phoneNumber"));
+                        customerAddress.get().setPhysicalAddress(reqBody.getString("physicalAddress"));
+                        customerAddress.get().setLatitude(reqBody.getString("latitude"));
+                        customerAddress.get().setLongitude(reqBody.getString("longitude"));
+                        customerAddress.set(customerAddressRepository.save(customerAddress.get()));
                         responseMap.put("statusCode", ResponseCodes.SUCCESS)
                                 .put("statusDescription", "success")
+                                .put("AddressId", customerAddress.get().getId())
                                 .put("statusMessage", "success");
                     }, () -> {
                         responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
