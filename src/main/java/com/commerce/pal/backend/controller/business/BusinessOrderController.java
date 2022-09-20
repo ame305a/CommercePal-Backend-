@@ -382,7 +382,6 @@ public class BusinessOrderController {
         try {
             JSONObject reqBody = new JSONObject(checkOut);
             LoginValidation user = globalMethods.fetchUserDetails();
-
             orderRepository.findOrderByOrderRef(reqBody.getString("orderRef"))
                     .ifPresentOrElse(order -> {
                         businessRepository.findBusinessByBusinessIdAndEmailAddress(

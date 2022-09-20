@@ -56,6 +56,15 @@ public class Business {
     @Column(name = "Location")
     private String location;
     @Basic
+    @Column(name = "RegionId")
+    private Integer regionId;
+    @Basic
+    @Column(name = "ServiceCodeId")
+    private Integer serviceCodeId;
+    @Basic
+    @Column(name = "PhysicalAddress")
+    private String physicalAddress;
+    @Basic
     @Column(name = "Longitude")
     private String longitude;
     @Basic
