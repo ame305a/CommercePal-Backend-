@@ -2,6 +2,7 @@ package com.commerce.pal.backend.controller.merchant;
 
 import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.models.LoginValidation;
+import com.commerce.pal.backend.models.transaction.MerchantWithdrawal;
 import com.commerce.pal.backend.module.transaction.TransactionProcessingService;
 import com.commerce.pal.backend.repo.transaction.MerchantWithdrawalRepository;
 import com.commerce.pal.backend.repo.user.MerchantRepository;
@@ -17,6 +18,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Log
 @CrossOrigin(origins = {"*"}, maxAge = 3600L)
@@ -110,7 +112,53 @@ public class MerchantTransactionController {
             LoginValidation user = globalMethods.fetchUserDetails();
             merchantRepository.findMerchantByEmailAddress(user.getEmailAddress())
                     .ifPresentOrElse(merchant -> {
+                        String balance = "0.00";
+                        balance = globalMethods.getAccountBalance(merchant.getTillNumber());
 
+                        if (Double.valueOf(balance) >= request.getBigDecimal("Amount").doubleValue()) {
+                            merchantWithdrawalRepository.findMerchantWithdrawalByMerchantIdAndStatus(
+                                            merchant.getMerchantId(), 0)
+                                    .ifPresentOrElse(merchantWithdrawal -> {
+                                        responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
+                                                .put("transRef", merchantWithdrawal.getTransRef())
+                                                .put("statusDescription", "There is a pending request")
+                                                .put("statusMessage", "There is a pending request");
+                                    }, () -> {
+                                        String validationCode = globalMethods.generateValidationCode();
+                                        String transRef = globalMethods.generateTrans();
+                                        AtomicReference<MerchantWithdrawal> withdrawal = new AtomicReference<>(new MerchantWithdrawal());
+                                        withdrawal.get().setMerchantId(merchant.getMerchantId());
+                                        withdrawal.get().setTransRef(transRef);
+                                        withdrawal.get().setWithdrawalMethod(request.getString("WithdrawalMethod"));
+                                        withdrawal.get().setWithdrawalType(request.getString("WithdrawalType"));
+                                        withdrawal.get().setAccount(request.getString("Account"));
+                                        withdrawal.get().setAmount(request.getBigDecimal("Amount"));
+                                        withdrawal.get().setValidationCode(globalMethods.encryptCode(validationCode));
+                                        withdrawal.get().setValidationDate(Timestamp.from(Instant.now()));
+                                        withdrawal.get().setStatus(0);
+                                        withdrawal.get().setRequestDate(Timestamp.from(Instant.now()));
+                                        withdrawal.get().setResponseStatus(0);
+                                        withdrawal.get().setBillTransRef("Failed");
+                                        withdrawal.get().setResponsePayload("Pending");
+                                        withdrawal.get().setResponseStatus(0);
+                                        withdrawal.get().setResponseDescription("Pending");
+                                        withdrawal.get().setResponseDate(Timestamp.from(Instant.now()));
+                                        withdrawal.set(merchantWithdrawalRepository.save(withdrawal.get()));
+
+                                        JSONObject merchWth = new JSONObject();
+                                        merchWth.put("TransRef", transRef);
+
+                                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                                .put("statusDescription", "success")
+                                                .put("transRef", transRef)
+                                                .put("statusMessage", "Request Successful");
+                                    });
+
+                        } else {
+                            responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
+                                    .put("statusDescription", "Insufficient Balance")
+                                    .put("statusMessage", "Insufficient Balance");
+                        }
                     }, () -> {
                         responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
                                 .put("statusDescription", "Merchant Does not exists")

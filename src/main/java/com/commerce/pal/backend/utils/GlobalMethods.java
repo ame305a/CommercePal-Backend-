@@ -225,4 +225,17 @@ public class GlobalMethods {
         }
         return String.valueOf(results);
     }
+
+    public String generateValidationCode() {
+        Random rnd = new Random();
+        Integer n = Integer.valueOf(1000 + rnd.nextInt(9000));
+        return n.toString();
+    }
+    public String encryptCode(String code) {
+        return code;
+    }
+
+    public String deCryptCode(String code) {
+        return code;
+    }
 }
