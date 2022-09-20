@@ -189,7 +189,7 @@ public class GlobalMethods {
         return results;
     }
 
-    public Boolean validateMerchantProduct(Long merchant, String product) {
+    public Boolean validateMerchantProduct(Long merchant, Long product) {
         Boolean results = false;
         try {
             results = productRepository.findProductByOwnerTypeAndMerchantIdAndProductId(

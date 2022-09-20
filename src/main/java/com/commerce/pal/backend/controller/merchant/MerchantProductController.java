@@ -114,7 +114,7 @@ public class MerchantProductController {
             if (!globalMethods.getMerchantId(user.getEmailAddress()).equals(0)) {
                 if (globalMethods.validateMerchantProduct(
                         globalMethods.getMerchantId(user.getEmailAddress()),
-                        request.getString("productId"))) {
+                        request.getLong("productId"))) {
                     responseMap = productService.updateProduct(request);
                 } else {
                     responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
@@ -144,7 +144,7 @@ public class MerchantProductController {
             if (!globalMethods.getMerchantId(user.getEmailAddress()).equals(0)) {
                 if (globalMethods.validateMerchantProduct(
                         globalMethods.getMerchantId(user.getEmailAddress()),
-                        request.getString("productId"))) {
+                        request.getLong("productId"))) {
                     responseMap = productService.disableProduct(request);
                 } else {
                     responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
