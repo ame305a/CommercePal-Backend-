@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 
 @Log
 @CrossOrigin(origins = {"*"}, maxAge = 3600L)
@@ -107,6 +108,7 @@ public class MerchantProductController {
 
     @RequestMapping(value = "/update-product", method = RequestMethod.POST)
     public ResponseEntity<?> updateProduct(@RequestBody String req) {
+        log.log(Level.INFO, req);
         JSONObject responseMap = new JSONObject();
         try {
             JSONObject request = new JSONObject(req);
