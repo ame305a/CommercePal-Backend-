@@ -407,10 +407,16 @@ public class CustomerOrderController {
                                                                     orderItem.setDeliveryPrice(itemDeliveryFee);
                                                                     totalDeliveryFee.set(new BigDecimal(itemDeliveryFee.doubleValue() + totalDeliveryFee.get().doubleValue()));
                                                                 });
+                                                        if (order.getIsUserAddressAssigned().equals(1)) {
+                                                            order.setTotalPrice(new BigDecimal(order.getTotalPrice().doubleValue() - order.getDeliveryPrice().doubleValue()  + totalDeliveryFee.get().doubleValue()));
+                                                        } else {
+                                                            order.setTotalPrice(new BigDecimal(order.getTotalPrice().doubleValue() + totalDeliveryFee.get().doubleValue()));
+                                                        }
                                                         order.setPreferredLocationType("C");
                                                         order.setUserAddressId(customerAddress.getId());
                                                         order.setIsUserAddressAssigned(1);
                                                         order.setDeliveryPrice(totalDeliveryFee.get());
+
                                                         orderRepository.save(order);
                                                         responseMap.put("statusCode", ResponseCodes.SUCCESS)
                                                                 .put("statusDescription", "success")
