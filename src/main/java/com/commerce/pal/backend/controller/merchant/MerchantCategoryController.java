@@ -47,7 +47,7 @@ public class MerchantCategoryController {
                     List<JSONObject> data = new ArrayList<>();
                     productRepository.findProductsByProductParentCateoryId(merchant.getMerchantId())
                             .forEach(parentCategory -> {
-                                data.add(categoryService.getCategoryInfo(parentCategory));
+                                data.add(categoryService.getParentCatInfo(parentCategory));
                             });
                     responseMap.put("statusCode", ResponseCodes.SUCCESS)
                             .put("statusDescription", "success")
