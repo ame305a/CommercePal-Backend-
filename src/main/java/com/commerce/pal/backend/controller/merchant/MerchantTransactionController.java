@@ -172,4 +172,48 @@ public class MerchantTransactionController {
         }
         return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
     }
+
+    @RequestMapping(value = "/withdrawal-validation", method = RequestMethod.POST)
+    public ResponseEntity<?> withdrawalValidation(@RequestBody String req) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            JSONObject request = new JSONObject(req);
+            LoginValidation user = globalMethods.fetchUserDetails();
+            merchantRepository.findMerchantByEmailAddress(user.getEmailAddress())
+                    .ifPresentOrElse(merchant -> {
+                        String balance = "0.00";
+                        balance = globalMethods.getAccountBalance(merchant.getTillNumber());
+
+                        if (Double.valueOf(balance) >= request.getBigDecimal("Amount").doubleValue()) {
+                            merchantWithdrawalRepository.findMerchantWithdrawalByIdAndMerchantId(
+                                            request.getLong("Id"), merchant.getMerchantId())
+                                    .ifPresentOrElse(merchantWithdrawal -> {
+                                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                                .put("statusDescription", "success")
+                                                .put("statusMessage", "Request Successful");
+
+                                    }, () -> {
+                                        responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
+                                                .put("statusDescription", "There is a pending request")
+                                                .put("statusMessage", "There is a pending request");
+
+                                    });
+                        } else {
+                            responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
+                                    .put("statusDescription", "Insufficient Balance")
+                                    .put("statusMessage", "Insufficient Balance");
+                        }
+                    }, () -> {
+                        responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
+                                .put("statusDescription", "Merchant Does not exists")
+                                .put("statusMessage", "Merchant Does not exists");
+                    });
+
+        } catch (Exception e) {
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("statusMessage", "internal system error");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
+    }
 }

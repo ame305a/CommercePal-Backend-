@@ -8,4 +8,9 @@ import java.util.Optional;
 public interface MerchantWithdrawalRepository extends JpaRepository<MerchantWithdrawal, Long> {
 
     Optional<MerchantWithdrawal> findMerchantWithdrawalByMerchantIdAndStatus(Long merchant, Integer status);
+
+    Optional<MerchantWithdrawal> findMerchantWithdrawalByIdAndMerchantId(Long id, Long merchant);
+
+
+
 }
