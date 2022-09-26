@@ -60,15 +60,16 @@ public class MerchantCategoryController {
                 });
         return ResponseEntity.ok(responseMap.toString());
     }
+
     @RequestMapping(value = {"/get-category"}, method = {RequestMethod.GET}, produces = {"application/json"})
     @ResponseBody
-    public ResponseEntity<?> getCategory() {
+    public ResponseEntity<?> getCategory(@RequestParam("parentCat") String parentCat) {
         JSONObject responseMap = new JSONObject();
         LoginValidation user = globalMethods.fetchUserDetails();
         merchantRepository.findMerchantByEmailAddress(user.getEmailAddress())
                 .ifPresentOrElse(merchant -> {
                     List<JSONObject> data = new ArrayList<>();
-                    productRepository.findProductsByProductCategoryId(merchant.getMerchantId())
+                    productRepository.findProductsByProductCategoryId(merchant.getMerchantId(), Long.valueOf(parentCat))
                             .forEach(parentCategory -> {
                                 data.add(categoryService.getCategoryInfo(parentCategory));
                             });
@@ -86,13 +87,13 @@ public class MerchantCategoryController {
 
     @RequestMapping(value = {"/get-sub-category"}, method = {RequestMethod.GET}, produces = {"application/json"})
     @ResponseBody
-    public ResponseEntity<?> getSubCategory() {
+    public ResponseEntity<?> getSubCategory(@RequestParam("category") String category) {
         JSONObject responseMap = new JSONObject();
         LoginValidation user = globalMethods.fetchUserDetails();
         merchantRepository.findMerchantByEmailAddress(user.getEmailAddress())
                 .ifPresentOrElse(merchant -> {
                     List<JSONObject> data = new ArrayList<>();
-                    productRepository.findProductsByProductSubCategoryId(merchant.getMerchantId())
+                    productRepository.findProductsByProductSubCategoryId(merchant.getMerchantId(), Long.valueOf(category))
                             .forEach(parentCategory -> {
                                 data.add(categoryService.getSubCategoryInfo(parentCategory));
                             });
