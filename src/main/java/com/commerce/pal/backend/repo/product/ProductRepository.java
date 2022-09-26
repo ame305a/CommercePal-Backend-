@@ -18,10 +18,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query(value = "SELECT ProductParentCateoryId  FROM Product WHERE MerchantId = ?1  GROUP BY ProductParentCateoryId", nativeQuery = true)
     List<Long> findProductsByProductParentCateoryId(Long merchant);
 
-    @Query(value = "SELECT ProductCategoryId  FROM Product WHERE MerchantId = ?1 AND ProductParentCateoryId= ?2 GROUP BY ProductCategoryId", nativeQuery = true)
+    @Query(value = "SELECT ProductCategoryId  FROM Product WHERE MerchantId = :merchant AND ProductParentCateoryId = :parent GROUP BY ProductCategoryId", nativeQuery = true)
     List<Long> findProductsByProductCategoryId(Long merchant, Long parent);
 
-    @Query(value = "SELECT ProductSubCategoryId  FROM Product WHERE MerchantId = ?1 AND ProductCategoryId = ?2  GROUP BY ProductSubCategoryId", nativeQuery = true)
+    @Query(value = "SELECT ProductSubCategoryId  FROM Product WHERE MerchantId = :merchant AND ProductCategoryId = :category  GROUP BY ProductSubCategoryId", nativeQuery = true)
     List<Long> findProductsByProductSubCategoryId(Long merchant, Long category);
 
     List<Product> findAllByProductParentCateoryId(Long category);
