@@ -357,6 +357,7 @@ public class ProductManagementController {
                                     .ifPresent(originalProduct -> {
                                         productRepository.findProductByProductId(retDet.getLong("productId"))
                                                 .ifPresent(newProduct -> {
+                                                    newProduct.setStatus(1);
                                                     newProduct.setProductMobileImage(originalProduct.getProductMobileImage() != null ? originalProduct.getProductMobileImage() : "");
                                                     newProduct.setProductImage(originalProduct.getProductImage() != null ? originalProduct.getProductImage() : "");
                                                     newProduct.setProductWebVideo(originalProduct.getProductWebVideo() != null ? originalProduct.getProductWebVideo() : "");
