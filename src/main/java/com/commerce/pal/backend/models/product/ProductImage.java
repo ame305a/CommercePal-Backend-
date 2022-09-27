@@ -2,10 +2,7 @@ package com.commerce.pal.backend.models.product;
 
 import lombok.*;
 
-import javax.persistence.Basic;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.sql.Timestamp;
 import java.util.Objects;
 
@@ -14,10 +11,11 @@ import java.util.Objects;
 public class ProductImage {
     @Id
     @Column(name = "Id")
-    private long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     @Basic
     @Column(name = "ProductId")
-    private long productId;
+    private Long productId;
     @Basic
     @Column(name = "Type")
     private String type;
