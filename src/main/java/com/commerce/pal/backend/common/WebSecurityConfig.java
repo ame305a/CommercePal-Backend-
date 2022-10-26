@@ -89,18 +89,4 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         return freeMarkerConfigurer;
     }
 
-//    @Bean("jasyptStringEncryptor")
-//    public StringEncryptor stringEncryptor() {
-//        PooledPBEStringEncryptor encryptor = new PooledPBEStringEncryptor();
-//        SimpleStringPBEConfig config = new SimpleStringPBEConfig();
-//        config.setPassword(jasyptProperties.getPassword());
-//        config.setAlgorithm(jasyptProperties.getAlgorithm());
-//        config.setKeyObtentionIterations(jasyptProperties.getKeyObtentionIterations());
-//        config.setPoolSize(jasyptProperties.getPoolSize());
-//        config.setProviderName(jasyptProperties.getProviderName());
-//        config.setSaltGeneratorClassName(jasyptProperties.getSaltGeneratorClassname());
-//        config.setStringOutputType(jasyptProperties.getStringOutputType());
-//        encryptor.setConfig(config);
-//        return encryptor;
-//    }
 }
