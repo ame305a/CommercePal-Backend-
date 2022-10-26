@@ -265,7 +265,7 @@ public class ProductController {
         specificationsDao.getProducts(params)
                 .forEach(pro -> {
                     JSONObject detail = productService.getProductListDetails(pro.getProductId());
-                    detail.put("unique_id", globalMethods.generateUniqueString(String.valueOf(pro.getProductId() )));
+                    detail.put("unique_id", globalMethods.generateUniqueString(pro.getProductId().toString()) + "");
                     details.add(detail);
                 });
         if (details.isEmpty()) {
