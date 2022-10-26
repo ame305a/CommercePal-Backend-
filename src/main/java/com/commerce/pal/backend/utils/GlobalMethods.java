@@ -235,6 +235,7 @@ public class GlobalMethods {
         Integer n = Integer.valueOf(1000 + rnd.nextInt(9000));
         return n.toString();
     }
+
     public String encryptCode(String code) {
         return code;
     }
@@ -253,9 +254,8 @@ public class GlobalMethods {
                 if (uniqueString.contains("/")) continue;
                 corectFormat = true;
             }
-        }
-        catch (Exception exception) {
-            // empty catch block
+        } catch (Exception e) {
+            log.log(Level.WARNING, e.getMessage());
         }
         return uniqueString;
     }
@@ -264,8 +264,8 @@ public class GlobalMethods {
         String strValue = "";
         try {
             strValue = jasyptStringEncryptor.decrypt(strEncrypted);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
+            log.log(Level.WARNING, e.getMessage());
             strValue = "";
         }
         return strValue;

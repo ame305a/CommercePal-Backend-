@@ -256,7 +256,7 @@ public class ProductController {
             params.add(new SearchCriteria("productId", ":", value));
         });
         uniqueId.ifPresent(value -> {
-            params.add(new SearchCriteria("productId", ":", value));
+            params.add(new SearchCriteria("productId", ":", globalMethods.getStringValue(value)));
         });
 
         params.add(new SearchCriteria("status", ":", 1));
