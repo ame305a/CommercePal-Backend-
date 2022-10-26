@@ -1,5 +1,8 @@
 package com.commerce.pal.backend.common;
 
+import org.jasypt.encryption.StringEncryptor;
+import org.jasypt.encryption.pbe.PooledPBEStringEncryptor;
+import org.jasypt.encryption.pbe.config.SimpleStringPBEConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -85,4 +88,19 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         freeMarkerConfigurer.setTemplateLoaderPath("classpath:templates/");
         return freeMarkerConfigurer;
     }
+
+//    @Bean("jasyptStringEncryptor")
+//    public StringEncryptor stringEncryptor() {
+//        PooledPBEStringEncryptor encryptor = new PooledPBEStringEncryptor();
+//        SimpleStringPBEConfig config = new SimpleStringPBEConfig();
+//        config.setPassword(jasyptProperties.getPassword());
+//        config.setAlgorithm(jasyptProperties.getAlgorithm());
+//        config.setKeyObtentionIterations(jasyptProperties.getKeyObtentionIterations());
+//        config.setPoolSize(jasyptProperties.getPoolSize());
+//        config.setProviderName(jasyptProperties.getProviderName());
+//        config.setSaltGeneratorClassName(jasyptProperties.getSaltGeneratorClassname());
+//        config.setStringOutputType(jasyptProperties.getStringOutputType());
+//        encryptor.setConfig(config);
+//        return encryptor;
+//    }
 }

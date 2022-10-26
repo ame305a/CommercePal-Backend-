@@ -256,7 +256,7 @@ public class ProductController {
             params.add(new SearchCriteria("productId", ":", value));
         });
         uniqueId.ifPresent(value -> {
-            params.add(new SearchCriteria("productId", ":", globalMethods.getStringValue(value)));
+            params.add(new SearchCriteria("productId", ":", Long.valueOf(globalMethods.getStringValue(value))));
         });
 
         params.add(new SearchCriteria("status", ":", 1));
@@ -265,7 +265,7 @@ public class ProductController {
         specificationsDao.getProducts(params)
                 .forEach(pro -> {
                     JSONObject detail = productService.getProductListDetails(pro.getProductId());
-                    detail.put("unique_id", globalMethods.generateUniqueString(pro.getProductId().toString()) + "");
+                    detail.put("unique_id", globalMethods.generateUniqueString(pro.getProductId().toString()));
                     details.add(detail);
                 });
         if (details.isEmpty()) {

@@ -16,6 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -246,12 +247,11 @@ public class GlobalMethods {
 
 
     public String generateUniqueString(String strValue) {
-        log.log(Level.INFO, strValue);
         String uniqueString = "";
         boolean corectFormat = false;
         try {
             while (!corectFormat) {
-                uniqueString = jasyptStringEncryptor.encrypt(strValue);
+                uniqueString = Base64.getEncoder().encodeToString(strValue.getBytes());
                 if (uniqueString.contains("/")) continue;
                 corectFormat = true;
             }
@@ -264,7 +264,8 @@ public class GlobalMethods {
     public String getStringValue(String strEncrypted) {
         String strValue = "";
         try {
-            strValue = jasyptStringEncryptor.decrypt(strEncrypted);
+            byte[] decodedBytes = Base64.getDecoder().decode(strEncrypted);
+            strValue = new String(decodedBytes);
         } catch (Exception e) {
             log.log(Level.WARNING, e.getMessage());
             strValue = "";
