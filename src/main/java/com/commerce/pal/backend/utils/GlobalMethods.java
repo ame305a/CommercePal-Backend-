@@ -6,6 +6,7 @@ import com.commerce.pal.backend.repo.LoginValidationRepository;
 import com.commerce.pal.backend.repo.product.ProductRepository;
 import com.commerce.pal.backend.repo.user.*;
 import com.commerce.pal.backend.repo.user.business.BusinessRepository;
+import org.jasypt.encryption.StringEncryptor;
 import lombok.extern.java.Log;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.json.JSONException;
@@ -26,6 +27,9 @@ import java.util.stream.Collectors;
 @Component
 @SuppressWarnings("Duplicates")
 public class GlobalMethods {
+
+    private static StringEncryptor jasyptStringEncryptor;
+
     private final AccountService accountService;
     private final AgentRepository agentRepository;
     private final ProductRepository productRepository;
@@ -237,5 +241,33 @@ public class GlobalMethods {
 
     public String deCryptCode(String code) {
         return code;
+    }
+
+
+    public String generateUniqueString(String strValue) {
+        String uniqueString = "";
+        boolean corectFormat = false;
+        try {
+            while (!corectFormat) {
+                uniqueString = jasyptStringEncryptor.encrypt(strValue);
+                if (uniqueString.contains("/")) continue;
+                corectFormat = true;
+            }
+        }
+        catch (Exception exception) {
+            // empty catch block
+        }
+        return uniqueString;
+    }
+
+    public String getStringValue(String strEncrypted) {
+        String strValue = "";
+        try {
+            strValue = jasyptStringEncryptor.decrypt(strEncrypted);
+        }
+        catch (Exception e) {
+            strValue = "";
+        }
+        return strValue;
     }
 }
