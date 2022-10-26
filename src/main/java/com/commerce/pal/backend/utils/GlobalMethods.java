@@ -246,6 +246,7 @@ public class GlobalMethods {
 
 
     public String generateUniqueString(String strValue) {
+        log.log(Level.INFO, strValue);
         String uniqueString = "";
         boolean corectFormat = false;
         try {
