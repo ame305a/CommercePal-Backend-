@@ -135,7 +135,7 @@ public class BusinessShoppingController {
                         params.add(new SearchCriteria("productId", ":", value));
                     });
                     params.add(new SearchCriteria("status", ":", 1));
-                    params.add(new SearchCriteria("productParentCateoryId", ":", business.getBusinessSector()));
+//                    params.add(new SearchCriteria("productParentCateoryId", ":", business.getBusinessSector()));
                     params.add(new SearchCriteria("productType", ":", "WHOLESALE"));
 
                     List<JSONObject> details = new ArrayList<>();

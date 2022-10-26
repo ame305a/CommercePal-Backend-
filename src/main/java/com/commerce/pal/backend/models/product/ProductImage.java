@@ -27,9 +27,8 @@ public class ProductImage {
     private String mobileImage;
     @Basic
     @Column(name = "Status")
-    private int status;
+    private Integer status;
     @Basic
     @Column(name = "CreatedDate")
     private Timestamp createdDate;
-
 }

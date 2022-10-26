@@ -353,6 +353,7 @@ public class ProductManagementController {
                                     .put("statusMessage", "Product successful");
 
                             // Replicate Images
+
                             productRepository.findProductByProductId(jsonObject.getLong("ProductId"))
                                     .ifPresent(originalProduct -> {
                                         productRepository.findProductByProductId(retDet.getLong("productId"))
