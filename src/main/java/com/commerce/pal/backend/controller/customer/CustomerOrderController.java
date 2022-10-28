@@ -215,7 +215,6 @@ public class CustomerOrderController {
         JSONObject responseMap = new JSONObject();
         try {
             JSONObject request = new JSONObject(checkOut);
-            LoginValidation user = globalMethods.fetchUserDetails();
             productRepository.findById(Long.valueOf(request.getInt("productId")))
                     .ifPresentOrElse(product -> {
                         subProductRepository.findSubProductsByProductIdAndSubProductId(
@@ -243,9 +242,6 @@ public class CustomerOrderController {
                                 proValue.put("DiscountAmount", new BigDecimal(0));
                             }
                             //Find the Delivery Price
-                            JSONObject deliveryPrice = getRate(globalMethods.getMerchantCity(product.getMerchantId()), globalMethods.customerRepository(user.getEmailAddress()), product.getShipmentType());
-                            proValue = globalMethods.mergeJSONObjects(proValue, deliveryPrice);
-
                             proValue.put("TotalUnitPrice", new BigDecimal(subProduct.getUnitPrice().doubleValue() * Double.valueOf(request.getInt("quantity"))));
                             proValue.put("TotalDiscount", new BigDecimal(proValue.getBigDecimal("DiscountAmount").doubleValue() * Double.valueOf(request.getInt("quantity"))));
                             proValue.put("FinalPrice", proValue.getBigDecimal("TotalUnitPrice").doubleValue() - proValue.getBigDecimal("TotalDiscount").doubleValue());
