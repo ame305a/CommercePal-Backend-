@@ -191,7 +191,8 @@ public class ProductController {
                                          @RequestParam("category ") Optional<String> category,
                                          @RequestParam("subCat") Optional<String> subCat,
                                          @RequestParam("brand") Optional<String> brand,
-                                         @RequestParam("product") Optional<String> product) {
+                                         @RequestParam("product") Optional<String> product,
+                                         @RequestParam("unique_id") Optional<String> uniqueId) {
         JSONObject responseMap = new JSONObject();
 
         List<SearchCriteria> params = new ArrayList<SearchCriteria>();
@@ -209,6 +210,9 @@ public class ProductController {
         });
         product.ifPresent(value -> {
             params.add(new SearchCriteria("productId", ":", value));
+        });
+        uniqueId.ifPresent(value -> {
+            params.add(new SearchCriteria("productId", ":", Long.valueOf(globalMethods.getStringValue(value))));
         });
         params.add(new SearchCriteria("status", ":", 1));
         params.add(new SearchCriteria("productType", ":", "RETAIL"));
