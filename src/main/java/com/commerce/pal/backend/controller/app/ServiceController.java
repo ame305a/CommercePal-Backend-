@@ -110,7 +110,13 @@ public class ServiceController {
             one.put("code", bank.getBankCode());
             banks.add(one);
         });
-        return ResponseEntity.status(HttpStatus.OK).body(banks.toString());
+        JSONObject response = new JSONObject();
+        response.put("statusCode", ResponseCodes.SUCCESS)
+                .put("data", banks)
+                .put("statusDescription", "Product Passed")
+                .put("statusMessage", "Product Passed");
+
+        return ResponseEntity.status(HttpStatus.OK).body(response.toString());
     }
 
     @RequestMapping(value = {"/payment-method"}, method = {RequestMethod.GET}, produces = {"application/json"})
@@ -142,7 +148,14 @@ public class ServiceController {
         });
         JSONObject paymentMeds = new JSONObject();
         paymentMeds.put("paymentMethods", paymentMethods);
-        return ResponseEntity.status(HttpStatus.OK).body(paymentMeds.toString());
+
+        JSONObject response = new JSONObject();
+        response.put("statusCode", ResponseCodes.SUCCESS)
+                .put("data", paymentMeds)
+                .put("statusDescription", "Product Passed")
+                .put("statusMessage", "Product Passed");
+
+        return ResponseEntity.status(HttpStatus.OK).body(response.toString());
     }
 
 
