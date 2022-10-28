@@ -1,5 +1,6 @@
 package com.commerce.pal.backend.controller.app;
 
+import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.repo.setting.*;
 import lombok.extern.java.Log;
 import org.json.JSONObject;
@@ -49,7 +50,13 @@ public class ServiceController {
             one.put(String.valueOf(country.getCountryCode()), country.getCountry());
             countries.add(one);
         });
-        return ResponseEntity.status(HttpStatus.OK).body(countries.toString());
+        JSONObject response = new JSONObject();
+        response.put("statusCode", ResponseCodes.SUCCESS)
+                .put("data", countries)
+                .put("statusDescription", "Product Passed")
+                .put("statusMessage", "Product Passed");
+
+        return ResponseEntity.status(HttpStatus.OK).body(response.toString());
     }
 
     @RequestMapping(value = {"/regions"}, method = {RequestMethod.GET}, produces = {"application/json"})
@@ -63,12 +70,19 @@ public class ServiceController {
             one.put("regionId", region.getId());
             list.add(one);
         });
-        return ResponseEntity.status(HttpStatus.OK).body(list.toString());
+        JSONObject response = new JSONObject();
+        response.put("statusCode", ResponseCodes.SUCCESS)
+                .put("data", list)
+                .put("statusDescription", "Product Passed")
+                .put("statusMessage", "Product Passed");
+
+        return ResponseEntity.status(HttpStatus.OK).body(response.toString());
     }
 
     @RequestMapping(value = {"/cities"}, method = {RequestMethod.GET}, produces = {"application/json"})
     @ResponseBody
     public ResponseEntity<?> citiesList() {
+
         List<JSONObject> countries = new ArrayList<>();
         cityRepository.findAll().forEach(country -> {
             JSONObject one = new JSONObject();
@@ -77,7 +91,13 @@ public class ServiceController {
             one.put("countryId", country.getCountryId());
             countries.add(one);
         });
-        return ResponseEntity.status(HttpStatus.OK).body(countries.toString());
+        JSONObject response = new JSONObject();
+        response.put("statusCode", ResponseCodes.SUCCESS)
+                .put("data", countries)
+                .put("statusDescription", "Product Passed")
+                .put("statusMessage", "Product Passed");
+
+        return ResponseEntity.status(HttpStatus.OK).body(response.toString());
     }
 
     @RequestMapping(value = {"/banks"}, method = {RequestMethod.GET}, produces = {"application/json"})

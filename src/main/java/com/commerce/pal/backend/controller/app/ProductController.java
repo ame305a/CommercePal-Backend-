@@ -312,7 +312,6 @@ public class ProductController {
                             proValue.put("DiscountValue", new BigDecimal(0));
                             proValue.put("DiscountAmount", new BigDecimal(0));
                         }
-
                         proValue.put("TotalUnitPrice", new BigDecimal(product.getUnitPrice().doubleValue() * Double.valueOf(request.getInt("quantity"))));
                         proValue.put("TotalDiscount", new BigDecimal(proValue.getBigDecimal("DiscountAmount").doubleValue() * Double.valueOf(request.getInt("quantity"))));
                         proValue.put("FinalPrice", proValue.getBigDecimal("TotalUnitPrice").doubleValue() - proValue.getBigDecimal("TotalDiscount").doubleValue());
