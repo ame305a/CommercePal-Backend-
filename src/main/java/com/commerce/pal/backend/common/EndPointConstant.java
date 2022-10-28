@@ -22,7 +22,7 @@ public class EndPointConstant {
             OPEN APIS FOR APPS
              */
             versioning + "/app/*",
-            versioning + "/customer/get-pricing",
+            versioning + "/customer/order/get-pricing",
             /*
             UPLOADS
              */
