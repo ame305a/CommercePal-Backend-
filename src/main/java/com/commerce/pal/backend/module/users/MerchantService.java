@@ -204,6 +204,7 @@ public class MerchantService {
                         payload.get().put("businessLicense", merchant.getBusinessLicense());
                         payload.get().put("commercialCertNo", merchant.getCommercialCertNo());
                         payload.get().put("tillNumber", merchant.getTillNumber());
+                        payload.get().put("commissionAccount", merchant.getCommissionAccount());
                         payload.get().put("taxNumber", merchant.getTaxNumber());
                         payload.get().put("bankCode", merchant.getBankCode());
                         payload.get().put("bankAccountNumber", merchant.getBankAccountNumber());

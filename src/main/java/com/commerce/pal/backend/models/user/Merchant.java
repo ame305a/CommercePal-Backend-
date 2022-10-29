@@ -114,7 +114,9 @@ public class Merchant {
     @Column(name = "TaxPhoto")
     private String taxPhoto;
 
-
+    @Basic
+    @Column(name = "CommissionAccount")
+    private String commissionAccount;
 
     @Basic
     @Column(name = "Status")
