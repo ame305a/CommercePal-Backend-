@@ -32,6 +32,38 @@ public class CategoryService {
         this.productParentCategoryRepository = productParentCategoryRepository;
     }
 
+    public List<JSONObject> dynamicCategories() {
+        List<JSONObject> parents = new ArrayList<>();
+        productParentCategoryRepository.findAll().forEach(parentCat -> {
+            JSONObject parent = new JSONObject();
+            parent.put("parentCategoryID", parentCat.getId());
+            parent.put("parentCategoryName", parentCat.getParentCategoryName());
+            parent.put("parentMobileImage", parentCat.getMobileImage() != null ? parentCat.getMobileImage() : "");
+            parent.put("parentWebImage", parentCat.getWebImage() != null ? parentCat.getWebImage() : "");
+            parent.put("parentWebThumbnail", parentCat.getWebThumbnail() != null ? parentCat.getWebThumbnail() : "");
+            List<JSONObject> categories = new ArrayList<>();
+            productCategoryRepository.findProductCategoriesByParentCategoryId(parentCat.getId())
+                    .forEach(cat -> {
+                        JSONObject category = new JSONObject();
+                        category.put("categoryID", cat.getId());
+                        category.put("categoryName", cat.getCategoryName());
+                        List<JSONObject> subCategories = new ArrayList<>();
+                        productSubCategoryRepository.findProductSubCategoriesByProductCategoryId(cat.getId())
+                                .forEach(subCat -> {
+                                    JSONObject subCategory = new JSONObject();
+                                    subCategory.put("categoryID", subCat.getId());
+                                    subCategory.put("categoryName", subCat.getSubCategoryName());
+                                    subCategories.add(subCategory);
+                                });
+                        category.put("subCategories", subCategories);
+                        categories.add(category);
+                    });
+            parent.put("categories", categories);
+            parents.add(parent);
+        });
+        return parents;
+    }
+
     public JSONObject getBrandInfo(Long id) {
         JSONObject detail = new JSONObject();
         brandImageRepository.findById(id)
@@ -55,6 +87,7 @@ public class CategoryService {
         });
         return details;
     }
+
 
     public JSONObject getParentCatInfo(Long id) {
         JSONObject detail = new JSONObject();

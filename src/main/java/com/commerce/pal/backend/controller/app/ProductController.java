@@ -61,6 +61,17 @@ public class ProductController {
         this.productSubCategoryRepository = productSubCategoryRepository;
     }
 
+    @RequestMapping(value = {"/dynamic-category"}, method = {RequestMethod.GET}, produces = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<?> getDynamicCategory() {
+        JSONObject responseMap = new JSONObject();
+        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                .put("statusDescription", "success")
+                .put("data", categoryService.dynamicCategories())
+                .put("statusMessage", "Request Successful");
+        return ResponseEntity.ok(responseMap.toString());
+    }
+
 
     @RequestMapping(value = {"/get-brands"}, method = {RequestMethod.GET}, produces = {"application/json"})
     @ResponseBody
@@ -282,7 +293,6 @@ public class ProductController {
                 .put("statusMessage", "Request Successful");
         return ResponseEntity.ok(responseMap.toString());
     }
-
 
     @RequestMapping(value = "/get-pricing", method = RequestMethod.POST)
     public ResponseEntity<?> updatePricing(@RequestBody String checkOut) {
