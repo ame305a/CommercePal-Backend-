@@ -51,8 +51,8 @@ public class CategoryService {
                         productSubCategoryRepository.findProductSubCategoriesByProductCategoryId(cat.getId())
                                 .forEach(subCat -> {
                                     JSONObject subCategory = new JSONObject();
-                                    subCategory.put("categoryID", subCat.getId());
-                                    subCategory.put("categoryName", subCat.getSubCategoryName());
+                                    subCategory.put("subCategoryID", subCat.getId());
+                                    subCategory.put("subCategoryName", subCat.getSubCategoryName());
                                     subCategories.add(subCategory);
                                 });
                         category.put("subCategories", subCategories);
