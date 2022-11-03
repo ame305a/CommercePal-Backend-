@@ -294,6 +294,42 @@ public class ProductController {
         return ResponseEntity.ok(responseMap.toString());
     }
 
+
+    @RequestMapping(value = {"/search-products"}, method = {RequestMethod.GET}, produces = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<?> searchProducts(@RequestParam("parent") Optional<String> parent,
+                                            @RequestParam("searchName ") String searchName) {
+        JSONObject responseMap = new JSONObject();
+
+        List<SearchCriteria> params = new ArrayList<SearchCriteria>();
+        parent.ifPresent(value -> {
+            params.add(new SearchCriteria("productParentCateoryId", ":", value));
+        });
+        params.add(new SearchCriteria("productName", ":", searchName));
+        params.add(new SearchCriteria("shortDescription", ":", searchName));
+        params.add(new SearchCriteria("productDescription", ":", searchName));
+        params.add(new SearchCriteria("specialInstruction", ":", searchName));
+
+        params.add(new SearchCriteria("status", ":", 1));
+        params.add(new SearchCriteria("productType", ":", "RETAIL"));
+        List<JSONObject> details = new ArrayList<>();
+        specificationsDao.getProducts(params)
+                .forEach(pro -> {
+                    JSONObject detail = productService.getProductListDetails(pro.getProductId());
+                    detail.put("unique_id", globalMethods.generateUniqueString(pro.getProductId().toString()));
+                    details.add(detail);
+                });
+        if (details.isEmpty()) {
+            responseMap.put("statusCode", ResponseCodes.NOT_EXIST);
+        } else {
+            responseMap.put("statusCode", ResponseCodes.SUCCESS);
+        }
+        responseMap.put("statusDescription", "success")
+                .put("details", details)
+                .put("statusMessage", "Request Successful");
+        return ResponseEntity.ok(responseMap.toString());
+    }
+
     @RequestMapping(value = "/get-pricing", method = RequestMethod.POST)
     public ResponseEntity<?> updatePricing(@RequestBody String checkOut) {
         JSONObject responseMap = new JSONObject();

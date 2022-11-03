@@ -117,12 +117,9 @@ public class Product {
     @Basic
     @Column(name = "ShipmentType")
     private String shipmentType;
-
-
     @Basic
     @Column(name = "PrimarySubProduct")
     private Long primarySubProduct;
-
     @Basic
     @Column(name = "Status")
     private Integer status;
