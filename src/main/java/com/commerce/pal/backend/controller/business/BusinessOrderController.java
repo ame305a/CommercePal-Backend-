@@ -410,6 +410,7 @@ public class BusinessOrderController {
                                         orderRepository.save(order);
                                         responseMap.put("statusCode", ResponseCodes.SUCCESS)
                                                 .put("statusDescription", "success")
+                                                .put("totalDeliveryFee", totalDeliveryFee.get())
                                                 .put("statusMessage", "success");
                                     } else {
                                         responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
