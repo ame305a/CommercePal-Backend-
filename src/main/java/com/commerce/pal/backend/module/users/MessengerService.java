@@ -11,6 +11,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 @Log
 @Service
@@ -188,35 +189,39 @@ public class MessengerService {
         JSONObject payload = new JSONObject();
         messengerRepository.findMessengerByMessengerId(messengerId)
                 .ifPresent(messenger -> {
-                    payload.put("userId", messenger.getMessengerId());
-                    payload.put("ownerPhoneNumber", messenger.getOwnerPhoneNumber());
-                    payload.put("email", messenger.getEmailAddress());
-                    payload.put("ownerType", messenger.getOwnerType());
-                    payload.put("idNumber", messenger.getIdNumber());
-                    payload.put("idNumberImage", messenger.getIdNumberImage());
-                    payload.put("drivingLicenceNumber", messenger.getDrivingLicenceNumber());
-                    payload.put("drivingLicenceImage", messenger.getDrivingLicenceImage());
-                    payload.put("insuranceExpiry", messenger.getInsuranceExpiry());
-                    payload.put("policeClearanceImage", messenger.getPoliceClearanceImage());
-                    payload.put("messengerPhoto", messenger.getMessengerPhoto());
-                    payload.put("carrierType", messenger.getCarrierType());
-                    payload.put("carrierLicencePlate", messenger.getCarrierLicencePlate());
-                    payload.put("carrierImage", messenger.getCarrierImage());
-                    payload.put("language", messenger.getLanguage());
-                    payload.put("country", messenger.getCountry());
-                    payload.put("city", messenger.getCity());
-                    payload.put("district", messenger.getDistrict());
-                    payload.put("location", messenger.getLocation());
-                    payload.put("longitude", messenger.getLongitude());
-                    payload.put("latitude", messenger.getLatitude());
-                    JSONObject nextOfKin = new JSONObject();
-                    nextOfKin.put("nextKinNames", messenger.getNextKinNames());
-                    nextOfKin.put("nextKinPhone", messenger.getNextKinPhone());
-                    nextOfKin.put("nextKinEmail", messenger.getNextKinEmail());
-                    nextOfKin.put("nextKinId", messenger.getNextKinId());
-                    nextOfKin.put("nextKinPhoto", messenger.getNextKinPhoto());
-                    payload.put("nextOfKin", nextOfKin);
-                    payload.put("Status", messenger.getStatus().toString());
+                    try {
+                        payload.put("userId", messenger.getMessengerId());
+                        payload.put("ownerPhoneNumber", messenger.getOwnerPhoneNumber());
+                        payload.put("email", messenger.getEmailAddress());
+                        payload.put("ownerType", messenger.getOwnerType());
+                        payload.put("idNumber", messenger.getIdNumber());
+                        payload.put("idNumberImage", messenger.getIdNumberImage());
+                        payload.put("drivingLicenceNumber", messenger.getDrivingLicenceNumber());
+                        payload.put("drivingLicenceImage", messenger.getDrivingLicenceImage());
+                        payload.put("insuranceExpiry", messenger.getInsuranceExpiry());
+                        payload.put("policeClearanceImage", messenger.getPoliceClearanceImage());
+                        payload.put("messengerPhoto", messenger.getMessengerPhoto());
+                        payload.put("carrierType", messenger.getCarrierType());
+                        payload.put("carrierLicencePlate", messenger.getCarrierLicencePlate());
+                        payload.put("carrierImage", messenger.getCarrierImage());
+                        payload.put("language", messenger.getLanguage());
+                        payload.put("country", messenger.getCountry());
+                        payload.put("city", messenger.getCity());
+                        payload.put("district", messenger.getDistrict());
+                        payload.put("location", messenger.getLocation());
+                        payload.put("longitude", messenger.getLongitude());
+                        payload.put("latitude", messenger.getLatitude());
+                        JSONObject nextOfKin = new JSONObject();
+                        nextOfKin.put("nextKinNames", messenger.getNextKinNames());
+                        nextOfKin.put("nextKinPhone", messenger.getNextKinPhone());
+                        nextOfKin.put("nextKinEmail", messenger.getNextKinEmail());
+                        nextOfKin.put("nextKinId", messenger.getNextKinId());
+                        nextOfKin.put("nextKinPhoto", messenger.getNextKinPhoto());
+                        payload.put("nextOfKin", nextOfKin);
+                        payload.put("Status", messenger.getStatus().toString());
+                    } catch (Exception ex) {
+                        log.log(Level.WARNING, ex.getMessage());
+                    }
                 });
         return payload;
     }
