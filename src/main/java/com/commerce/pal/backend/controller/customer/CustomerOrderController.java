@@ -409,7 +409,7 @@ public class CustomerOrderController {
                                                             order.setTotalPrice(new BigDecimal(order.getTotalPrice().doubleValue() + totalDeliveryFee.get().doubleValue()));
                                                         }
 
-                                                        totalDeliveryFee.set(new BigDecimal(totalDeliveryFee.get().doubleValue()).setScale(2, RoundingMode.HALF_UP));
+                                                        totalDeliveryFee.set(new BigDecimal(totalDeliveryFee.get().doubleValue()).setScale(0, RoundingMode.UP));
                                                         order.setPreferredLocationType("C");
                                                         order.setUserAddressId(customerAddress.getId());
                                                         order.setIsUserAddressAssigned(1);
