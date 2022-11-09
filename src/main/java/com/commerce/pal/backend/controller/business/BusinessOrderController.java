@@ -403,6 +403,7 @@ public class BusinessOrderController {
                                                     orderItem.setDeliveryPrice(itemDeliveryFee);
                                                     totalDeliveryFee.set(new BigDecimal(itemDeliveryFee.doubleValue() + totalDeliveryFee.get().doubleValue()));
                                                 });
+                                        totalDeliveryFee.set(new BigDecimal(totalDeliveryFee.get().doubleValue()).setScale(2, RoundingMode.HALF_UP));
                                         order.setPreferredLocationType("B");
                                         order.setUserAddressId(business.getBusinessId());
                                         order.setIsUserAddressAssigned(1);

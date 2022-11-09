@@ -404,10 +404,12 @@ public class CustomerOrderController {
                                                                     totalDeliveryFee.set(new BigDecimal(itemDeliveryFee.doubleValue() + totalDeliveryFee.get().doubleValue()));
                                                                 });
                                                         if (order.getIsUserAddressAssigned().equals(1)) {
-                                                            order.setTotalPrice(new BigDecimal(order.getTotalPrice().doubleValue() - order.getDeliveryPrice().doubleValue()  + totalDeliveryFee.get().doubleValue()));
+                                                            order.setTotalPrice(new BigDecimal(order.getTotalPrice().doubleValue() - order.getDeliveryPrice().doubleValue() + totalDeliveryFee.get().doubleValue()));
                                                         } else {
                                                             order.setTotalPrice(new BigDecimal(order.getTotalPrice().doubleValue() + totalDeliveryFee.get().doubleValue()));
                                                         }
+
+                                                        totalDeliveryFee.set(new BigDecimal(totalDeliveryFee.get().doubleValue()).setScale(2, RoundingMode.HALF_UP));
                                                         order.setPreferredLocationType("C");
                                                         order.setUserAddressId(customerAddress.getId());
                                                         order.setIsUserAddressAssigned(1);
