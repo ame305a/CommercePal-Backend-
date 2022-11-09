@@ -55,6 +55,9 @@ public class DataAccessController {
     public ResponseEntity<?> getDataRequest(@RequestBody String request) {
         JSONObject responseMap = new JSONObject();
         try {
+            responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                    .put("statusDescription", "success")
+                    .put("statusMessage", "Request Successful");
             JSONObject jsonObject = new JSONObject(request);
             switch (jsonObject.getString("Type")) {
                 case "PRODUCT":
@@ -93,11 +96,16 @@ public class DataAccessController {
                 case "MESSENGER":
                     responseMap = messengerService.getMessengerInfo(jsonObject.getLong("TypeId"));
                     break;
+                default:
+                    responseMap.put("statusCode", ResponseCodes.TRANSACTION_FAILED)
+                            .put("statusDescription", "failed")
+                            .put("issueType", jsonObject.getString("Type"))
+                            .put("statusMessage", "Request failed");
+                    break;
+
 
             }
-            responseMap.put("statusCode", ResponseCodes.SUCCESS)
-                    .put("statusDescription", "success")
-                    .put("statusMessage", "Request Successful");
+
         } catch (Exception ex) {
             responseMap.put("statusCode", ResponseCodes.TRANSACTION_FAILED)
                     .put("statusDescription", "failed")
