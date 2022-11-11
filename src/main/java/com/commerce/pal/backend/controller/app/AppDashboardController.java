@@ -126,7 +126,7 @@ public class AppDashboardController {
                                     JSONObject response = categoryService.getBrandInfo(targetSectionChildren.getItemId());
                                     items.add(globalMethods.mergeJSONObjects(response, item));
                                 } else if (targetSectionChildren.getType().equals("Product")) {
-                                    JSONObject response = productService.getProductDetail(Long.valueOf(targetSectionChildren.getItemId()));
+                                    JSONObject response = productService.getProductListDetails(Long.valueOf(targetSectionChildren.getItemId()));
                                     items.add(globalMethods.mergeJSONObjects(response, item));
                                 } else if (targetSectionChildren.getType().equals("ParentCategory")) {
                                     JSONObject response = categoryService.getParentCatInfo(Long.valueOf(targetSectionChildren.getItemId()));
