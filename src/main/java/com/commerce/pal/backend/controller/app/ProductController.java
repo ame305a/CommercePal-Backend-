@@ -302,17 +302,6 @@ public class ProductController {
         JSONObject responseMap = new JSONObject();
 
         List<SearchCriteria> params = new ArrayList<SearchCriteria>();
-        parent.ifPresent(value -> {
-            params.add(new SearchCriteria("productParentCateoryId", ":", value));
-        });
-        params.add(new SearchCriteria("productName", ":", reqName));
-        params.add(new SearchCriteria("shortDescription", ":", reqName));
-//        params.add(new SearchCriteria("productDescription", ":", searchName));
-        params.add(new SearchCriteria("specialInstruction", ":", reqName));
-
-
-        params.add(new SearchCriteria("status", ":", 1));
-        params.add(new SearchCriteria("productType", ":", "RETAIL"));
 
         List<JSONObject> details = new ArrayList<>();
         productRepository.findProductByProductId(reqName, reqName, reqName, reqName, "RETAIL")

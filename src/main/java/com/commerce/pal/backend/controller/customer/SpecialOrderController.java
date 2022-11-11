@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
+import static org.hibernate.sql.InFragment.NULL;
+
 @Log
 @CrossOrigin(origins = {"*"}, maxAge = 3600L)
 @RestController
@@ -71,17 +73,17 @@ public class SpecialOrderController {
 
     @RequestMapping(value = "/upload-image", method = RequestMethod.POST)
     public ResponseEntity<String> uploadOrderImage(@RequestPart(value = "file") MultipartFile file,
-                                               @RequestPart(value = "orderId") String orderId) {
+                                                   @RequestPart(value = "orderId") String orderId) {
         JSONObject response = new JSONObject();
         log.log(Level.INFO, "File Name :" + file.getName());
         specialProductOrderRepository.findById(Long.valueOf(orderId))
                 .ifPresentOrElse(specialProductOrder -> {
                     String productUrl = uploadService.uploadFileAlone(file, "Web", "SpecialOrder");
-                    if (specialProductOrder.getImageOne().isEmpty()) {
+                    if (specialProductOrder.getImageOne() == null) {
                         specialProductOrder.setImageOne(productUrl);
-                    } else if (specialProductOrder.getImageTwo().isEmpty()) {
+                    } else if (specialProductOrder.getImageTwo() == null)){
                         specialProductOrder.setImageTwo(productUrl);
-                    } else if (specialProductOrder.getImageThree().isEmpty()) {
+                    } else if (specialProductOrder.getImageThree() == null)){
                         specialProductOrder.setImageThree(productUrl);
                     }
                     specialProductOrderRepository.save(specialProductOrder);
