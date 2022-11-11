@@ -81,9 +81,9 @@ public class SpecialOrderController {
                     String productUrl = uploadService.uploadFileAlone(file, "Web", "SpecialOrder");
                     if (specialProductOrder.getImageOne() == null) {
                         specialProductOrder.setImageOne(productUrl);
-                    } else if (specialProductOrder.getImageTwo() == null)){
+                    } else if (specialProductOrder.getImageTwo() == null) {
                         specialProductOrder.setImageTwo(productUrl);
-                    } else if (specialProductOrder.getImageThree() == null)){
+                    } else if (specialProductOrder.getImageThree() == null) {
                         specialProductOrder.setImageThree(productUrl);
                     }
                     specialProductOrderRepository.save(specialProductOrder);
