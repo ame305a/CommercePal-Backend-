@@ -279,7 +279,7 @@ public class ProductController {
         List<JSONObject> details = new ArrayList<>();
         specificationsDao.getProducts(params)
                 .forEach(pro -> {
-                    JSONObject detail = productService.getProductListDetails(pro.getProductId());
+                    JSONObject detail = productService.getProductListDetailsAlready(pro);
                     detail.put("unique_id", globalMethods.generateUniqueString(pro.getProductId().toString()));
                     details.add(detail);
                 });
@@ -298,7 +298,7 @@ public class ProductController {
     @RequestMapping(value = {"/search-products"}, method = {RequestMethod.GET}, produces = {"application/json"})
     @ResponseBody
     public ResponseEntity<?> searchProducts(@RequestParam("parent") Optional<String> parent,
-                                            @RequestParam("searchName ") String searchName) {
+                                            @RequestParam("reqName ") String searchName) {
         JSONObject responseMap = new JSONObject();
 
         List<SearchCriteria> params = new ArrayList<SearchCriteria>();
@@ -317,7 +317,7 @@ public class ProductController {
         List<JSONObject> details = new ArrayList<>();
         productRepository.findProductByProductId(searchName, searchName, searchName, searchName)
                 .forEach(pro -> {
-                    JSONObject detail = productService.getProductListDetails(pro.getProductId());
+                    JSONObject detail = productService.getProductListDetailsAlready(pro);
                     details.add(detail);
                 });
         if (details.isEmpty()) {

@@ -1,6 +1,7 @@
 package com.commerce.pal.backend.module.product;
 
 import com.commerce.pal.backend.common.ResponseCodes;
+import com.commerce.pal.backend.models.product.Product;
 import com.commerce.pal.backend.module.database.ProductDatabaseService;
 import com.commerce.pal.backend.repo.product.*;
 import com.commerce.pal.backend.utils.GlobalMethods;
@@ -288,6 +289,56 @@ public class ProductService {
                         }
                         detail.put("reviews", reviews);
                     });
+        } catch (Exception e) {
+            log.log(Level.WARNING, e.getMessage());
+        }
+        return detail;
+    }
+
+    public JSONObject getProductListDetailsAlready(Product pro) {
+        JSONObject detail = new JSONObject();
+        try {
+
+            detail.put("unique_id", globalMethods.generateUniqueString(pro.getProductId().toString()));
+            detail.put("ProductId", pro.getProductId());
+            detail.put("productName", pro.getProductName());
+            detail.put("mobileImage", pro.getProductMobileImage() != null ? pro.getProductMobileImage() : "");
+            detail.put("webImage", pro.getProductImage() != null ? pro.getProductImage() : "");
+            detail.put("webThumbnail", pro.getWebThumbnail() != null ? pro.getWebThumbnail() : "");
+            detail.put("mobileThumbnail", pro.getMobileThumbnail() != null ? pro.getMobileThumbnail() : "");
+            detail.put("isDiscounted", pro.getIsDiscounted().toString());
+            detail.put("unitPrice", pro.getUnitPrice().toString());
+            detail.put("manufacturer", pro.getManufucturer());
+            detail.put("actualPrice", pro.getUnitPrice().toString());
+            detail.put("maxOrder", pro.getMaxOrder().toString());
+            detail.put("minOrder", pro.getMinOrder().toString());
+            detail.put("primarySubProduct", pro.getPrimarySubProduct());
+            if (pro.getIsDiscounted().equals(1)) {
+                detail.put("DiscountType", pro.getDiscountType());
+
+                Double discountAmount = 0D;
+                if (pro.getDiscountType().equals("FIXED")) {
+                    detail.put("DiscountValue", pro.getDiscountValue());
+                    detail.put("DiscountAmount", pro.getDiscountValue());
+                    detail.put("discountDescription", pro.getDiscountValue() + " " + pro.getCurrency());
+                } else {
+                    discountAmount = pro.getUnitPrice().doubleValue() * pro.getDiscountValue().doubleValue() / 100;
+                    detail.put("DiscountValue", pro.getDiscountValue());
+                    detail.put("DiscountAmount", new BigDecimal(discountAmount));
+                    detail.put("discountDescription", pro.getDiscountValue() + "% Discount");
+                }
+                detail.put("offerPrice", pro.getUnitPrice().doubleValue() - discountAmount);
+            } else {
+                detail.put("DiscountType", "NotDiscounted");
+                detail.put("DiscountValue", new BigDecimal(0));
+                detail.put("DiscountAmount", new BigDecimal(0));
+                detail.put("offerPrice", pro.getUnitPrice());
+                detail.put("discountDescription", pro.getDiscountValue() + " " + pro.getCurrency());
+            }
+            detail.put("currency", pro.getCurrency());
+            detail.put("productRating", 4.2);
+            detail.put("ratingCount", 30);
+
         } catch (Exception e) {
             log.log(Level.WARNING, e.getMessage());
         }
