@@ -3,8 +3,8 @@ package com.commerce.pal.backend.module.product;
 import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.module.database.ProductDatabaseService;
 import com.commerce.pal.backend.repo.product.*;
+import com.commerce.pal.backend.utils.GlobalMethods;
 import lombok.extern.java.Log;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,6 +23,7 @@ import java.util.logging.Level;
 @Service
 @SuppressWarnings("Duplicates")
 public class ProductService {
+    private final GlobalMethods globalMethods;
     private final CategoryService categoryService;
     private final ProductRepository productRepository;
     private final SubProductService subProductService;
@@ -33,7 +34,8 @@ public class ProductService {
     private final ProductMoreTemplateRepository productMoreTemplateRepository;
 
     @Autowired
-    public ProductService(CategoryService categoryService,
+    public ProductService(GlobalMethods globalMethods,
+                          CategoryService categoryService,
                           ProductRepository productRepository,
                           SubProductService subProductService,
                           ProductMoreRepository productMoreRepository,
@@ -41,6 +43,7 @@ public class ProductService {
                           ProductImageRepository productImageRepository,
                           ProductCategoryService productCategoryService,
                           ProductMoreTemplateRepository productMoreTemplateRepository) {
+        this.globalMethods = globalMethods;
         this.categoryService = categoryService;
         this.productRepository = productRepository;
         this.subProductService = subProductService;
@@ -146,6 +149,7 @@ public class ProductService {
         try {
             productRepository.findProductByProductId(product)
                     .ifPresent(pro -> {
+                        detail.put("unique_id", globalMethods.generateUniqueString(pro.getProductId().toString()));
                         detail.put("ProductId", pro.getProductId());
                         detail.put("ProductName", pro.getProductName());
                         detail.put("ShortDescription", pro.getShortDescription() != null ? pro.getShortDescription() : "");
@@ -295,6 +299,7 @@ public class ProductService {
         try {
             productRepository.findProductByProductId(product)
                     .ifPresent(pro -> {
+                        detail.put("unique_id", globalMethods.generateUniqueString(pro.getProductId().toString()));
                         detail.put("ProductId", pro.getProductId());
                         detail.put("productName", pro.getProductName());
                         detail.put("mobileImage", pro.getProductMobileImage() != null ? pro.getProductMobileImage() : "");
@@ -388,6 +393,7 @@ public class ProductService {
                         detail.put("productRating", 4.2);
                         detail.put("ratingCount", 30);
                         detail.put("createdBy", "username");
+
                     });
         } catch (Exception e) {
             log.log(Level.WARNING, e.getMessage());
