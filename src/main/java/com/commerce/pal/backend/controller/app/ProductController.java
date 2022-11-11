@@ -315,7 +315,7 @@ public class ProductController {
         params.add(new SearchCriteria("productType", ":", "RETAIL"));
 
         List<JSONObject> details = new ArrayList<>();
-        productRepository.findProductByProductId(reqName, reqName, reqName, reqName)
+        productRepository.findProductByProductId(reqName, reqName, reqName, reqName, "RETAIL")
                 .forEach(pro -> {
                     JSONObject detail = productService.getProductListDetailsAlready(pro);
                     details.add(detail);

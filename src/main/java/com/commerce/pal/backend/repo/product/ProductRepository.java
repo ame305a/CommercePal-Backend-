@@ -31,11 +31,11 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findAllByProductSubCategoryId(Long category);
 
     @Query(value = "SELECT *  FROM Product WHERE " +
-            "(ProductName LIKE '%:productName%' OR " +
-            "ShortDescription LIKE '%:shortDes%' OR " +
-            "ProductDescription LIKE '%:productDes%' OR " +
-            "SpecialInstruction LIKE '%:prodIns%') AND Status = 1 AND ProductType = 'RETAIL'", nativeQuery = true)
-    List<Product> findProductByProductId(String productName,String shortDes, String productDes, String prodIns);
+            "(ProductName LIKE %:productName% OR " +
+            "ShortDescription LIKE %:shortDes% OR " +
+            "ProductDescription LIKE %:productDes% OR " +
+            "SpecialInstruction LIKE %:prodIns%) AND Status = 1 AND ProductType = :type", nativeQuery = true)
+    List<Product> findProductByProductId(String productName, String shortDes, String productDes, String prodIns, String type);
 
 
 }
