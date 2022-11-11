@@ -298,7 +298,7 @@ public class ProductController {
     @RequestMapping(value = {"/search-products"}, method = {RequestMethod.GET}, produces = {"application/json"})
     @ResponseBody
     public ResponseEntity<?> searchProducts(@RequestParam("parent") Optional<String> parent,
-                                            @RequestParam("reqName ") String searchName) {
+                                            @RequestParam("reqName") String searchName) {
         JSONObject responseMap = new JSONObject();
 
         List<SearchCriteria> params = new ArrayList<SearchCriteria>();
