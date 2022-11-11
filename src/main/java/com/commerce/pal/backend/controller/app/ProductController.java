@@ -315,7 +315,7 @@ public class ProductController {
         params.add(new SearchCriteria("productType", ":", "RETAIL"));
 
         List<JSONObject> details = new ArrayList<>();
-        specificationsDao.getProducts(params)
+        productRepository.findProductByProductId(searchName, searchName, searchName, searchName)
                 .forEach(pro -> {
                     JSONObject detail = productService.getProductListDetails(pro.getProductId());
                     details.add(detail);
