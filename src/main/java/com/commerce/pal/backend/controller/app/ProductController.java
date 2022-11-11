@@ -312,11 +312,11 @@ public class ProductController {
 
         params.add(new SearchCriteria("status", ":", 1));
         params.add(new SearchCriteria("productType", ":", "RETAIL"));
+
         List<JSONObject> details = new ArrayList<>();
         specificationsDao.getProducts(params)
                 .forEach(pro -> {
                     JSONObject detail = productService.getProductListDetails(pro.getProductId());
-                    detail.put("unique_id", globalMethods.generateUniqueString(pro.getProductId().toString()));
                     details.add(detail);
                 });
         if (details.isEmpty()) {
