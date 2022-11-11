@@ -298,24 +298,24 @@ public class ProductController {
     @RequestMapping(value = {"/search-products"}, method = {RequestMethod.GET}, produces = {"application/json"})
     @ResponseBody
     public ResponseEntity<?> searchProducts(@RequestParam("parent") Optional<String> parent,
-                                            @RequestParam("reqName") String searchName) {
+                                            @RequestParam("reqName") String reqName) {
         JSONObject responseMap = new JSONObject();
 
         List<SearchCriteria> params = new ArrayList<SearchCriteria>();
         parent.ifPresent(value -> {
             params.add(new SearchCriteria("productParentCateoryId", ":", value));
         });
-        params.add(new SearchCriteria("productName", ":", searchName));
-        params.add(new SearchCriteria("shortDescription", ":", searchName));
+        params.add(new SearchCriteria("productName", ":", reqName));
+        params.add(new SearchCriteria("shortDescription", ":", reqName));
 //        params.add(new SearchCriteria("productDescription", ":", searchName));
-        params.add(new SearchCriteria("specialInstruction", ":", searchName));
+        params.add(new SearchCriteria("specialInstruction", ":", reqName));
 
 
         params.add(new SearchCriteria("status", ":", 1));
         params.add(new SearchCriteria("productType", ":", "RETAIL"));
 
         List<JSONObject> details = new ArrayList<>();
-        productRepository.findProductByProductId(searchName, searchName, searchName, searchName)
+        productRepository.findProductByProductId(reqName, reqName, reqName, reqName)
                 .forEach(pro -> {
                     JSONObject detail = productService.getProductListDetailsAlready(pro);
                     details.add(detail);
