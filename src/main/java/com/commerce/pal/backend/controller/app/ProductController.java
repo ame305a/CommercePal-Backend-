@@ -307,8 +307,9 @@ public class ProductController {
         });
         params.add(new SearchCriteria("productName", ":", searchName));
         params.add(new SearchCriteria("shortDescription", ":", searchName));
-        params.add(new SearchCriteria("productDescription", ":", searchName));
+//        params.add(new SearchCriteria("productDescription", ":", searchName));
         params.add(new SearchCriteria("specialInstruction", ":", searchName));
+
 
         params.add(new SearchCriteria("status", ":", 1));
         params.add(new SearchCriteria("productType", ":", "RETAIL"));
