@@ -4,9 +4,9 @@ import com.commerce.pal.backend.models.LoginValidation;
 import com.commerce.pal.backend.module.transaction.AccountService;
 import com.commerce.pal.backend.repo.LoginValidationRepository;
 import com.commerce.pal.backend.repo.product.ProductRepository;
+import com.commerce.pal.backend.repo.setting.CityRepository;
 import com.commerce.pal.backend.repo.user.*;
 import com.commerce.pal.backend.repo.user.business.BusinessRepository;
-import org.jasypt.encryption.StringEncryptor;
 import lombok.extern.java.Log;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.json.JSONException;
@@ -29,8 +29,8 @@ import java.util.stream.Collectors;
 @SuppressWarnings("Duplicates")
 public class GlobalMethods {
 
-    private static StringEncryptor jasyptStringEncryptor;
-
+    private final SmsLogging smsLogging;
+    private final CityRepository cityRepository;
     private final AccountService accountService;
     private final AgentRepository agentRepository;
     private final ProductRepository productRepository;
@@ -43,7 +43,10 @@ public class GlobalMethods {
 
 
     @Autowired
-    public GlobalMethods(AccountService accountService, AgentRepository agentRepository,
+    public GlobalMethods(SmsLogging smsLogging,
+                         CityRepository cityRepository,
+                         AccountService accountService,
+                         AgentRepository agentRepository,
                          ProductRepository productRepository,
                          CustomerRepository customerRepository,
                          MerchantRepository merchantRepository,
@@ -51,6 +54,8 @@ public class GlobalMethods {
                          MessengerRepository messengerRepository,
                          DistributorRepository distributorRepository,
                          LoginValidationRepository loginValidationRepository) {
+        this.smsLogging = smsLogging;
+        this.cityRepository = cityRepository;
         this.accountService = accountService;
         this.agentRepository = agentRepository;
         this.productRepository = productRepository;
@@ -120,6 +125,11 @@ public class GlobalMethods {
         }
         return city.get();
     }
+
+    public void sendSMSNotification(JSONObject data) {
+        smsLogging.generateMessage(data);
+    }
+
 
     public JSONObject getMultiUserCustomer(String email) {
         JSONObject customerData = new JSONObject();
@@ -271,5 +281,14 @@ public class GlobalMethods {
             strValue = "";
         }
         return strValue;
+    }
+
+    public String cityName(Long cityId) {
+        AtomicReference<String> name = new AtomicReference<>("Addis Ababa");
+        cityRepository.findById(cityId)
+                .ifPresent(city -> {
+                    name.set(city.getCity());
+                });
+        return name.get();
     }
 }

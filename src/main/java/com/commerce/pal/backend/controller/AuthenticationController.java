@@ -376,6 +376,69 @@ public class AuthenticationController {
         return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
     }
 
+    @RequestMapping(value = {"/validate-token"}, method = {RequestMethod.GET}, produces = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<?> validateToken() {
+        JSONObject responseMap = new JSONObject();
+        try {
+            responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                    .put("statusDescription", "success")
+                    .put("statusMessage", "success");
+            LoginValidation user = globalMethods.fetchUserDetails();
+
+            customerRepository.findCustomerByEmailAddress(user.getEmailAddress())
+                    .ifPresent(customer -> {
+                        JSONObject customerData = new JSONObject();
+                        customerData.put("userId", customer.getCustomerId());
+                        customerData.put("firstName", customer.getFirstName());
+                        customerData.put("lastName", customer.getLastName());
+                        customerData.put("language", customer.getLanguage());
+                        customerData.put("phoneNumber", customer.getPhoneNumber());
+                        customerData.put("email", customer.getEmailAddress());
+                        customerData.put("city", customer.getCity());
+                        customerData.put("country", customer.getCountry());
+                        customerData.put("district", customer.getDistrict());
+                        customerData.put("location", customer.getLocation());
+                        customerData.put("oneSignalToken", user.getUserOneSignalId() != null ? user.getUserOneSignalId() : "12WEQWE21313");
+                        responseMap.put("Details", customerData);
+                    });
+        } catch (Exception ex) {
+            log.log(Level.INFO, ex.getMessage());
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("errorDescription", ex.getMessage())
+                    .put("statusMessage", "internal system error");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseMap.toString());
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
+    }
+
+    @RequestMapping(value = {"/user-language"}, method = {RequestMethod.GET}, produces = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<?> getUserLanguage() {
+        JSONObject responseMap = new JSONObject();
+        try {
+            responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                    .put("statusDescription", "success")
+                    .put("statusMessage", "success");
+            LoginValidation user = globalMethods.fetchUserDetails();
+            customerRepository.findCustomerByEmailAddress(user.getEmailAddress())
+                    .ifPresentOrElse(customer -> {
+                        responseMap.put("Language", customer.getLanguage());
+                    }, () -> {
+                        responseMap.put("Language", "en");
+                    });
+        } catch (Exception ex) {
+            log.log(Level.INFO, ex.getMessage());
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("errorDescription", ex.getMessage())
+                    .put("statusMessage", "internal system error");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseMap.toString());
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
+    }
+
     @RequestMapping(value = {"/update-one-signal"}, method = {RequestMethod.POST}, produces = {"application/json"})
     @ResponseBody
     public ResponseEntity<?> updateOneSignalId(@RequestBody String requestBody) {
@@ -418,6 +481,12 @@ public class AuthenticationController {
                         .put("statusDescription", "email address already registered")
                         .put("statusMessage", "registration exists");
             } else if (exists == -1) {
+                JSONObject smsBody = new JSONObject();
+                smsBody.put("TemplateId", "1");
+                smsBody.put("TemplateLanguage", "en");
+                smsBody.put("Phone", request.getString("msisdn").substring(request.getString("msisdn").length() - 9));
+                globalMethods.sendSMSNotification(smsBody);
+
                 responseMap.put("statusCode", ResponseCodes.SUCCESS)
                         .put("userId", userId)
                         .put("statusDescription", "success. Use current login details")

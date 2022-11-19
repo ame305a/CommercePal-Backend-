@@ -246,6 +246,7 @@ public class MerchantService {
                     payload.put("name", merchant.getMerchantName());
                     payload.put("country", merchant.getCountry());
                     payload.put("city", merchant.getCity());
+                    payload.put("cityName", globalMethods.cityName(Long.valueOf(merchant.getCity())));
                     payload.put("regionId", merchant.getRegionId());
                     payload.put("serviceCodeId", merchant.getServiceCodeId());
                     payload.put("physicalAddress", merchant.getPhysicalAddress());

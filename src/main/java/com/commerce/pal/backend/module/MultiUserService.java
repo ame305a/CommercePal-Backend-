@@ -108,6 +108,13 @@ public class MultiUserService {
                         "Username is " + request.getString("email").trim() + " and password : " + password;
 
                 emailClient.emailSender(msg, request.getString("email").trim(), "REGISTRATION");
+
+
+                JSONObject smsBody = new JSONObject();
+                smsBody.put("TemplateId", "1");
+                smsBody.put("TemplateLanguage", "en");
+                smsBody.put("Phone", request.getString("msisdn").substring(request.getString("msisdn").length() - 9));
+                globalMethods.sendSMSNotification(smsBody);
             }
 
         } catch (Exception e) {
