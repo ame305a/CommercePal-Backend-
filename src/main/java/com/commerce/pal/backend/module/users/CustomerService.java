@@ -62,6 +62,7 @@ public class CustomerService {
                     payload.get().put("regionId", customerAddress.getRegionId());
                     payload.get().put("country", customerAddress.getCountry());
                     payload.get().put("city", customerAddress.getCity());
+                    payload.get().put("cityName", globalMethods.cityName(Long.valueOf(customerAddress.getCity())));
                     payload.get().put("subCity", customerAddress.getSubCity());
                     payload.get().put("physicalAddress", customerAddress.getPhysicalAddress());
                     payload.get().put("latitude", customerAddress.getLatitude());
