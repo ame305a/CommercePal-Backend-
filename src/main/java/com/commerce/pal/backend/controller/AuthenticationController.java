@@ -219,6 +219,7 @@ public class AuthenticationController {
                         emailPayload.put("TemplateName", "reset-pin-request.ftl");
                         emailPayload.put("name", globalMethods.getMultiUserCustomer(userEmail).getString("firstName"));
                         emailPayload.put("otp", code);
+                        emailPayload.put("email", userEmail);
                         emailPayload.put("EmailDestination", userEmail);
                         emailPayload.put("EmailSubject", "PASSWORD RESET");
                         emailPayload.put("EmailMessage", "Password Reset");
