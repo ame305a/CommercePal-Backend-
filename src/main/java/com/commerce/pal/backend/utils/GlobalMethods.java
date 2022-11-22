@@ -1,5 +1,6 @@
 package com.commerce.pal.backend.utils;
 
+import com.commerce.pal.backend.integ.notification.SmsEmailPushService;
 import com.commerce.pal.backend.models.LoginValidation;
 import com.commerce.pal.backend.module.transaction.AccountService;
 import com.commerce.pal.backend.repo.LoginValidationRepository;
@@ -33,14 +34,15 @@ public class GlobalMethods {
     private final CityRepository cityRepository;
     private final AccountService accountService;
     private final AgentRepository agentRepository;
+
     private final ProductRepository productRepository;
     private final CustomerRepository customerRepository;
     private final MerchantRepository merchantRepository;
     private final BusinessRepository businessRepository;
+    private final SmsEmailPushService smsEmailPushService;
     private final MessengerRepository messengerRepository;
     private final DistributorRepository distributorRepository;
     private final LoginValidationRepository loginValidationRepository;
-
 
     @Autowired
     public GlobalMethods(SmsLogging smsLogging,
@@ -51,6 +53,7 @@ public class GlobalMethods {
                          CustomerRepository customerRepository,
                          MerchantRepository merchantRepository,
                          BusinessRepository businessRepository,
+                         SmsEmailPushService smsEmailPushService,
                          MessengerRepository messengerRepository,
                          DistributorRepository distributorRepository,
                          LoginValidationRepository loginValidationRepository) {
@@ -62,9 +65,27 @@ public class GlobalMethods {
         this.customerRepository = customerRepository;
         this.merchantRepository = merchantRepository;
         this.businessRepository = businessRepository;
+        this.smsEmailPushService = smsEmailPushService;
         this.messengerRepository = messengerRepository;
         this.distributorRepository = distributorRepository;
         this.loginValidationRepository = loginValidationRepository;
+    }
+
+
+    public void sendSMSNotification(JSONObject data) {
+        String message = smsLogging.generateMessage(data);
+        smsEmailPushService.pickAndProcess(message, data.getString("Phone"));
+    }
+
+    public void sendEmailNotification(JSONObject data) {
+        smsEmailPushService.pickAndProcessEmail(data);
+    }
+
+    public void sendPushNotification(JSONObject payload) {
+        smsEmailPushService.pickAndProcessPush(payload.getString("UserId"),
+                payload.getString("Header"),
+                payload.getString("Message"),
+                payload.getJSONObject("data"));
     }
 
     public LoginValidation fetchUserDetails() {
@@ -125,11 +146,6 @@ public class GlobalMethods {
         }
         return city.get();
     }
-
-    public void sendSMSNotification(JSONObject data) {
-        smsLogging.generateMessage(data);
-    }
-
 
     public JSONObject getMultiUserCustomer(String email) {
         JSONObject customerData = new JSONObject();

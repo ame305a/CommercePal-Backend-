@@ -115,6 +115,8 @@ public class MultiUserService {
                 smsBody.put("TemplateLanguage", "en");
                 smsBody.put("Phone", request.getString("msisdn").substring(request.getString("msisdn").length() - 9));
                 globalMethods.sendSMSNotification(smsBody);
+
+
             }
 
         } catch (Exception e) {

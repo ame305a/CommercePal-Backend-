@@ -47,7 +47,6 @@ public class SmsLogging {
                     log.log(Level.WARNING, "Error Mapping SMS : " + ex.getMessage());
                 }
             }
-            sendSMS(message.get(), data.getString("Phone"));
         } catch (Exception ex) {
             log.log(Level.WARNING, "Error Generating SMS : " + ex.getMessage());
         }
@@ -74,21 +73,5 @@ public class SmsLogging {
             transResponse.put("Template", "Welcome to CommercePal");
         }
         return transResponse;
-    }
-
-    public void sendSMS(String message, String phone) {
-        try {
-            JSONObject pushBdy = new JSONObject();
-            pushBdy.put("Phone", phone);
-            pushBdy.put("Message", message);
-            RequestBuilder builder = new RequestBuilder("POST");
-            builder.addHeader("Content-Type", "application/json")
-                    .setBody(pushBdy.toString())
-                    .setUrl(PUSH_END_POINT)
-                    .build();
-            log.log(Level.INFO, "CommercePal Notification Res : " + httpProcessor.processProperRequest(builder));
-        } catch (Exception ex) {
-            log.log(Level.WARNING, ex.getMessage());
-        }
     }
 }

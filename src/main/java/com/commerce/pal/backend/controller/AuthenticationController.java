@@ -206,15 +206,23 @@ public class AuthenticationController {
             String userEmail = jsonObject.getString("email");
             loginValidationRepository.findLoginValidationByEmailAddress(userEmail)
                     .ifPresentOrElse(user -> {
+
                         String code = globalMethods.getMobileValidationCode();
                         String token = code + "-" + UUID.randomUUID().toString();
                         user.setPasswordResetToken(token);
                         user.setPasswordResetTokenStatus(0);
                         user.setPasswordResetTokenExpire(Timestamp.from(Instant.now().plusSeconds(TimeUnit.MINUTES.toSeconds(30))));
                         loginValidationRepository.save(user);
-                        String msg = "You have requested for password reset!"
-                                + "Code : " + code;
-                        emailClient.emailSender(msg, userEmail, "PASSWORD RESET");
+
+                        JSONObject emailPayload = new JSONObject();
+                        emailPayload.put("HasTemplate", "YES");
+                        emailPayload.put("TemplateName", "reset-pin-request.ftl");
+                        emailPayload.put("name", globalMethods.getMultiUserCustomer(userEmail).getString("firstName"));
+                        emailPayload.put("otp", code);
+                        emailPayload.put("EmailDestination", userEmail);
+                        emailPayload.put("EmailSubject", "PASSWORD RESET");
+                        emailPayload.put("EmailMessage", "Password Reset");
+                        globalMethods.sendEmailNotification(emailPayload);
                         responseMap.put("Status", "00");
                         responseMap.put("Message", "Request to reset password received.");
                     }, () -> {
