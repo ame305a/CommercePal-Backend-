@@ -150,9 +150,9 @@ public class BusinessOrderController {
                                                 orderItem.setDiscountValue(new BigDecimal(0));
                                                 orderItem.setDiscountAmount(new BigDecimal(0));
                                             }
-//                                            orderItem.setTotalAmount(new BigDecimal(product.getUnitPrice().doubleValue() * Double.valueOf(orderItem.getQuantity())));
+                                            orderItem.setTotalAmount(new BigDecimal(product.getUnitPrice().doubleValue() * Double.valueOf(orderItem.getQuantity())));
                                             orderItem.setTotalDiscount(new BigDecimal(orderItem.getDiscountAmount().doubleValue() * Double.valueOf(orderItem.getQuantity())));
-                                            orderItem.setTotalAmount(new BigDecimal((product.getUnitPrice().doubleValue() * Double.valueOf(orderItem.getQuantity())) - orderItem.getTotalDiscount().doubleValue()));
+//                                            orderItem.setTotalAmount(new BigDecimal((product.getUnitPrice().doubleValue() * Double.valueOf(orderItem.getQuantity())) - orderItem.getTotalDiscount().doubleValue()));
                                             orderItem.setStatus(0);
                                             orderItem.setSettlementStatus(0);
                                             orderItem.setStatusDescription("Pending Payment and Shipping");
@@ -175,7 +175,7 @@ public class BusinessOrderController {
                                         newOrder.get().setStatusDescription("Failure as one of the products is invalid");
                                     });
                         });
-                        newOrder.get().setTotalPrice(new BigDecimal(totalAmount.get()));
+                        newOrder.get().setTotalPrice(new BigDecimal(totalAmount.get() - totalDiscount.get()));
                         newOrder.get().setDiscount(new BigDecimal(totalDiscount.get()));
                         orderRepository.save(newOrder.get());
                         if (newOrder.get().getStatus().equals(5)) {
