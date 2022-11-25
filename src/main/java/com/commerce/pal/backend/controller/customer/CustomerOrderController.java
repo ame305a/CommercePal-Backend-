@@ -187,6 +187,7 @@ public class CustomerOrderController {
                         } else {
                             JSONObject checkoutSummary = new JSONObject();
                             checkoutSummary.put("TotalCheckoutPrice", newOrder.get().getTotalPrice());
+                            checkoutSummary.put("TotalDiscountPrice", newOrder.get().getDiscount());
                             checkoutSummary.put("VoucherDiscountAmount", 0.00);
                             checkoutSummary.put("DeliveryFeeAmount", newOrder.get().getDeliveryPrice());
                             checkoutSummary.put("FinalTotalCheckoutPrice", newOrder.get().getTotalPrice());
@@ -404,11 +405,6 @@ public class CustomerOrderController {
                                                                     orderItem.setDeliveryPrice(itemDeliveryFee);
                                                                     totalDeliveryFee.set(new BigDecimal(itemDeliveryFee.doubleValue() + totalDeliveryFee.get().doubleValue()));
                                                                 });
-                                                        if (order.getIsUserAddressAssigned().equals(1)) {
-                                                            order.setTotalPrice(new BigDecimal(order.getTotalPrice().doubleValue() - order.getDeliveryPrice().doubleValue() + totalDeliveryFee.get().doubleValue()));
-                                                        } else {
-                                                            order.setTotalPrice(new BigDecimal(order.getTotalPrice().doubleValue() + totalDeliveryFee.get().doubleValue()));
-                                                        }
 
                                                         totalDeliveryFee.set(new BigDecimal(totalDeliveryFee.get().doubleValue()).setScale(0, RoundingMode.UP));
                                                         order.setPreferredLocationType("C");

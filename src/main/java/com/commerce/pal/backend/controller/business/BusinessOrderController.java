@@ -186,6 +186,7 @@ public class BusinessOrderController {
                             JSONObject checkoutSummary = new JSONObject();
                             checkoutSummary.put("TotalCheckoutPrice", newOrder.get().getTotalPrice());
                             checkoutSummary.put("VoucherDiscountAmount", 0.00);
+                            checkoutSummary.put("TotalDiscountPrice", newOrder.get().getDiscount());
                             checkoutSummary.put("DeliveryFeeAmount", newOrder.get().getDeliveryPrice());
                             checkoutSummary.put("FinalTotalCheckoutPrice", newOrder.get().getTotalPrice());
 
