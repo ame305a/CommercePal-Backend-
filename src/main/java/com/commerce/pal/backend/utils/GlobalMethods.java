@@ -17,6 +17,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
@@ -100,7 +102,15 @@ public class GlobalMethods {
     }
 
     public String generateTrans() {
-        return IDGenerator.getInstance("CP").getRRN();
+        String ref = Timestamp.from(Instant.now()).toString();
+        Boolean finalRef = false;
+        while (finalRef == false) {
+            ref = IDGenerator.getInstance("CP").getRRN();
+            if (!ref.contains("0") || !ref.contains("O")) {
+                finalRef = true;
+            }
+        }
+        return ref;
     }
 
     public JSONObject mergeJSONObjects(JSONObject json1, JSONObject json2) {

@@ -216,7 +216,7 @@ public class AuthenticationController {
 
                         JSONObject emailPayload = new JSONObject();
                         emailPayload.put("HasTemplate", "YES");
-                        emailPayload.put("TemplateName", "reset-pin-request.ftl");
+                        emailPayload.put("TemplateName", "reset-pin-request");
                         emailPayload.put("name", globalMethods.getMultiUserCustomer(userEmail).getString("firstName"));
                         emailPayload.put("otp", code);
                         emailPayload.put("email", userEmail);
