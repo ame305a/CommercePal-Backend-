@@ -163,6 +163,11 @@ public class ProductService {
                         detail.put("ProductParentCategoryId", pro.getProductParentCateoryId());
                         detail.put("ProductCategoryId", pro.getProductCategoryId());
                         detail.put("ProductSubCategoryId", pro.getProductSubCategoryId());
+
+                        detail.put("ProductParentCategoryIdName", categoryService.getParentCatInfo(pro.getProductParentCateoryId()).getString("name"));
+                        detail.put("ProductCategoryIdName",  categoryService.getCategoryInfo(pro.getProductCategoryId()).getString("name"));
+                        detail.put("ProductSubCategoryIdName", categoryService.getSubCategoryInfo(pro.getProductSubCategoryId()).getString("name"));
+
                         detail.put("ProductDescription", pro.getProductDescription());
                         detail.put("SpecialInstruction", pro.getSpecialInstruction());
                         detail.put("IsDiscounted", pro.getIsDiscounted());
