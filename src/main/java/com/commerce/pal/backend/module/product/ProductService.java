@@ -24,6 +24,7 @@ import java.util.logging.Level;
 @Service
 @SuppressWarnings("Duplicates")
 public class ProductService {
+
     private final GlobalMethods globalMethods;
     private final CategoryService categoryService;
     private final ProductRepository productRepository;
