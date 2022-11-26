@@ -224,6 +224,14 @@ public class AuthenticationController {
                         emailPayload.put("EmailSubject", "PASSWORD RESET");
                         emailPayload.put("EmailMessage", "Password Reset");
                         globalMethods.sendEmailNotification(emailPayload);
+
+                        JSONObject smsBody = new JSONObject();
+                        smsBody.put("TemplateId", "9");
+                        smsBody.put("TemplateLanguage", "en");
+                        smsBody.put("Phone", globalMethods.getMultiUserCustomer(userEmail).getString("phoneNumber"));
+                        smsBody.put("otp", code);
+                        globalMethods.sendSMSNotification(smsBody);
+
                         responseMap.put("Status", "00");
                         responseMap.put("Message", "Request to reset password received.");
                     }, () -> {
