@@ -55,6 +55,7 @@ public class TransactionController {
         agentFloatRepository.findAgentFloatsByStatusOrderByRequestDate(0)
                 .forEach(agentFloat -> {
                     JSONObject detail = new JSONObject();
+                    detail.put("AgentId", agentFloat.getAgentId());
                     detail.put("TransRef", agentFloat.getTransRef());
                     detail.put("Amount", agentFloat.getAmount());
                     detail.put("Comment", agentFloat.getComment());
