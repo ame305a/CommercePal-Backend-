@@ -56,6 +56,12 @@ public class TransactionController {
                 .forEach(agentFloat -> {
                     JSONObject detail = new JSONObject();
                     detail.put("AgentId", agentFloat.getAgentId());
+                    agentRepository.findAgentByAgentId(agentFloat.getAgentId())
+                            .ifPresentOrElse(agent -> {
+                                detail.put("AgentName", agent.getAgentName());
+                            }, () -> {
+                                detail.put("AgentId", "Agent Names (InValid)");
+                            });
                     detail.put("TransRef", agentFloat.getTransRef());
                     detail.put("Amount", agentFloat.getAmount());
                     detail.put("Comment", agentFloat.getComment());
