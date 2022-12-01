@@ -514,10 +514,16 @@ public class AuthenticationController {
                         .put("statusDescription", "success")
                         .put("statusMessage", "registration successful");
 
-                String msg = "Welcome to CommercePal! Your CUSTOMER Account has been created. " +
-                        "Username is " + request.getString("email").trim() + " and password : " + password;
 
-                emailClient.emailSender(msg, request.getString("email").trim(), "REGISTRATION");
+                JSONObject emailPayload = new JSONObject();
+                emailPayload.put("HasTemplate", "YES");
+                emailPayload.put("TemplateName", "registration");
+                emailPayload.put("name", request.getString("firstName"));
+                emailPayload.put("password", password);
+                emailPayload.put("EmailDestination", request.getString("email").trim());
+                emailPayload.put("EmailSubject", "COMMERCE PAL REGISTRATION");
+                emailPayload.put("EmailMessage", "Password Reset");
+                globalMethods.sendEmailNotification(emailPayload);
             }
 
         } catch (Exception e) {

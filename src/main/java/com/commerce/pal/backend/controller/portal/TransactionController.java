@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -78,6 +80,66 @@ public class TransactionController {
                 .put("statusMessage", "Request Successful");
 
         return ResponseEntity.ok(responseMap.toString());
+    }
+
+    @RequestMapping(value = "/approve-decline-float", method = RequestMethod.POST)
+    public ResponseEntity<?> approveDeclineFloat(@RequestBody String req) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            JSONObject request = new JSONObject(req);
+            agentFloatRepository.findById(request.getInt("RequestId"))
+                    .ifPresentOrElse(agentFloat -> {
+                        agentFloat.setStatus(request.getInt("Status"));
+                        agentFloat.setReviewedBy(1);
+                        agentFloat.setReview(request.getString("Review"));
+                        agentFloat.setReviewDate(Timestamp.from(Instant.now()));
+                        agentFloat.setTransRef("PENDING");
+                        agentFloat.setProcessedDate(Timestamp.from(Instant.now()));
+                        if (Integer.valueOf(request.getInt("Status")).equals(3)) {
+                            agentRepository.findAgentByAgentId(agentFloat.getAgentId())
+                                    .ifPresentOrElse(agent -> {
+                                        JSONObject floatRq = new JSONObject();
+                                        floatRq.put("TransRef", globalMethods.generateTrans());
+                                        floatRq.put("Account", agent.getTillNumber());
+                                        floatRq.put("Currency", "ETB");
+                                        floatRq.put("Amount", request.getBigDecimal("Amount").toString());
+
+                                        JSONObject payRes = accountService.processAgentFloat(floatRq);
+                                        agentFloat.setTransRef(floatRq.getString("TransRef"));
+                                        agentFloat.setProcessedDate(Timestamp.from(Instant.now()));
+                                        agentFloatRepository.save(agentFloat);
+                                        if (payRes.getString("TransactionStatus").equals("0")) {
+                                            responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                                    .put("balance", payRes.getString("Balance"))
+                                                    .put("statusDescription", "Successful")
+                                                    .put("statusMessage", "Successful");
+                                        } else {
+                                            responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
+                                                    .put("statusDescription", "Failed")
+                                                    .put("statusMessage", "Failed");
+                                        }
+                                    }, () -> {
+                                        responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
+                                                .put("statusDescription", "Failed")
+                                                .put("statusMessage", "Failed");
+                                    });
+                        } else {
+                            responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                    .put("statusDescription", "Success")
+                                    .put("statusMessage", "Success");
+                        }
+                    }, () -> {
+                        responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
+                                .put("statusDescription", "Agent Does not exists")
+                                .put("statusMessage", "Agent Does not exists");
+                    });
+        } catch (Exception e) {
+            log.log(Level.SEVERE, e.getMessage());
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("statusMessage", "internal system error");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
     }
 
     @RequestMapping(value = "/assign-float", method = RequestMethod.POST)

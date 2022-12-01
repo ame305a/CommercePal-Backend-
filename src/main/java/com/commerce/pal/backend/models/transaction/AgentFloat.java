@@ -32,7 +32,7 @@ public class AgentFloat {
     private Timestamp requestDate;
     @Basic
     @Column(name = "ReviewedBy")
-    private String reviewedBy;
+    private Integer reviewedBy;
     @Basic
     @Column(name = "Review")
     private String review;

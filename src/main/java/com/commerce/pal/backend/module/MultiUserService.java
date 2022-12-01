@@ -104,10 +104,15 @@ public class MultiUserService {
                         .put("statusDescription", "success")
                         .put("statusMessage", "registration successful");
 
-                String msg = "Welcome to CommercePal! Your " + request.getString("userType") + " Account has been created. " +
-                        "Username is " + request.getString("email").trim() + " and password : " + password;
-
-                emailClient.emailSender(msg, request.getString("email").trim(), "REGISTRATION");
+                JSONObject emailPayload = new JSONObject();
+                emailPayload.put("HasTemplate", "YES");
+                emailPayload.put("TemplateName", "registration");
+                emailPayload.put("name", request.getString("firstName"));
+                emailPayload.put("password", password);
+                emailPayload.put("EmailDestination", request.getString("email").trim());
+                emailPayload.put("EmailSubject", "COMMERCE PAL REGISTRATION");
+                emailPayload.put("EmailMessage", "Password Reset");
+                globalMethods.sendEmailNotification(emailPayload);
 
 
                 JSONObject smsBody = new JSONObject();
@@ -115,7 +120,6 @@ public class MultiUserService {
                 smsBody.put("TemplateLanguage", "en");
                 smsBody.put("Phone", request.getString("msisdn").substring(request.getString("msisdn").length() - 9));
                 globalMethods.sendSMSNotification(smsBody);
-
 
             }
 
