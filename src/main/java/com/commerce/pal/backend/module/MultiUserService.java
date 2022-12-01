@@ -68,18 +68,23 @@ public class MultiUserService {
             request.put("password", passwordHash);
             switch (request.getString("userType")) {
                 case "MERCHANT":
+                    request.put("msisdn", request.getString("ownerPhoneNumber"));
                     responseMap = registrationStoreService.doMerchantRegistration(request);
                     break;
                 case "BUSINESS":
+                    request.put("msisdn", request.getString("ownerPhoneNumber"));
                     responseMap = registrationStoreService.doBusinessRegistration(request);
                     break;
                 case "DISTRIBUTOR":
+                    request.put("msisdn", request.getString("ownerPhoneNumber"));
                     responseMap = registrationStoreService.doDistributorRegistration(request);
                     break;
                 case "AGENT":
+                    request.put("msisdn", request.getString("ownerPhoneNumber"));
                     responseMap = registrationStoreService.doAgentRegistration(request);
                     break;
                 case "MESSENGER":
+                    request.put("msisdn", request.getString("ownerPhoneNumber"));
                     responseMap = registrationStoreService.doMessengerRegistration(request);
                     break;
             }
