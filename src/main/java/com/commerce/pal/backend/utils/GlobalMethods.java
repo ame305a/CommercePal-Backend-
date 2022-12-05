@@ -83,6 +83,9 @@ public class GlobalMethods {
         smsEmailPushService.pickAndProcessEmail(data);
     }
 
+    public void sendSlackNotification(JSONObject data) {
+        smsEmailPushService.pickAndProcessSlack(data);
+    }
     public void sendPushNotification(JSONObject payload) {
         smsEmailPushService.pickAndProcessPush(payload.getString("UserId"),
                 payload.getString("Header"),

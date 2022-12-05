@@ -70,6 +70,15 @@ public class MultiUserService {
                 case "MERCHANT":
                     request.put("msisdn", request.getString("ownerPhoneNumber"));
                     responseMap = registrationStoreService.doMerchantRegistration(request);
+
+                    if (!Integer.valueOf(responseMap.getInt("exists")).equals(1)) {
+                        JSONObject slackBody = new JSONObject();
+                        slackBody.put("TemplateId", "5");
+                        slackBody.put("merchant_name", request.getString("businessName"));
+                        slackBody.put("merchant_email", request.getString("email"));
+                        slackBody.put("merchant_phone", request.getString("msisdn"));
+                        globalMethods.sendSlackNotification(slackBody);
+                    }
                     break;
                 case "BUSINESS":
                     request.put("msisdn", request.getString("ownerPhoneNumber"));
@@ -97,6 +106,7 @@ public class MultiUserService {
                         .put("statusDescription", "email address already registered")
                         .put("statusMessage", "registration exists");
             } else if (exists == -1) {
+
                 responseMap.put("statusCode", ResponseCodes.SUCCESS)
                         .put("userId", userId)
                         .put("statusDescription", "success. Use current login details")

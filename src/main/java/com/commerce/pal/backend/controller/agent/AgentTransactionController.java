@@ -68,6 +68,11 @@ public class AgentTransactionController {
                         responseMap.put("statusCode", ResponseCodes.SUCCESS)
                                 .put("statusDescription", "Successful")
                                 .put("statusMessage", "Successful");
+
+                        JSONObject slackBody = new JSONObject();
+                        slackBody.put("TemplateId", "3");
+                        slackBody.put("name", agent.getAgentName());
+                        globalMethods.sendSlackNotification(slackBody);
                     }, () -> {
                         responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
                                 .put("statusDescription", "Agent Does not exists")

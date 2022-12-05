@@ -2,6 +2,7 @@ package com.commerce.pal.backend.module.users;
 
 import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.repo.user.MessengerRepository;
+import com.commerce.pal.backend.utils.GlobalMethods;
 import lombok.extern.java.Log;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,17 +12,20 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 
 @Log
 @Service
 @SuppressWarnings("Duplicates")
 public class MessengerService {
-
+    private final GlobalMethods globalMethods;
     private final MessengerRepository messengerRepository;
 
     @Autowired
-    public MessengerService(MessengerRepository messengerRepository) {
+    public MessengerService(GlobalMethods globalMethods,
+                            MessengerRepository messengerRepository) {
+        this.globalMethods = globalMethods;
         this.messengerRepository = messengerRepository;
     }
 
@@ -186,44 +190,46 @@ public class MessengerService {
     }
 
     public JSONObject getMessengerInfo(Long messengerId) {
-        JSONObject payload = new JSONObject();
+        AtomicReference<JSONObject> payload = new AtomicReference<>(new JSONObject());
         messengerRepository.findMessengerByMessengerId(messengerId)
                 .ifPresent(messenger -> {
                     try {
-                        payload.put("userId", messenger.getMessengerId());
-                        payload.put("ownerPhoneNumber", messenger.getOwnerPhoneNumber());
-                        payload.put("email", messenger.getEmailAddress());
-                        payload.put("ownerType", messenger.getOwnerType());
-                        payload.put("idNumber", messenger.getIdNumber());
-                        payload.put("idNumberImage", messenger.getIdNumberImage());
-                        payload.put("drivingLicenceNumber", messenger.getDrivingLicenceNumber());
-                        payload.put("drivingLicenceImage", messenger.getDrivingLicenceImage());
-                        payload.put("insuranceExpiry", messenger.getInsuranceExpiry());
-                        payload.put("policeClearanceImage", messenger.getPoliceClearanceImage());
-                        payload.put("messengerPhoto", messenger.getMessengerPhoto());
-                        payload.put("carrierType", messenger.getCarrierType());
-                        payload.put("carrierLicencePlate", messenger.getCarrierLicencePlate());
-                        payload.put("carrierImage", messenger.getCarrierImage());
-                        payload.put("language", messenger.getLanguage());
-                        payload.put("country", messenger.getCountry());
-                        payload.put("city", messenger.getCity());
-                        payload.put("district", messenger.getDistrict());
-                        payload.put("location", messenger.getLocation());
-                        payload.put("longitude", messenger.getLongitude());
-                        payload.put("latitude", messenger.getLatitude());
+                        payload.get() .put("userId", messenger.getMessengerId());
+                        payload.get().put("ownerPhoneNumber", messenger.getOwnerPhoneNumber());
+                        payload.get().put("email", messenger.getEmailAddress());
+                        payload.get().put("ownerType", messenger.getOwnerType());
+                        payload.get().put("idNumber", messenger.getIdNumber());
+                        payload.get().put("idNumberImage", messenger.getIdNumberImage());
+                        payload.get().put("drivingLicenceNumber", messenger.getDrivingLicenceNumber());
+                        payload.get().put("drivingLicenceImage", messenger.getDrivingLicenceImage());
+                        payload.get().put("insuranceExpiry", messenger.getInsuranceExpiry());
+                        payload.get().put("policeClearanceImage", messenger.getPoliceClearanceImage());
+                        payload.get().put("messengerPhoto", messenger.getMessengerPhoto());
+                        payload.get().put("carrierType", messenger.getCarrierType());
+                        payload.get().put("carrierLicencePlate", messenger.getCarrierLicencePlate());
+                        payload.get().put("carrierImage", messenger.getCarrierImage());
+                        payload.get().put("language", messenger.getLanguage());
+                        payload.get().put("country", messenger.getCountry());
+                        payload.get().put("city", messenger.getCity());
+                        payload.get().put("district", messenger.getDistrict());
+                        payload.get().put("location", messenger.getLocation());
+                        payload.get().put("longitude", messenger.getLongitude());
+                        payload.get().put("latitude", messenger.getLatitude());
                         JSONObject nextOfKin = new JSONObject();
                         nextOfKin.put("nextKinNames", messenger.getNextKinNames());
                         nextOfKin.put("nextKinPhone", messenger.getNextKinPhone());
                         nextOfKin.put("nextKinEmail", messenger.getNextKinEmail());
                         nextOfKin.put("nextKinId", messenger.getNextKinId());
                         nextOfKin.put("nextKinPhoto", messenger.getNextKinPhoto());
-                        payload.put("nextOfKin", nextOfKin);
-                        payload.put("Status", messenger.getStatus().toString());
+                        payload.get().put("nextOfKin", nextOfKin);
+                        JSONObject customer = globalMethods.getMultiUserCustomer(messenger.getEmailAddress());
+                        payload.set(globalMethods.mergeJSONObjects(payload.get(), customer));
+                        payload.get().put("Status", messenger.getStatus().toString());
                     } catch (Exception ex) {
                         log.log(Level.WARNING, ex.getMessage());
                     }
                 });
-        return payload;
+        return payload.get();
     }
 
 }

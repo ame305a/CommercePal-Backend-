@@ -23,6 +23,9 @@ public class SmsEmailPushService {
     @Value("${commerce.pal.notification.one.signal.endpoint}")
     private String PUSH_END_POINT;
 
+    @Value("${commerce.pal.notification.slack.notification.endpoint}")
+    private String SLACK_END_POINT;
+
     private final HttpProcessor httpProcessor;
 
     @Autowired
@@ -71,6 +74,19 @@ public class SmsEmailPushService {
                     .setUrl(PUSH_END_POINT)
                     .build();
             log.log(Level.INFO, "CommercePal OneSignal Res : " + httpProcessor.processProperRequest(builder));
+        } catch (Exception ex) {
+            log.log(Level.WARNING, ex.getMessage());
+        }
+    }
+
+    public void pickAndProcessSlack(JSONObject emailBody) {
+        try {
+            RequestBuilder builder = new RequestBuilder("POST");
+            builder.addHeader("Content-Type", "application/json")
+                    .setBody(emailBody.toString())
+                    .setUrl(SLACK_END_POINT)
+                    .build();
+            log.log(Level.INFO, "CommercePal Slack Notification Res : " + httpProcessor.processProperRequest(builder));
         } catch (Exception ex) {
             log.log(Level.WARNING, ex.getMessage());
         }
