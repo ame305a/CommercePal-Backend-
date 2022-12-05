@@ -61,6 +61,7 @@ public class SmsEmailPushService {
             log.log(Level.WARNING, ex.getMessage());
         }
     }
+
     public void pickAndProcessPush(String userId, String header, String message, JSONObject data) {
         try {
             JSONObject pushBdy = new JSONObject();
@@ -81,6 +82,7 @@ public class SmsEmailPushService {
 
     public void pickAndProcessSlack(JSONObject emailBody) {
         try {
+            log.log(Level.INFO, "SLACK ENDPOINT : " + SLACK_END_POINT);
             RequestBuilder builder = new RequestBuilder("POST");
             builder.addHeader("Content-Type", "application/json")
                     .setBody(emailBody.toString())
