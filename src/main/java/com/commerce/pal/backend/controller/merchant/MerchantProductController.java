@@ -86,6 +86,12 @@ public class MerchantProductController {
                                     .put("statusDescription", "failed to process request")
                                     .put("statusMessage", "internal system error");
                         } else {
+                            JSONObject slackBody = new JSONObject();
+                            slackBody.put("TemplateId", "7");
+                            slackBody.put("product_name", request.getString("productName"));
+                            slackBody.put("product_id", String.valueOf(request.getInt("productId")));
+                            globalMethods.sendSlackNotification(slackBody);
+
                             responseMap.put("statusCode", ResponseCodes.SUCCESS)
                                     .put("statusDescription", "success")
                                     .put("productId", retDet.getInt("productId"))
@@ -118,6 +124,13 @@ public class MerchantProductController {
                         globalMethods.getMerchantId(user.getEmailAddress()),
                         request.getLong("productId"))) {
                     responseMap = productService.updateProduct(request);
+
+                    JSONObject slackBody = new JSONObject();
+                    slackBody.put("TemplateId", "8");
+                    slackBody.put("product_name", request.getString("productName"));
+                    slackBody.put("product_id", String.valueOf(request.getLong("productId")));
+                    globalMethods.sendSlackNotification(slackBody);
+
                 } else {
                     responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
                             .put("statusDescription", "The User does not belong to the Merchant")
