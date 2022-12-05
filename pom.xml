@@ -115,7 +115,7 @@
 	</dependencies>
 
 	<build>
-		<finalName>backend</finalName>
+		<finalName>commerce-pal-backend</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
