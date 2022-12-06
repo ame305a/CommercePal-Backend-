@@ -195,6 +195,12 @@ public class GlobalMethods {
         return password;
     }
 
+    public String getGeneratePassword() {
+        Random rnd = new Random();
+        Integer n = Integer.valueOf(100001 + rnd.nextInt(900000));
+        return n.toString();
+    }
+
     public String getMobileValidationCode() {
         Random rnd = new Random();
         Integer n = Integer.valueOf(1000 + rnd.nextInt(9000));

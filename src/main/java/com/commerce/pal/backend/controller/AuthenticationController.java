@@ -484,7 +484,7 @@ public class AuthenticationController {
 
         try {
             JSONObject request = new JSONObject(registration);
-            String password = globalMethods.generatePassword();
+            String password = globalMethods.getGeneratePassword();
             String passwordHash = bcryptEncoder.encode(password);
             request.put("password", passwordHash);
 
