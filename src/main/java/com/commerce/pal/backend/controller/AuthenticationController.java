@@ -228,11 +228,14 @@ public class AuthenticationController {
                         smsBody.put("otp", code);
                         globalMethods.sendSMSNotification(smsBody);
 
-                        responseMap.put("Status", "00");
-                        responseMap.put("Message", "Request to reset password received.");
+                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                .put("statusDescription", "success")
+                                .put("statusMessage", "Change Password was successful");
                     }, () -> {
-                        responseMap.put("Status", "99");
-                        responseMap.put("Message", "User does not exist");
+                        responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                                .put("statusDescription", "failed to process request")
+                                .put("errorDescription", "User does not exist")
+                                .put("statusMessage", "User does not exist");
                     });
         } catch (Exception ex) {
             log.log(Level.WARNING, "Pass Reset Error : " + ex.getMessage());
@@ -257,22 +260,30 @@ public class AuthenticationController {
                         if (user.getPasswordResetTokenExpire().equals(Timestamp.from(Instant.now()))) {
                         }
                         if (!user.getPasswordResetToken().substring(0, 4).equals(jsonObject.getString("code"))) {
-                            responseMap.put("Status", "99");
-                            responseMap.put("Message", "Code is not valid or expired");
+
+                            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                                    .put("statusDescription", "Code is not valid or expired")
+                                    .put("errorDescription", "Code is not valid or expired")
+                                    .put("statusMessage", "Code is not valid or expired");
                         } else {
                             user.setStatus(1);
                             loginValidationRepository.save(user);
-                            responseMap.put("Status", "00");
-                            responseMap.put("Message", "Code Valid");
+
                             final UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmailAddress());
                             String userToken = jwtTokenUtil.generateToken(userDetails);
                             responseMap.put("jwttoken", userToken);
                             user.setPasswordResetTokenStatus(1);
                             loginValidationRepository.save(user);
+
+                            responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                    .put("statusDescription", "success")
+                                    .put("statusMessage", "Change Password was successful");
                         }
                     }, () -> {
-                        responseMap.put("Status", "99");
-                        responseMap.put("Message", "Token is not valid or expired");
+                        responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                                .put("statusDescription", "Code is not valid or expired")
+                                .put("errorDescription", "Code is not valid or expired")
+                                .put("statusMessage", "Token is not valid or expired");
                     });
         } catch (Exception ex) {
             log.log(Level.WARNING, "Confirm Code Error : " + ex.getMessage());
@@ -298,8 +309,9 @@ public class AuthenticationController {
             user.setPinChange(1);
             user.setLastAttemptDate(Timestamp.from(Instant.now()));
             loginValidationRepository.save(user);
-            responseMap.put("Status", "00");
-            responseMap.put("Message", "Password changed successfully");
+            responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                    .put("statusDescription", "success")
+                    .put("statusMessage", "Change Password was successful");
         } catch (Exception ex) {
             log.log(Level.WARNING, "Change Password Error : " + ex.getMessage());
             responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
@@ -461,8 +473,9 @@ public class AuthenticationController {
             LoginValidation user = globalMethods.fetchUserDetails();
             user.setUserOneSignalId(jsonObject.getString("UserId"));
             loginValidationRepository.save(user);
-            responseMap.put("Status", "00");
-            responseMap.put("Message", "Password changed successfully");
+            responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                    .put("statusDescription", "success")
+                    .put("statusMessage", "successful");
         } catch (Exception ex) {
             log.log(Level.WARNING, "Change Password Error : " + ex.getMessage());
             responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
