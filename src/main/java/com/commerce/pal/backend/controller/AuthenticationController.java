@@ -61,9 +61,6 @@ public class AuthenticationController {
     private JwtTokenUtil jwtTokenUtil;
 
     @Autowired
-    private EmailClient emailClient;
-
-    @Autowired
     private JwtUserDetailsService userDetailsService;
 
     private final AgentService agentService;
@@ -109,7 +106,6 @@ public class AuthenticationController {
         this.messengerRepository = messengerRepository;
         this.distributorRepository = distributorRepository;
         this.registrationStoreService = registrationStoreService;
-
         this.loginValidationRepository = loginValidationRepository;
     }
 

@@ -141,7 +141,7 @@ public class BusinessShoppingController {
                     List<JSONObject> details = new ArrayList<>();
                     specificationsDao.getProducts(params)
                             .forEach(pro -> {
-                                JSONObject detail = productService.getProductDetail(pro.getProductId());
+                                JSONObject detail = productService.getProductListDetailsAlready(pro);
                                 details.add(detail);
                             });
                     responseMap.put("statusCode", ResponseCodes.SUCCESS)
