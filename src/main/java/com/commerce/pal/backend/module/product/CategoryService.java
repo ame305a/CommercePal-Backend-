@@ -109,6 +109,7 @@ public class CategoryService {
         productCategoryRepository.findById(id)
                 .ifPresent(data -> {
                     detail.put("id", data.getId());
+                    detail.put("categoryId", data.getId());
                     detail.put("parentCategoryId", data.getParentCategoryId());
                     detail.put("name", data.getCategoryName());
                     detail.put("mobileImage", data.getCategoryMobileImage() != null ? data.getCategoryMobileImage() : "");
