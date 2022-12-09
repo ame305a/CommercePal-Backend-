@@ -115,7 +115,8 @@ public class BusinessShoppingController {
     public ResponseEntity<?> getProducts(@RequestParam("category") Optional<String> category,
                                          @RequestParam("subCat") Optional<String> subCat,
                                          @RequestParam("brand") Optional<String> brand,
-                                         @RequestParam("product") Optional<String> product) {
+                                         @RequestParam("product") Optional<String> product,
+                                         @RequestParam("unique_id") Optional<String> uniqueId) {
         JSONObject responseMap = new JSONObject();
 
         LoginValidation user = globalMethods.fetchUserDetails();
@@ -137,7 +138,9 @@ public class BusinessShoppingController {
                     params.add(new SearchCriteria("status", ":", 1));
 //                    params.add(new SearchCriteria("productParentCateoryId", ":", business.getBusinessSector()));
                     params.add(new SearchCriteria("productType", ":", "WHOLESALE"));
-
+                    uniqueId.ifPresent(value -> {
+                        params.add(new SearchCriteria("productId", ":", Long.valueOf(globalMethods.getStringValue(value))));
+                    });
                     List<JSONObject> details = new ArrayList<>();
                     specificationsDao.getProducts(params)
                             .forEach(pro -> {
