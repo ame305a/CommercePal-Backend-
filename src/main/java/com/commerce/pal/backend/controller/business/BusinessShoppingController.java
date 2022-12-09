@@ -110,6 +110,56 @@ public class BusinessShoppingController {
         return ResponseEntity.ok(responseMap.toString());
     }
 
+    @RequestMapping(value = {"/get-list-products"}, method = {RequestMethod.GET}, produces = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<?> getListProducts(@RequestParam("parent") Optional<String> parent,
+                                             @RequestParam("category ") Optional<String> category,
+                                             @RequestParam("subCat") Optional<String> subCat,
+                                             @RequestParam("brand") Optional<String> brand,
+                                             @RequestParam("product") Optional<String> product,
+                                             @RequestParam("unique_id") Optional<String> uniqueId) {
+        JSONObject responseMap = new JSONObject();
+
+        List<SearchCriteria> params = new ArrayList<SearchCriteria>();
+        parent.ifPresent(value -> {
+            params.add(new SearchCriteria("productParentCateoryId", ":", value));
+        });
+        category.ifPresent(value -> {
+            params.add(new SearchCriteria("productCategoryId", ":", value));
+        });
+        subCat.ifPresent(value -> {
+            params.add(new SearchCriteria("productSubCategoryId", ":", value));
+        });
+        brand.ifPresent(value -> {
+            params.add(new SearchCriteria("manufucturer", ":", value));
+        });
+        product.ifPresent(value -> {
+            params.add(new SearchCriteria("productId", ":", value));
+        });
+        uniqueId.ifPresent(value -> {
+            params.add(new SearchCriteria("productId", ":", Long.valueOf(globalMethods.getStringValue(value))));
+        });
+
+        params.add(new SearchCriteria("status", ":", 1));
+        params.add(new SearchCriteria("productType", ":", "RETAIL"));
+        List<JSONObject> details = new ArrayList<>();
+        specificationsDao.getProducts(params)
+                .forEach(pro -> {
+                    JSONObject detail = productService.getProductListDetailsAlready(pro);
+                    detail.put("unique_id", globalMethods.generateUniqueString(pro.getProductId().toString()));
+                    details.add(detail);
+                });
+        if (details.isEmpty()) {
+            responseMap.put("statusCode", ResponseCodes.NOT_EXIST);
+        } else {
+            responseMap.put("statusCode", ResponseCodes.SUCCESS);
+        }
+        responseMap.put("statusDescription", "success")
+                .put("details", details)
+                .put("statusMessage", "Request Successful");
+        return ResponseEntity.ok(responseMap.toString());
+    }
+
     @RequestMapping(value = {"/get-products"}, method = {RequestMethod.GET}, produces = {"application/json"})
     @ResponseBody
     public ResponseEntity<?> getProducts(@RequestParam("category") Optional<String> category,
@@ -144,7 +194,7 @@ public class BusinessShoppingController {
                     List<JSONObject> details = new ArrayList<>();
                     specificationsDao.getProducts(params)
                             .forEach(pro -> {
-                                JSONObject detail = productService.getProductListDetailsAlready(pro);
+                                JSONObject detail = productService.getProductDetail(pro);
                                 details.add(detail);
                             });
                     responseMap.put("statusCode", ResponseCodes.SUCCESS)
