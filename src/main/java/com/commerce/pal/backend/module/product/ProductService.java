@@ -84,6 +84,7 @@ public class ProductService {
                     .ifPresentOrElse(product -> {
                         product.setProductName(reqBody.has("productName") ? reqBody.getString("productName") : product.getProductName());
                         product.setShortDescription(reqBody.has("shortDescription") ? reqBody.getString("shortDescription") : product.getShortDescription());
+                        product.setProductType(reqBody.has("productType") ? reqBody.getString("productType") : product.getProductType());
                         product.setProductParentCateoryId(reqBody.has("productParentCateoryId") ? Long.valueOf(reqBody.getString("productParentCateoryId")) : product.getProductParentCateoryId());
                         product.setProductCategoryId(reqBody.has("productCategoryId") ? Long.valueOf(reqBody.getString("productCategoryId")) : product.getProductCategoryId());
                         product.setProductSubCategoryId(reqBody.has("productSubCategoryId") ? Long.valueOf(reqBody.getString("productSubCategoryId")) : product.getProductSubCategoryId());
