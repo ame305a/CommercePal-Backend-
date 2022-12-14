@@ -90,7 +90,7 @@ public class MerchantProductController {
                             JSONObject slackBody = new JSONObject();
                             slackBody.put("TemplateId", "7");
                             slackBody.put("product_name", request.getString("productName"));
-                            slackBody.put("product_id", String.valueOf(request.getInt("productId")));
+                            slackBody.put("product_id", String.valueOf(retDet.getInt("productId")));
                             globalMethods.sendSlackNotification(slackBody);
 
                             responseMap.put("statusCode", ResponseCodes.SUCCESS)
