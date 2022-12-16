@@ -175,8 +175,8 @@ public class BusinessOrderController {
                                         newOrder.get().setStatusDescription("Failure as one of the products is invalid");
                                     });
                         });
-                        newOrder.get().setTotalPrice(new BigDecimal(totalAmount.get() - totalDiscount.get()));
-                        newOrder.get().setDiscount(new BigDecimal(totalDiscount.get()));
+                        newOrder.get().setTotalPrice(new BigDecimal(totalAmount.get() - totalDiscount.get()).setScale(2, RoundingMode.CEILING));
+                        newOrder.get().setDiscount(new BigDecimal(totalDiscount.get()).setScale(2, RoundingMode.CEILING));
                         orderRepository.save(newOrder.get());
                         if (newOrder.get().getStatus().equals(5)) {
                             responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
