@@ -377,7 +377,9 @@ public class ProductManagementController {
                                                     productImageRepository.save(productImage);
                                                 });
                                     });
-                            subProductService.replicateSubFeatures(Long.valueOf(retDet.getInt("subProductId")), proBdy.getLong("primarySubProduct"));
+
+//                            subProductService.replicateSubFeatures(Long.valueOf(retDet.getInt("subProductId")), proBdy.getLong("primarySubProduct"));
+                            subProductService.replicateSubProducts(jsonObject.getLong("ProductId"), retDet.getLong("productId"));
                         }
                         responseMap.put("statusCode", ResponseCodes.SUCCESS)
                                 .put("statusDescription", "success")

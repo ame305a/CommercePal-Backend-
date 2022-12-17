@@ -211,6 +211,27 @@ public class SubProductService {
                 });
     }
 
+    public void replicateSubProducts(Long originalProduct, Long newProduct) {
+        subProductRepository.findSubProductsByProductId(originalProduct)
+                .forEach(originalSubProduct -> {
+                    AtomicReference<SubProduct> subProduct = new AtomicReference<>(new SubProduct());
+                    subProduct.get().setProductId(newProduct);
+                    subProduct.get().setShortDescription(originalSubProduct.getShortDescription());
+                    subProduct.get().setUnitPrice(originalSubProduct.getUnitPrice());
+                    subProduct.get().setIsDiscounted(originalSubProduct.getIsDiscounted());
+                    subProduct.get().setDiscountType(originalSubProduct.getDiscountType());
+                    subProduct.get().setDiscountValue(originalSubProduct.getDiscountValue());
+                    subProduct.get().setIsPromoted(0);
+                    subProduct.get().setIsPrioritized(0);
+                    subProduct.get().setStatus(1);
+                    subProduct.get().setCreatedDate(Timestamp.from(Instant.now()));
+                    subProduct.get().setCreatedBy(originalSubProduct.getCreatedBy());
+                    subProduct.set(subProductRepository.save(subProduct.get()));
+                    replicateSubFeatures(subProduct.get().getSubProductId(), originalSubProduct.getSubProductId());
+                });
+    }
+
+
     public JSONObject addSubProduct(JSONObject subPayload) {
         JSONObject response = new JSONObject();
         try {
