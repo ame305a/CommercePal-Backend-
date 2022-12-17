@@ -105,7 +105,7 @@ public class PortalController {
             payload.put("userType", userType);
             payload.put("ownerType", "WAREHOUSE");
             payload.put("ownerId", "0");
-            responseMap = multiUserService.getUsers(payload);
+            responseMap = multiUserService.getAllUsers(payload);
         } catch (Exception e) {
             responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
                     .put("statusDescription", "failed to process request")
