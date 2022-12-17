@@ -201,7 +201,8 @@ public class CustomerController {
                                     payload.put("id", customerAddress.getId());
                                     payload.put("regionId", customerAddress.getRegionId());
                                     payload.put("country", customerAddress.getCountry());
-                                    payload.put("city", customerAddress.getCity());
+                                    payload.put("cityId", customerAddress.getCity());
+                                    payload.put("city", globalMethods.cityName(Long.valueOf(customerAddress.getCity())));
                                     payload.put("subCity", customerAddress.getSubCity());
                                     payload.put("physicalAddress", customerAddress.getPhysicalAddress());
                                     payload.put("latitude", customerAddress.getLatitude());
