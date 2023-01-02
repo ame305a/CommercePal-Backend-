@@ -167,7 +167,7 @@ public class ProductService {
                         detail.put("ProductSubCategoryId", pro.getProductSubCategoryId());
 
                         detail.put("ProductParentCategoryIdName", categoryService.getParentCatInfo(pro.getProductParentCateoryId()).getString("name"));
-                        detail.put("ProductCategoryIdName",  categoryService.getCategoryInfo(pro.getProductCategoryId()).getString("name"));
+                        detail.put("ProductCategoryIdName", categoryService.getCategoryInfo(pro.getProductCategoryId()).getString("name"));
                         detail.put("ProductSubCategoryIdName", categoryService.getSubCategoryInfo(pro.getProductSubCategoryId()).getString("name"));
 
                         detail.put("ProductDescription", pro.getProductDescription());
@@ -345,7 +345,7 @@ public class ProductService {
             detail.put("currency", pro.getCurrency());
             detail.put("productRating", 4.2);
             detail.put("ratingCount", 30);
-
+            detail.put("quantity", pro.getQuantity());
         } catch (Exception e) {
             log.log(Level.WARNING, e.getMessage());
         }

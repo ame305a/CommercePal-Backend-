@@ -1,14 +1,13 @@
 package com.commerce.pal.backend.controller.portal;
 
 import com.commerce.pal.backend.common.ResponseCodes;
-import com.commerce.pal.backend.models.LoginValidation;
-import com.commerce.pal.backend.models.product.ProductFeatureValue;
 import com.commerce.pal.backend.models.product.ProductImage;
 import com.commerce.pal.backend.module.product.ProductService;
 import com.commerce.pal.backend.module.users.MerchantService;
 import com.commerce.pal.backend.module.product.SubProductService;
 import com.commerce.pal.backend.repo.product.ProductImageRepository;
 import com.commerce.pal.backend.repo.product.ProductRepository;
+import com.commerce.pal.backend.repo.product.SubProductImageRepository;
 import com.commerce.pal.backend.service.specification.SpecificationsDao;
 import com.commerce.pal.backend.service.specification.utils.SearchCriteria;
 import lombok.extern.java.Log;
@@ -44,20 +43,22 @@ public class ProductManagementController {
     private final SpecificationsDao specificationsDao;
     private final ProductRepository productRepository;
     private final ProductImageRepository productImageRepository;
-
+    private final SubProductImageRepository subProductImageRepository;
     @Autowired
     public ProductManagementController(ProductService productService,
                                        MerchantService merchantService,
                                        SubProductService subProductService,
                                        SpecificationsDao specificationsDao,
                                        ProductRepository productRepository,
-                                       ProductImageRepository productImageRepository) {
+                                       ProductImageRepository productImageRepository,
+                                       SubProductImageRepository subProductImageRepository) {
         this.productService = productService;
         this.merchantService = merchantService;
         this.subProductService = subProductService;
         this.specificationsDao = specificationsDao;
         this.productRepository = productRepository;
         this.productImageRepository = productImageRepository;
+        this.subProductImageRepository = subProductImageRepository;
     }
 
     @RequestMapping(value = "/add-product", method = RequestMethod.POST)
@@ -469,6 +470,31 @@ public class ProductManagementController {
         try {
             JSONObject jsonObject = new JSONObject(proBody);
             Long res = productImageRepository.removeProductImageByProductIdAndFilePath(
+                    jsonObject.getLong("productId"), jsonObject.getString("imageName")
+            );
+
+            log.log(Level.INFO, "Del Res: " + String.valueOf(res));
+            responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                    .put("statusDescription", "success")
+                    .put("statusMessage", "Request Successful");
+        } catch (Exception ex) {
+            log.log(Level.WARNING, "Delete Product Image : " + ex.getMessage());
+            responseMap.put("statusCode", ResponseCodes.TRANSACTION_FAILED)
+                    .put("errorDescription", ex.getMessage())
+                    .put("statusDescription", "failed")
+                    .put("statusMessage", "Request failed");
+        }
+        return ResponseEntity.ok(responseMap.toString());
+    }
+
+    @RequestMapping(value = {"/delete-sub-product-image"}, method = {RequestMethod.POST}, produces = {"application/json"})
+    @ResponseBody
+    @Transactional
+    public ResponseEntity<?> deleteSubImage(@RequestBody String proBody) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            JSONObject jsonObject = new JSONObject(proBody);
+            Long res = subProductImageRepository.removeSubProductImageBySubProductIdAndImageUrl(
                     jsonObject.getLong("productId"), jsonObject.getString("imageName")
             );
 
