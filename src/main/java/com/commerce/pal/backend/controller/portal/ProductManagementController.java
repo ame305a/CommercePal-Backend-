@@ -436,7 +436,6 @@ public class ProductManagementController {
         return ResponseEntity.ok(responseMap.toString());
     }
 
-
     @RequestMapping(value = {"/replicate-product-image"}, method = {RequestMethod.POST}, produces = {"application/json"})
     @ResponseBody
     public ResponseEntity<?> replicateProductImage(@RequestBody String proBody) {
@@ -461,7 +460,6 @@ public class ProductManagementController {
         }
         return ResponseEntity.ok(responseMap.toString());
     }
-
 
     @RequestMapping(value = {"/delete-product"}, method = {RequestMethod.POST}, produces = {"application/json"})
     @ResponseBody

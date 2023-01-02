@@ -54,6 +54,7 @@ public class SpecificationsDao {
     }
 
 
+
     public List<Product> getOrderHistory(final List<SearchCriteria> params) {
         final CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         final CriteriaQuery<Product> query = builder.createQuery(Product.class);

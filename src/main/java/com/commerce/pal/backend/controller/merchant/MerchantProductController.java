@@ -325,6 +325,29 @@ public class MerchantProductController {
         return ResponseEntity.ok(responseMap.toString());
     }
 
+    @RequestMapping(value = {"/get-sub-product-by-id"}, method = {RequestMethod.GET}, produces = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<?> getSubProductById(@RequestParam("subProduct") String subProduct) {
+        JSONObject responseMap = new JSONObject();
+        LoginValidation user = globalMethods.fetchUserDetails();
+        merchantRepository.findMerchantByEmailAddress(user.getEmailAddress())
+                .ifPresentOrElse(merchant -> {
+                    List<SearchCriteria> params = new ArrayList<SearchCriteria>();
+                    params.add(new SearchCriteria("merchantId", ":", merchant.getMerchantId()));
+                    AtomicReference<JSONObject> detail = new AtomicReference<>(new JSONObject());
+                    detail.set(subProductService.getSubProductInfo(Long.valueOf(subProduct)));
+                    responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                            .put("statusDescription", "success")
+                            .put("detail", detail.get())
+                            .put("statusMessage", "Request Successful");
+                }, () -> {
+                    responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
+                            .put("statusDescription", "Merchant Does not exists")
+                            .put("statusMessage", "Merchant Does not exists");
+                });
+        return ResponseEntity.ok(responseMap.toString());
+    }
+
     @RequestMapping(value = "/enable-disable-account", method = RequestMethod.POST)
     public ResponseEntity<?> enableDisableAccount(@RequestBody String req) {
         JSONObject responseMap = new JSONObject();
