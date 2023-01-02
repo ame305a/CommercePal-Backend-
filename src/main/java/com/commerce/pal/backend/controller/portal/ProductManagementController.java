@@ -1,6 +1,7 @@
 package com.commerce.pal.backend.controller.portal;
 
 import com.commerce.pal.backend.common.ResponseCodes;
+import com.commerce.pal.backend.models.LoginValidation;
 import com.commerce.pal.backend.models.product.ProductFeatureValue;
 import com.commerce.pal.backend.models.product.ProductImage;
 import com.commerce.pal.backend.module.product.ProductService;
@@ -11,6 +12,7 @@ import com.commerce.pal.backend.repo.product.ProductRepository;
 import com.commerce.pal.backend.service.specification.SpecificationsDao;
 import com.commerce.pal.backend.service.specification.utils.SearchCriteria;
 import lombok.extern.java.Log;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -144,6 +146,43 @@ public class ProductManagementController {
                     .put("statusMessage", "internal system error");
         }
         return ResponseEntity.status(HttpStatus.OK).body(responseMap.get().toString());
+    }
+
+    @RequestMapping(value = "/add-multi-sub-product", method = RequestMethod.POST)
+    public ResponseEntity<?> addMultipleProduct(@RequestBody String req) {
+        AtomicReference<JSONObject> responseMap = new AtomicReference<>(new JSONObject());
+        try {
+            JSONArray arrayReq = new JSONArray(req);
+            arrayReq.forEach(jsonBody -> {
+                JSONObject request = new JSONObject(jsonBody.toString());
+                productRepository.findProductByProductId(Long.valueOf(request.getString("ProductId")))
+                        .ifPresentOrElse(product -> {
+                            if (subProductService.validateFeature(product.getProductSubCategoryId(), request.getJSONArray("productFeature")).equals(1)) {
+                                responseMap.set(subProductService.addSubProduct(request));
+                                product.setStatus(0);
+                                product.setStatusComment("Added SubProduct - " + request.getString("shortDescription"));
+                                product.setStatusUpdatedDate(Timestamp.from(Instant.now()));
+                                productRepository.save(product);
+                            } else {
+                                responseMap.get().put("statusCode", ResponseCodes.REQUEST_FAILED)
+                                        .put("statusDescription", "Product features not defined well")
+                                        .put("statusMessage", "Product features not defined well");
+                            }
+                        }, () -> {
+                            responseMap.get().put("statusCode", ResponseCodes.REQUEST_FAILED)
+                                    .put("statusDescription", "Product Does not exists")
+                                    .put("statusMessage", "Product Does not exists");
+                        });
+
+            });
+
+
+        } catch (Exception e) {
+            responseMap.get().put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("statusMessage", "internal system error");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
     }
 
     @RequestMapping(value = "/update-sub-product", method = RequestMethod.POST)
