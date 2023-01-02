@@ -275,6 +275,7 @@ public class ProductController {
         });
 
         params.add(new SearchCriteria("status", ":", 1));
+        params.add(new SearchCriteria("quantity", ">", 0));
         params.add(new SearchCriteria("productType", ":", "RETAIL"));
         List<JSONObject> details = new ArrayList<>();
         specificationsDao.getProducts(params)

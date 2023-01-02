@@ -3,18 +3,23 @@ package com.commerce.pal.backend.controller.merchant;
 import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.models.LoginValidation;
 import com.commerce.pal.backend.module.product.ProductService;
+import com.commerce.pal.backend.module.product.SubProductService;
 import com.commerce.pal.backend.repo.product.ProductFeatureRepository;
+import com.commerce.pal.backend.repo.product.ProductRepository;
 import com.commerce.pal.backend.repo.user.MerchantRepository;
 import com.commerce.pal.backend.service.specification.SpecificationsDao;
 import com.commerce.pal.backend.service.specification.utils.SearchCriteria;
 import com.commerce.pal.backend.utils.GlobalMethods;
 import lombok.extern.java.Log;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -31,6 +36,8 @@ public class MerchantProductController {
     private final ProductService productService;
     private final SpecificationsDao specificationsDao;
     private final MerchantRepository merchantRepository;
+    private final SubProductService subProductService;
+    private final ProductRepository productRepository;
     private final ProductFeatureRepository productFeatureRepository;
 
     @Autowired
@@ -38,11 +45,13 @@ public class MerchantProductController {
                                      ProductService productService,
                                      SpecificationsDao specificationsDao,
                                      MerchantRepository merchantRepository,
-                                     ProductFeatureRepository productFeatureRepository) {
+                                     SubProductService subProductService, ProductRepository productRepository, ProductFeatureRepository productFeatureRepository) {
         this.globalMethods = globalMethods;
         this.productService = productService;
         this.specificationsDao = specificationsDao;
         this.merchantRepository = merchantRepository;
+        this.subProductService = subProductService;
+        this.productRepository = productRepository;
         this.productFeatureRepository = productFeatureRepository;
     }
 
@@ -106,6 +115,51 @@ public class MerchantProductController {
 
         } catch (Exception e) {
             responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("statusMessage", "internal system error");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
+    }
+
+    @RequestMapping(value = "/add-multi-sub-product", method = RequestMethod.POST)
+    public ResponseEntity<?> addMultipleProduct(@RequestBody String req) {
+        AtomicReference<JSONObject> responseMap = new AtomicReference<>(new JSONObject());
+        try {
+            JSONArray arrayReq = new JSONArray(req);
+            arrayReq.forEach(jsonBody -> {
+                JSONObject request = new JSONObject(jsonBody.toString());
+
+                LoginValidation user = globalMethods.fetchUserDetails();
+                merchantRepository.findMerchantByEmailAddress(user.getEmailAddress())
+                        .ifPresentOrElse(merchant -> {
+                            productRepository.findProductByProductId(Long.valueOf(request.getString("ProductId")))
+                                    .ifPresentOrElse(product -> {
+                                        if (subProductService.validateFeature(product.getProductSubCategoryId(), request.getJSONArray("productFeature")).equals(1)) {
+                                            responseMap.set(subProductService.addSubProduct(request));
+                                            product.setStatus(0);
+                                            product.setStatusComment("Added SubProduct - " + request.getString("shortDescription"));
+                                            product.setStatusUpdatedDate(Timestamp.from(Instant.now()));
+                                            productRepository.save(product);
+                                        } else {
+                                            responseMap.get().put("statusCode", ResponseCodes.REQUEST_FAILED)
+                                                    .put("statusDescription", "Product features not defined well")
+                                                    .put("statusMessage", "Product features not defined well");
+                                        }
+                                    }, () -> {
+                                        responseMap.get().put("statusCode", ResponseCodes.REQUEST_FAILED)
+                                                .put("statusDescription", "Product Does not exists")
+                                                .put("statusMessage", "Product Does not exists");
+                                    });
+                        }, () -> {
+                            responseMap.get().put("statusCode", ResponseCodes.REQUEST_FAILED)
+                                    .put("statusDescription", "Merchant Does not exists")
+                                    .put("statusMessage", "Merchant Does not exists");
+                        });
+            });
+
+
+        } catch (Exception e) {
+            responseMap.get().put("statusCode", ResponseCodes.SYSTEM_ERROR)
                     .put("statusDescription", "failed to process request")
                     .put("statusMessage", "internal system error");
         }
