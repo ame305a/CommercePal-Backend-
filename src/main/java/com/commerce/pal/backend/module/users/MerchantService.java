@@ -1,6 +1,7 @@
 package com.commerce.pal.backend.module.users;
 
 import com.commerce.pal.backend.common.ResponseCodes;
+import com.commerce.pal.backend.module.product.ProductService;
 import com.commerce.pal.backend.repo.user.MerchantRepository;
 import com.commerce.pal.backend.utils.GlobalMethods;
 import lombok.extern.java.Log;
@@ -18,12 +19,15 @@ import java.util.logging.Level;
 @SuppressWarnings("Duplicates")
 public class MerchantService {
     private final GlobalMethods globalMethods;
+    private final ProductService productService;
     private final MerchantRepository merchantRepository;
 
     @Autowired
     public MerchantService(GlobalMethods globalMethods,
+                           ProductService productService,
                            MerchantRepository merchantRepository) {
         this.globalMethods = globalMethods;
+        this.productService = productService;
         this.merchantRepository = merchantRepository;
     }
 
@@ -254,6 +258,21 @@ public class MerchantService {
                     payload.put("longitude", merchant.getLongitude());
                 });
         return payload;
+    }
+
+    public JSONObject merchantStatus(JSONObject request) {
+        JSONObject responseMap = new JSONObject();
+        JSONObject updateRes = productService.enableDisableAccount(request);
+        if (updateRes.getString("Status").equals("00")) {
+            responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                    .put("statusDescription", "success")
+                    .put("statusMessage", "Request Successful");
+        } else {
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("statusMessage", "internal system error");
+        }
+        return responseMap;
     }
 
 

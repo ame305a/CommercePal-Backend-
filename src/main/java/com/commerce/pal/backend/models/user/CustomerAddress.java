@@ -4,6 +4,7 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.Objects;
 
 @Data
@@ -46,6 +47,6 @@ public class CustomerAddress {
     private Integer status;
     @Basic
     @Column(name = "CreatedDate")
-    private Date createdDate;
+    private Timestamp createdDate;
 
 }

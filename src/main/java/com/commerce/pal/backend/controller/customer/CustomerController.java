@@ -21,6 +21,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -122,6 +124,8 @@ public class CustomerController {
                         customerAddress.get().setPhysicalAddress(reqBody.getString("physicalAddress"));
                         customerAddress.get().setLatitude(reqBody.getString("latitude"));
                         customerAddress.get().setLongitude(reqBody.getString("longitude"));
+                        customerAddress.get().setStatus(1);
+                        customerAddress.get().setCreatedDate(Timestamp.from(Instant.now()));
                         customerAddress.set(customerAddressRepository.save(customerAddress.get()));
                         responseMap.put("statusCode", ResponseCodes.SUCCESS)
                                 .put("statusDescription", "success")
@@ -187,6 +191,45 @@ public class CustomerController {
         return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
     }
 
+    @RequestMapping(value = "/delete-delivery-address", method = RequestMethod.POST)
+    public ResponseEntity<?> deleteDeliveryAddress(@RequestBody String request) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            JSONObject reqBody = new JSONObject(request);
+            LoginValidation user = globalMethods.fetchUserDetails();
+
+            customerRepository.findCustomerByEmailAddress(user.getEmailAddress())
+                    .ifPresentOrElse(customer -> {
+                        customerAddressRepository.findCustomerAddressByCustomerIdAndId(
+                                        customer.getCustomerId(), reqBody.getLong("id"))
+                                .ifPresentOrElse(customerAddress -> {
+                                    customerAddress.setStatus(0);
+                                    customerAddressRepository.save(customerAddress);
+                                    responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                            .put("statusDescription", "success")
+                                            .put("statusMessage", "success");
+                                }, () -> {
+                                    responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                                            .put("statusDescription", "failed to process request")
+                                            .put("statusMessage", "internal system error");
+                                });
+                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                .put("statusDescription", "success")
+                                .put("statusMessage", "success");
+                    }, () -> {
+                        responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                                .put("statusDescription", "failed to process request")
+                                .put("statusMessage", "internal system error");
+                    });
+        } catch (Exception e) {
+            log.log(Level.WARNING, "CUSTOMER DELIVERY ADDRESS INFO : " + e.getMessage());
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("statusMessage", "internal system error");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
+    }
+
     @RequestMapping(value = "/get-delivery-address", method = RequestMethod.GET)
     public ResponseEntity<?> getDeliveryAddress() {
         JSONObject responseMap = new JSONObject();
@@ -195,7 +238,8 @@ public class CustomerController {
             customerRepository.findCustomerByEmailAddress(user.getEmailAddress())
                     .ifPresentOrElse(customer -> {
                         List<JSONObject> addresses = new ArrayList<>();
-                        customerAddressRepository.findCustomerAddressByCustomerId(customer.getCustomerId())
+                        customerAddressRepository.findCustomerAddressByCustomerIdAndStatus(
+                                        customer.getCustomerId(), 1)
                                 .forEach(customerAddress -> {
                                     JSONObject payload = new JSONObject();
                                     payload.put("id", customerAddress.getId());

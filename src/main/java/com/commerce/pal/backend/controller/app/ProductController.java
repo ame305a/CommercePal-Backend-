@@ -40,6 +40,7 @@ public class ProductController {
     private final ProductCategoryRepository productCategoryRepository;
     private final ProductSubCategoryRepository productSubCategoryRepository;
 
+
     @Autowired
     public ProductController(GlobalMethods globalMethods,
                              ProductService productService,

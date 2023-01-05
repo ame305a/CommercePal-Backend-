@@ -77,6 +77,7 @@ public class MerchantProductController {
 
     @RequestMapping(value = "/add-product", method = RequestMethod.POST)
     public ResponseEntity<?> addProduct(@RequestBody String req) {
+        log.log(Level.INFO, req.toString());
         JSONObject responseMap = new JSONObject();
         try {
             JSONObject request = new JSONObject(req);

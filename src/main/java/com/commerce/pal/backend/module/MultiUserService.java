@@ -423,5 +423,11 @@ public class MultiUserService {
         return count;
     }
 
+    public JSONObject updateMerchantStatus(JSONObject req) {
+        JSONObject response = new JSONObject();
+        response = merchantService.merchantStatus(req);
+        return response;
+    }
+
 
 }

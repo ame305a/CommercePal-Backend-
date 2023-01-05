@@ -76,9 +76,21 @@ public class PortalController {
                     .put("statusDescription", "failed to process request")
                     .put("statusMessage", "internal system error");
         }
-
         return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
+    }
 
+    @RequestMapping(value = "/update-merchant-status", method = RequestMethod.POST)
+    public ResponseEntity<?> updateMerchantStatus(@RequestBody String registration) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            JSONObject request = new JSONObject(registration);
+            responseMap = multiUserService.updateMerchantStatus(request);
+        } catch (Exception e) {
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("statusMessage", "internal system error");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
     }
 
     @RequestMapping(value = "/user-update", method = RequestMethod.POST)

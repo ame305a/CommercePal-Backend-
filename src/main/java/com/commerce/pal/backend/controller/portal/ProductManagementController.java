@@ -34,8 +34,13 @@ import java.util.logging.Level;
 @RequestMapping({"/prime/api/v1/portal/product"})
 @SuppressWarnings("Duplicates")
 public class ProductManagementController {
-    @Autowired
-    private EntityManager entityManager;
+    /*
+    0 - Pending
+    1 - Approved
+    3 - Disable
+    5 - Delete Product
+    10 - Freeze
+     */
 
     private final ProductService productService;
     private final MerchantService merchantService;
@@ -44,6 +49,7 @@ public class ProductManagementController {
     private final ProductRepository productRepository;
     private final ProductImageRepository productImageRepository;
     private final SubProductImageRepository subProductImageRepository;
+
     @Autowired
     public ProductManagementController(ProductService productService,
                                        MerchantService merchantService,
@@ -339,6 +345,59 @@ public class ProductManagementController {
         return ResponseEntity.ok(responseMap.toString());
     }
 
+    @RequestMapping(value = {"/de-approve-product"}, method = {RequestMethod.POST}, produces = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<?> deApproveProduct(@RequestBody String proBody) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            JSONObject jsonObject = new JSONObject(proBody);
+
+            productRepository.findById(jsonObject.getLong("productId"))
+                    .ifPresentOrElse(product -> {
+                        product.setStatus(0);
+                        productRepository.save(product);
+                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                .put("statusDescription", "success")
+                                .put("statusMessage", "Request Successful");
+                    }, () -> {
+                        responseMap.put("statusCode", ResponseCodes.TRANSACTION_FAILED)
+                                .put("statusDescription", "failed")
+                                .put("statusMessage", "Request failed");
+                    });
+        } catch (Exception ex) {
+            responseMap.put("statusCode", ResponseCodes.TRANSACTION_FAILED)
+                    .put("statusDescription", "failed")
+                    .put("statusMessage", "Request failed");
+        }
+        return ResponseEntity.ok(responseMap.toString());
+    }
+
+    @RequestMapping(value = {"/delete-product"}, method = {RequestMethod.POST}, produces = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<?> deleteProduct(@RequestBody String proBody) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            JSONObject jsonObject = new JSONObject(proBody);
+            productRepository.findById(jsonObject.getLong("productId"))
+                    .ifPresentOrElse(product -> {
+                        product.setStatus(5);
+                        productRepository.save(product);
+                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                .put("statusDescription", "success")
+                                .put("statusMessage", "Request Successful");
+                    }, () -> {
+                        responseMap.put("statusCode", ResponseCodes.TRANSACTION_FAILED)
+                                .put("statusDescription", "failed")
+                                .put("statusMessage", "Request failed");
+                    });
+        } catch (Exception ex) {
+            responseMap.put("statusCode", ResponseCodes.TRANSACTION_FAILED)
+                    .put("statusDescription", "failed")
+                    .put("statusMessage", "Request failed");
+        }
+        return ResponseEntity.ok(responseMap.toString());
+    }
+
     @RequestMapping(value = {"/link-to-merchant"}, method = {RequestMethod.POST}, produces = {"application/json"})
     @ResponseBody
     public ResponseEntity<?> linkProductToMerchant(@RequestBody String proBody) {
@@ -462,7 +521,7 @@ public class ProductManagementController {
         return ResponseEntity.ok(responseMap.toString());
     }
 
-    @RequestMapping(value = {"/delete-product"}, method = {RequestMethod.POST}, produces = {"application/json"})
+    @RequestMapping(value = {"/delete-product-image"}, method = {RequestMethod.POST}, produces = {"application/json"})
     @ResponseBody
     @Transactional
     public ResponseEntity<?> deleteProductImage(@RequestBody String proBody) {

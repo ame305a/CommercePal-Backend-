@@ -1,6 +1,7 @@
 package com.commerce.pal.backend.controller.portal;
 
 import com.commerce.pal.backend.common.ResponseCodes;
+import com.commerce.pal.backend.models.transaction.AgentFloat;
 import com.commerce.pal.backend.module.transaction.AccountService;
 import com.commerce.pal.backend.repo.transaction.AgentFloatRepository;
 import com.commerce.pal.backend.repo.user.AgentRepository;
@@ -95,6 +96,7 @@ public class TransactionController {
                         agentFloat.setReviewDate(Timestamp.from(Instant.now()));
                         agentFloat.setTransRef("PENDING");
                         agentFloat.setProcessedDate(Timestamp.from(Instant.now()));
+                        agentFloatRepository.save(agentFloat);
                         if (Integer.valueOf(request.getInt("Status")).equals(3)) {
                             agentRepository.findAgentByAgentId(agentFloat.getAgentId())
                                     .ifPresentOrElse(agent -> {
@@ -149,6 +151,19 @@ public class TransactionController {
             JSONObject request = new JSONObject(req);
             agentRepository.findAgentByAgentId(request.getLong("AgentId"))
                     .ifPresentOrElse(agent -> {
+                        AgentFloat agentFloat = new AgentFloat();
+                        agentFloat.setAgentId(agent.getAgentId());
+                        agentFloat.setAmount(request.getDouble("Amount"));
+                        agentFloat.setComment(request.getString("Review"));
+                        agentFloat.setStatus(3);
+                        agentFloat.setRequestDate(Timestamp.from(Instant.now()));
+                        agentFloat.setReviewedBy(1);
+                        agentFloat.setReview(request.getString("Review"));
+                        agentFloat.setReviewDate(Timestamp.from(Instant.now()));
+                        agentFloat.setTransRef("PENDING");
+                        agentFloat.setProcessedDate(Timestamp.from(Instant.now()));
+                        agentFloatRepository.save(agentFloat);
+
                         JSONObject floatRq = new JSONObject();
                         floatRq.put("TransRef", globalMethods.generateTrans());
                         floatRq.put("Account", agent.getTillNumber());
@@ -156,6 +171,9 @@ public class TransactionController {
                         floatRq.put("Amount", request.getBigDecimal("Amount").toString());
 
                         JSONObject payRes = accountService.processAgentFloat(floatRq);
+                        agentFloat.setTransRef(floatRq.getString("TransRef"));
+                        agentFloat.setProcessedDate(Timestamp.from(Instant.now()));
+                        agentFloatRepository.save(agentFloat);
 
                         if (payRes.getString("TransactionStatus").equals("0")) {
                             responseMap.put("statusCode", ResponseCodes.SUCCESS)
