@@ -89,25 +89,40 @@ public class MerchantProductController {
                         request.put("isPromoted", "0");
                         request.put("isPrioritized", "0");
                         request.put("ownerType", "MERCHANT");
-                        JSONObject retDet = productService.doAddProduct(request);
-                        int returnValue = retDet.getInt("productId");
-                        if (returnValue == 0) {
-                            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
-                                    .put("statusDescription", "failed to process request")
-                                    .put("statusMessage", "internal system error");
-                        } else {
-                            JSONObject slackBody = new JSONObject();
-                            slackBody.put("TemplateId", "7");
-                            slackBody.put("product_name", request.getString("productName"));
-                            slackBody.put("product_id", String.valueOf(retDet.getInt("productId")));
-                            globalMethods.sendSlackNotification(slackBody);
 
-                            responseMap.put("statusCode", ResponseCodes.SUCCESS)
-                                    .put("statusDescription", "success")
-                                    .put("productId", retDet.getInt("productId"))
-                                    .put("subProductId", retDet.getInt("subProductId"))
-                                    .put("statusMessage", "Product successful");
+                        if (subProductService.validateFeature(Long.valueOf(request.getString("productSubCategoryId")), request.getJSONArray("productFeature")).equals(1)) {
+                            JSONObject retDet = productService.doAddProduct(request);
+                            int returnValue = retDet.getInt("productId");
+                            if (returnValue == 0) {
+                                responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                                        .put("statusDescription", "failed to process request")
+                                        .put("statusMessage", "internal system error");
+                            } else {
+                                JSONObject slackBody = new JSONObject();
+                                slackBody.put("TemplateId", "7");
+                                slackBody.put("product_name", request.getString("productName"));
+                                slackBody.put("product_id", String.valueOf(retDet.getInt("productId")));
+                                globalMethods.sendSlackNotification(slackBody);
+
+                                responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                        .put("statusDescription", "success")
+                                        .put("productId", retDet.getInt("productId"))
+                                        .put("subProductId", retDet.getInt("subProductId"))
+                                        .put("statusMessage", "Product successful");
+
+                                responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                        .put("statusDescription", "success")
+                                        .put("productId", retDet.getInt("productId"))
+                                        .put("subProductId", retDet.getInt("subProductId"))
+                                        .put("statusMessage", "Product successful");
+                                subProductService.updateInsertFeatures(Long.valueOf(retDet.getInt("subProductId")), request.getJSONArray("productFeature"));
+                            }
+                        } else {
+                            responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
+                                    .put("statusDescription", "Product features not defined well")
+                                    .put("statusMessage", "Product features not defined well");
                         }
+
                     }, () -> {
                         responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
                                 .put("statusDescription", "Merchant Does not exists")
