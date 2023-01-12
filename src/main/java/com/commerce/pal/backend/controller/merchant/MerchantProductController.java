@@ -122,13 +122,11 @@ public class MerchantProductController {
                                     .put("statusDescription", "Product features not defined well")
                                     .put("statusMessage", "Product features not defined well");
                         }
-
                     }, () -> {
                         responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
                                 .put("statusDescription", "Merchant Does not exists")
                                 .put("statusMessage", "Merchant Does not exists");
                     });
-
         } catch (Exception e) {
             responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
                     .put("statusDescription", "failed to process request")
@@ -218,6 +216,68 @@ public class MerchantProductController {
                     .put("statusMessage", "internal system error");
         }
         return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
+    }
+
+    @RequestMapping(value = "/add-sub-product", method = RequestMethod.POST)
+    public ResponseEntity<?> addSubProduct(@RequestBody String req) {
+        AtomicReference<JSONObject> responseMap = new AtomicReference<>(new JSONObject());
+        try {
+            JSONObject request = new JSONObject(req);
+            productRepository.findProductByProductId(Long.valueOf(request.getString("ProductId")))
+                    .ifPresentOrElse(product -> {
+                        if (subProductService.validateFeature(product.getProductSubCategoryId(), request.getJSONArray("productFeature")).equals(1)) {
+                            responseMap.set(subProductService.addSubProduct(request));
+                            product.setStatus(0);
+                            product.setStatusComment("Added SubProduct - " + request.getString("shortDescription"));
+                            product.setStatusUpdatedDate(Timestamp.from(Instant.now()));
+                            productRepository.save(product);
+                        } else {
+                            responseMap.get().put("statusCode", ResponseCodes.REQUEST_FAILED)
+                                    .put("statusDescription", "Product features not defined well")
+                                    .put("statusMessage", "Product features not defined well");
+                        }
+                    }, () -> {
+                        responseMap.get().put("statusCode", ResponseCodes.REQUEST_FAILED)
+                                .put("statusDescription", "Product Does not exists")
+                                .put("statusMessage", "Product Does not exists");
+                    });
+
+        } catch (Exception e) {
+            log.log(Level.WARNING, e.getMessage());
+            responseMap.get().put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("statusMessage", "internal system error");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(responseMap.get().toString());
+    }
+
+    @RequestMapping(value = "/update-sub-product", method = RequestMethod.POST)
+    public ResponseEntity<?> updateSubProduct(@RequestBody String req) {
+        AtomicReference<JSONObject> responseMap = new AtomicReference<>(new JSONObject());
+        try {
+            JSONObject request = new JSONObject(req);
+            productRepository.findProductByProductId(Long.valueOf(request.getString("ProductId")))
+                    .ifPresentOrElse(product -> {
+                        if (subProductService.validateFeature(product.getProductSubCategoryId(), request.getJSONArray("productFeature")).equals(1)) {
+                            responseMap.set(subProductService.updateSubProduct(request));
+                        } else {
+                            responseMap.get().put("statusCode", ResponseCodes.REQUEST_FAILED)
+                                    .put("statusDescription", "Product features not defined well")
+                                    .put("statusMessage", "Product features not defined well");
+                        }
+                    }, () -> {
+                        responseMap.get().put("statusCode", ResponseCodes.REQUEST_FAILED)
+                                .put("statusDescription", "Product Does not exists")
+                                .put("statusMessage", "Product Does not exists");
+                    });
+
+        } catch (Exception e) {
+            log.log(Level.WARNING, e.getMessage());
+            responseMap.get().put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("statusMessage", "internal system error");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(responseMap.get().toString());
     }
 
     @RequestMapping(value = "/disable-product", method = RequestMethod.POST)

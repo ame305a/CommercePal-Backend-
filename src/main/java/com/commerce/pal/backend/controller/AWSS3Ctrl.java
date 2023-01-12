@@ -59,12 +59,12 @@ public class AWSS3Ctrl {
         AtomicReference<JSONObject> response = new AtomicReference<>(new JSONObject());
         try {
             List<String> fileNames = new ArrayList<>();
-
             Arrays.asList(files).stream().forEach(file -> {
                 response.set(uploadService.uploadFile(file, platform, id, type));
             });
 
             return new ResponseEntity<>(response.get().toString(), HttpStatus.OK);
+
         } catch (Exception e) {
             log.log(Level.WARNING, "MULTIPLE IMAGE UPLOAD ERROR : " + e.getMessage());
             response.get().put("statusCode", ResponseCodes.SYSTEM_ERROR)

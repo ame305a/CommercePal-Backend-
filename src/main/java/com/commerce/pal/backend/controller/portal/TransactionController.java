@@ -154,11 +154,11 @@ public class TransactionController {
                         AgentFloat agentFloat = new AgentFloat();
                         agentFloat.setAgentId(agent.getAgentId());
                         agentFloat.setAmount(request.getDouble("Amount"));
-                        agentFloat.setComment(request.getString("Review"));
+                        agentFloat.setComment(request.getString("Comment"));
                         agentFloat.setStatus(3);
                         agentFloat.setRequestDate(Timestamp.from(Instant.now()));
                         agentFloat.setReviewedBy(1);
-                        agentFloat.setReview(request.getString("Review"));
+                        agentFloat.setReview(request.getString("Comment"));
                         agentFloat.setReviewDate(Timestamp.from(Instant.now()));
                         agentFloat.setTransRef("PENDING");
                         agentFloat.setProcessedDate(Timestamp.from(Instant.now()));
