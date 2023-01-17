@@ -141,7 +141,7 @@ public class BusinessShoppingController {
         });
 
         params.add(new SearchCriteria("status", ":", 1));
-        params.add(new SearchCriteria("productType", ":", "RETAIL"));
+        params.add(new SearchCriteria("productType", ":", "WHOLESALE"));
         List<JSONObject> details = new ArrayList<>();
         specificationsDao.getProducts(params)
                 .forEach(pro -> {
