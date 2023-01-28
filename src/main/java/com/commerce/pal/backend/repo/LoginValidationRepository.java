@@ -11,7 +11,11 @@ public interface LoginValidationRepository extends JpaRepository<LoginValidation
 
     Optional<LoginValidation> findLoginValidationByEmailAddress(String email);
 
+    Optional<LoginValidation> findLoginValidationByEmailAddressOrPhoneNumber(String email, String phone);
+
     LoginValidation findByEmailAddress(String email);
+
+    LoginValidation findByEmailAddressOrPhoneNumber(String email,String phone);
 
     Optional<LoginValidation> findLoginValidationByEmailAddressAndPasswordResetTokenStatus(String email, Integer status);
 }

@@ -122,7 +122,7 @@ public class AuthenticationController {
                     .put("statusDescription", "login failed invalid details")
                     .put("statusMessage", "login failed invalid details");
 
-            loginValidationRepository.findLoginValidationByEmailAddress(authenticationRequest.getEmail())
+            loginValidationRepository.findLoginValidationByEmailAddressOrPhoneNumber(authenticationRequest.getEmail(), authenticationRequest.getEmail())
                     .ifPresent(userLogin -> {
                         userLogin.setPinAttempt(userLogin.getPinAttempt() + 1);
                         userLogin.setLastAttemptDate(Timestamp.from(Instant.now()));
@@ -136,10 +136,11 @@ public class AuthenticationController {
             return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
         }
         try {
-            final UserDetails userDetails = userDetailsService.loadUserByUsername(authenticationRequest.getEmail());
-            String token = jwtTokenUtil.generateToken(userDetails);
-            loginValidationRepository.findLoginValidationByEmailAddress(authenticationRequest.getEmail())
+
+            loginValidationRepository.findLoginValidationByEmailAddressOrPhoneNumber(authenticationRequest.getEmail(), authenticationRequest.getEmail())
                     .ifPresent(userLogin -> {
+                        final UserDetails userDetails = userDetailsService.loadUserByUsername(userLogin.getEmailAddress());
+                        String token = jwtTokenUtil.generateToken(userDetails);
                         userLogin.setPinAttempt(0);
                         userLogin.setLastAttemptDate(Timestamp.from(Instant.now()));
                         loginValidationRepository.save(userLogin);

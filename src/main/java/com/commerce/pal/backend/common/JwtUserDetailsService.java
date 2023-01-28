@@ -24,10 +24,10 @@ public class JwtUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        LoginValidation user = userDao.findByEmailAddress(username);
+        LoginValidation user = userDao.findByEmailAddressOrPhoneNumber(username,username);
 
         if (user == null) {
-            throw new UsernameNotFoundException("User not found with username/email : " + username);
+            throw new UsernameNotFoundException("User not found with phone number/email : " + username);
         }
         final List<GrantedAuthority> authorities = new ArrayList<>();
 //        authorities.add(new SimpleGrantedAuthority(ROLES_ARRAY.getString(user.getUserType().toString())));

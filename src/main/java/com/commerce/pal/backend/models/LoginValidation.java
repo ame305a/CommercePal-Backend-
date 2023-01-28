@@ -19,6 +19,9 @@ public class LoginValidation {
     @Column(name = "EmailAddress")
     private String emailAddress;
     @Basic
+    @Column(name = "PhoneNumber")
+    private String phoneNumber;
+    @Basic
     @Column(name = "PinHash")
     private String pinHash;
     @Basic
