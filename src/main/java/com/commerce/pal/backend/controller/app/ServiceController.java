@@ -47,7 +47,6 @@ public class ServiceController {
         List<JSONObject> countries = new ArrayList<>();
         countryRepository.findAll().forEach(country -> {
             JSONObject one = new JSONObject();
-            one.put(String.valueOf(country.getCountryCode()), country.getCountry());
             one.put("countryCode", country.getCountryCode());
             one.put("country", country.getCountry());
             countries.add(one);
