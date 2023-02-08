@@ -554,7 +554,7 @@ public class ProductManagementController {
         try {
             JSONObject jsonObject = new JSONObject(proBody);
             Long res = subProductImageRepository.removeSubProductImageBySubProductIdAndImageUrl(
-                    jsonObject.getLong("productId"), jsonObject.getString("imageName")
+                    jsonObject.getLong("subProductId"), jsonObject.getString("imageName")
             );
 
             log.log(Level.INFO, "Del Res: " + String.valueOf(res));
