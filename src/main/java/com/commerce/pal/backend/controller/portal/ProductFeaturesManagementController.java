@@ -89,6 +89,28 @@ public class ProductFeaturesManagementController {
         return ResponseEntity.ok(responseMap.toString());
     }
 
+    @RequestMapping(value = {"/delete-feature"}, method = {RequestMethod.POST}, produces = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<?> deleteProductFeature(@RequestBody String parent) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            JSONObject jsonObject = new JSONObject(parent);
+
+            Long res = productFeatureRepository.removeProductFeatureById(jsonObject.getLong("id"));
+
+            log.log(Level.INFO, "Del Res: " + String.valueOf(res));
+            responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                    .put("statusDescription", "success")
+                    .put("statusMessage", "Request Successful");
+
+        } catch (Exception ex) {
+            responseMap.put("statusCode", ResponseCodes.TRANSACTION_FAILED)
+                    .put("statusDescription", "failed")
+                    .put("statusMessage", "Request failed");
+        }
+        return ResponseEntity.ok(responseMap.toString());
+    }
+
     @RequestMapping(value = {"/get-features"}, method = {RequestMethod.GET}, produces = {"application/json"})
     @ResponseBody
     public ResponseEntity<?> getProductFeatures(@RequestParam("sub-category") Optional<String> sub) {

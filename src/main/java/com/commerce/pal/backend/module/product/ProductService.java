@@ -154,6 +154,7 @@ public class ProductService {
                     .ifPresent(pro -> {
                         detail.put("unique_id", globalMethods.generateUniqueString(pro.getProductId().toString()));
                         detail.put("ProductId", pro.getProductId());
+                        detail.put("ownerType", pro.getOwnerType());
                         detail.put("productName", pro.getProductName());
                         detail.put("ShortDescription", pro.getShortDescription() != null ? pro.getShortDescription() : "");
                         detail.put("mobileImage", pro.getProductMobileImage() != null ? pro.getProductMobileImage() : "");
@@ -308,6 +309,7 @@ public class ProductService {
 
             detail.put("unique_id", globalMethods.generateUniqueString(pro.getProductId().toString()));
             detail.put("ProductId", pro.getProductId());
+            detail.put("ownerType", pro.getOwnerType());
             detail.put("productName", pro.getProductName());
             detail.put("mobileImage", pro.getProductMobileImage() != null ? pro.getProductMobileImage() : "");
             detail.put("webImage", pro.getProductImage() != null ? pro.getProductImage() : "");
@@ -359,6 +361,7 @@ public class ProductService {
                     .ifPresent(pro -> {
                         detail.put("unique_id", globalMethods.generateUniqueString(pro.getProductId().toString()));
                         detail.put("ProductId", pro.getProductId());
+                        detail.put("ownerType", pro.getOwnerType());
                         detail.put("productName", pro.getProductName());
                         detail.put("mobileImage", pro.getProductMobileImage() != null ? pro.getProductMobileImage() : "");
                         detail.put("webImage", pro.getProductImage() != null ? pro.getProductImage() : "");

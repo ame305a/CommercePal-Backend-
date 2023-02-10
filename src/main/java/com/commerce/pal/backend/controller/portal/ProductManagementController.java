@@ -2,6 +2,7 @@ package com.commerce.pal.backend.controller.portal;
 
 import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.models.product.ProductImage;
+import com.commerce.pal.backend.module.MultiUserService;
 import com.commerce.pal.backend.module.product.ProductService;
 import com.commerce.pal.backend.module.users.MerchantService;
 import com.commerce.pal.backend.module.product.SubProductService;
@@ -19,7 +20,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import javax.persistence.EntityManager;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -44,6 +44,7 @@ public class ProductManagementController {
 
     private final ProductService productService;
     private final MerchantService merchantService;
+    private final MultiUserService multiUserService;
     private final SubProductService subProductService;
     private final SpecificationsDao specificationsDao;
     private final ProductRepository productRepository;
@@ -53,13 +54,14 @@ public class ProductManagementController {
     @Autowired
     public ProductManagementController(ProductService productService,
                                        MerchantService merchantService,
-                                       SubProductService subProductService,
+                                       MultiUserService multiUserService, SubProductService subProductService,
                                        SpecificationsDao specificationsDao,
                                        ProductRepository productRepository,
                                        ProductImageRepository productImageRepository,
                                        SubProductImageRepository subProductImageRepository) {
         this.productService = productService;
         this.merchantService = merchantService;
+        this.multiUserService = multiUserService;
         this.subProductService = subProductService;
         this.specificationsDao = specificationsDao;
         this.productRepository = productRepository;
@@ -234,6 +236,51 @@ public class ProductManagementController {
                             .put("statusMessage", "Request Successful");
                 }, () -> {
                     responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
+                            .put("statusDescription", "The product is not found")
+                            .put("statusMessage", "The product is not found");
+                });
+
+        return ResponseEntity.ok(responseMap.toString());
+    }
+
+    @RequestMapping(value = {"/GetSubProductById"}, method = {RequestMethod.GET}, produces = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<?> getSubByProductId(@RequestParam("product") String product) {
+        JSONObject responseMap = new JSONObject();
+        productRepository.findById(Long.valueOf(product))
+                .ifPresentOrElse(pro -> {
+                    JSONObject detail = productService.getProductDetail(pro.getProductId());
+                    responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                            .put("statusDescription", "success")
+                            .put("detail", detail)
+                            .put("statusMessage", "Request Successful");
+                }, () -> {
+                    responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
+                            .put("statusDescription", "The product is not found")
+                            .put("statusMessage", "The product is not found");
+                });
+
+        return ResponseEntity.ok(responseMap.toString());
+    }
+
+
+    public ResponseEntity<?> getProductOwner(@RequestParam("product") String product) {
+        AtomicReference<JSONObject> responseMap = new AtomicReference<>(new JSONObject());
+        productRepository.findById(Long.valueOf(product))
+                .ifPresentOrElse(pro -> {
+                    if (pro.getOwnerType().equals("MERCHANT")) {
+                        JSONObject payload = new JSONObject();
+                        payload.put("userType", "MERCHANT");
+                        payload.put("userId", pro.getMerchantId().toString());
+                        responseMap.set(multiUserService.getAllUser(payload));
+                    } else {
+                        responseMap.get().put("statusCode", ResponseCodes.SUCCESS)
+                                .put("statusDescription", "success")
+                                .put("detail", "WareHouse Product")
+                                .put("statusMessage", "Request Successful");
+                    }
+                }, () -> {
+                    responseMap.get().put("statusCode", ResponseCodes.REQUEST_FAILED)
                             .put("statusDescription", "The product is not found")
                             .put("statusMessage", "The product is not found");
                 });
