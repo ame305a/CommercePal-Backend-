@@ -263,7 +263,6 @@ public class ProductManagementController {
         return ResponseEntity.ok(responseMap.toString());
     }
 
-
     public ResponseEntity<?> getProductOwner(@RequestParam("product") String product) {
         AtomicReference<JSONObject> responseMap = new AtomicReference<>(new JSONObject());
         productRepository.findById(Long.valueOf(product))
