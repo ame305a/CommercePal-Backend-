@@ -329,6 +329,8 @@ public class RegistrationStoreService {
             query.registerStoredProcedureParameter("Country", String.class, ParameterMode.IN);
             query.registerStoredProcedureParameter("Language", String.class, ParameterMode.IN);
             query.registerStoredProcedureParameter("Msisdn", String.class, ParameterMode.IN);
+            query.registerStoredProcedureParameter("Channel", String.class, ParameterMode.IN);
+            query.registerStoredProcedureParameter("DeviceId", String.class, ParameterMode.IN);
             query.registerStoredProcedureParameter("RegisteredBy", String.class, ParameterMode.IN);
             query.setParameter("FirstName", regHm.getString("firstName"));
             query.setParameter("LastName", regHm.getString("lastName"));
@@ -338,6 +340,8 @@ public class RegistrationStoreService {
             query.setParameter("Country", regHm.getString("country"));
             query.setParameter("Language", regHm.getString("language"));
             query.setParameter("Msisdn", regHm.getString("msisdn"));
+            query.setParameter("Channel", regHm.getString("channel"));
+            query.setParameter("DeviceId", regHm.getString("deviceId"));
             query.setParameter("RegisteredBy", regHm.getString("registeredBy"));
             query.registerStoredProcedureParameter("RegistrationExist", Integer.class, ParameterMode.OUT);
             query.execute();
@@ -366,6 +370,45 @@ public class RegistrationStoreService {
             query.setParameter(4, request.getString("User"));
             query.setParameter(5, request.getString("Action"));
 
+            List response = query.getResultList();
+            response.forEach(res -> {
+                try {
+                    List<?> resData = new ArrayList();
+                    if (res.getClass().isArray()) {
+                        resData = Arrays.asList((Object[]) res);
+                    } else if (res instanceof Collection) {
+                        resData = new ArrayList((Collection) res);
+                    }
+                    transResponse.put("Status", resData.get(0).toString());
+                    transResponse.put("Narration", resData.get(1).toString());
+                } catch (Exception ex) {
+                    log.log(Level.WARNING, ex.getMessage());
+                    transResponse.put("Status", "99");
+                    transResponse.put("Narration", "Failed Processing Response");
+                }
+            });
+        } catch (Exception ex) {
+            log.log(Level.WARNING, ex.getMessage());
+            transResponse.put("Status", "99");
+            transResponse.put("Narration", "Failed Processing Response");
+        }
+        return transResponse;
+    }
+
+    public JSONObject pinOtp(JSONObject request) {
+        JSONObject transResponse = new JSONObject();
+        try {
+            StoredProcedureQuery query = entityManager.createStoredProcedureQuery("ExecPhoneOtp");
+            query.registerStoredProcedureParameter(1, String.class, ParameterMode.IN);
+            query.registerStoredProcedureParameter(2, String.class, ParameterMode.IN);
+            query.registerStoredProcedureParameter(3, String.class, ParameterMode.IN);
+            query.registerStoredProcedureParameter(4, String.class, ParameterMode.IN);
+            query.registerStoredProcedureParameter(5, String.class, ParameterMode.IN);
+            query.setParameter(1, request.getString("msisdn"));
+            query.setParameter(2, request.getString("otpCode"));
+            query.setParameter(3, request.getString("PhoneOtp"));
+            query.setParameter(4, request.getString("otpEmailCode"));
+            query.setParameter(5, request.getString("EmailOtp"));
             List response = query.getResultList();
             response.forEach(res -> {
                 try {

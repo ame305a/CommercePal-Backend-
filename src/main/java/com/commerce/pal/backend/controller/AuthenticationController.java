@@ -109,6 +109,37 @@ public class AuthenticationController {
         this.loginValidationRepository = loginValidationRepository;
     }
 
+    @RequestMapping(value = "/auth-user", method = RequestMethod.POST)
+    public ResponseEntity<?> firstLogin(@RequestBody String authRequest) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            JSONObject reqBdy = new JSONObject(authRequest);
+            loginValidationRepository.findLoginValidationByEmailAddressOrPhoneNumber(
+                            reqBdy.getString("user"), reqBdy.getString("user"))
+                    .ifPresentOrElse(userLogin -> {
+                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                .put("statusDescription", "success")
+                                .put("changePin", userLogin.getPinChange())
+                                .put("isPhoneValidated", userLogin.getIsPhoneValidated())
+                                .put("isEmailValidated", userLogin.getIsEmailValidated())
+                                .put("statusMessage", "login successful");
+                    }, () -> {
+                        responseMap.put("statusCode", ResponseCodes.SYSTEM_LOGIN_NOT_SUCCESSFUL)
+                                .put("statusDescription", "login failed invalid details")
+                                .put("statusMessage", "login failed invalid details");
+                    });
+        } catch (Exception e) {
+            log.log(Level.INFO, e.getMessage());
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("errorDescription", e.getMessage())
+                    .put("statusMessage", "internal system error");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseMap.toString());
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
+
+    }
+
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
     public ResponseEntity<?> userAuthentication(HttpServletRequest request,
                                                 @Valid @RequestBody LoginPayload authenticationRequest) {
@@ -149,6 +180,7 @@ public class AuthenticationController {
                                 .put("userToken", token)
                                 .put("refreshToken", token)
                                 .put("changePin", userLogin.getPinChange())
+                                .put("isPhoneValidated", userLogin.getIsPhoneValidated())
                                 .put("statusMessage", "login successful");
                     });
         } catch (Exception e) {
@@ -249,6 +281,62 @@ public class AuthenticationController {
         return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
     }
 
+
+    @RequestMapping(value = {"/password-type-reset"}, method = {RequestMethod.POST}, produces = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<?> passwordResetType(@RequestBody String requestBody) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            JSONObject jsonObject = new JSONObject(requestBody);
+            String userValue = jsonObject.getString("user");
+            loginValidationRepository.findLoginValidationByEmailAddressOrPhoneNumber(userValue, userValue)
+                    .ifPresentOrElse(user -> {
+                        String code = globalMethods.getMobileValidationCode();
+                        String token = code + "-" + UUID.randomUUID().toString();
+                        user.setPasswordResetToken(token);
+                        user.setPasswordResetTokenStatus(0);
+                        user.setPasswordResetTokenExpire(Timestamp.from(Instant.now().plusSeconds(TimeUnit.MINUTES.toSeconds(30))));
+                        loginValidationRepository.save(user);
+
+                        String userEmail = user.getEmailAddress();
+                        JSONObject emailPayload = new JSONObject();
+                        emailPayload.put("HasTemplate", "YES");
+                        emailPayload.put("TemplateName", "reset-pin-request");
+                        emailPayload.put("name", globalMethods.getMultiUserCustomer(userEmail).getString("firstName"));
+                        emailPayload.put("otp", code);
+                        emailPayload.put("email", userEmail);
+                        emailPayload.put("EmailDestination", userEmail);
+                        emailPayload.put("EmailSubject", "PASSWORD RESET");
+                        emailPayload.put("EmailMessage", "Password Reset");
+                        globalMethods.sendEmailNotification(emailPayload);
+
+                        JSONObject smsBody = new JSONObject();
+                        smsBody.put("TemplateId", "9");
+                        smsBody.put("TemplateLanguage", "en");
+                        smsBody.put("Phone", globalMethods.getMultiUserCustomer(user.getEmailAddress()).getString("phoneNumber"));
+                        smsBody.put("otp", code);
+                        globalMethods.sendSMSNotification(smsBody);
+
+                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                .put("statusDescription", "success")
+                                .put("statusMessage", "Password Reset request was successful");
+                    }, () -> {
+                        responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                                .put("statusDescription", "failed to process request")
+                                .put("errorDescription", "User does not exist")
+                                .put("statusMessage", "User does not exist");
+                    });
+        } catch (Exception ex) {
+            log.log(Level.WARNING, "Pass Reset Error : " + ex.getMessage());
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("errorDescription", ex.getMessage())
+                    .put("statusMessage", "internal system error");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseMap.toString());
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
+    }
+
     @RequestMapping(value = {"/confirm-code"}, method = {RequestMethod.POST}, produces = {"application/json"})
     @ResponseBody
     public ResponseEntity<?> confirmCode(@RequestBody String code) {
@@ -256,12 +344,12 @@ public class AuthenticationController {
         JSONObject responseMap = new JSONObject();
         try {
             JSONObject jsonObject = new JSONObject(code);
-            loginValidationRepository.findLoginValidationByEmailAddressAndPasswordResetTokenStatus(jsonObject.getString("userEmail"), 0)
+            loginValidationRepository.findLoginValidationByEmailAddressOrPhoneNumberAndPasswordResetTokenStatus(
+                            jsonObject.getString("user"), jsonObject.getString("user"), 0)
                     .ifPresentOrElse(user -> {
                         if (user.getPasswordResetTokenExpire().equals(Timestamp.from(Instant.now()))) {
                         }
                         if (!user.getPasswordResetToken().substring(0, 4).equals(jsonObject.getString("code"))) {
-
                             responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
                                     .put("statusDescription", "Code is not valid or expired")
                                     .put("errorDescription", "Code is not valid or expired")
@@ -320,6 +408,128 @@ public class AuthenticationController {
                     .put("errorDescription", ex.getMessage())
                     .put("statusMessage", "internal system error");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseMap.toString());
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
+    }
+
+    @RequestMapping(value = {"/validate-type-request"}, method = {RequestMethod.POST}, produces = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<?> validateTypeRequest(@RequestBody String requestBody) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            JSONObject jsonObject = new JSONObject(requestBody);
+            String userValue = jsonObject.getString("user");
+            loginValidationRepository.findLoginValidationByEmailAddressOrPhoneNumber(userValue, userValue)
+                    .ifPresentOrElse(user -> {
+                        jsonObject.put("msisdn", user.getPhoneNumber());
+                        if (jsonObject.getString("type").equals("EMAIL")) {
+                            String otpEmailCode = globalMethods.getMobileValidationCode();
+                            String userEmail = user.getEmailAddress();
+                            JSONObject emailPayload = new JSONObject();
+                            emailPayload.put("HasTemplate", "YES");
+                            emailPayload.put("TemplateName", "reset-pin-request");
+                            emailPayload.put("name", globalMethods.getMultiUserCustomer(userEmail).getString("firstName"));
+                            emailPayload.put("otp", otpEmailCode);
+                            emailPayload.put("email", userEmail);
+                            emailPayload.put("EmailDestination", userEmail);
+                            emailPayload.put("EmailSubject", "PASSWORD RESET");
+                            emailPayload.put("EmailMessage", "Password Reset");
+                            globalMethods.sendEmailNotification(emailPayload);
+                            jsonObject.put("otpEmailCode", otpEmailCode);
+                            jsonObject.put("otpCode", "Code");
+                            jsonObject.put("PhoneOtp", "0");
+                            jsonObject.put("EmailOtp", "1");
+                        } else {
+                            String code = globalMethods.getMobileValidationCode();
+                            jsonObject.put("otpCode", code);
+                            jsonObject.put("otpEmailCode", "otpEmailCode");
+                            jsonObject.put("PhoneOtp", "1");
+                            jsonObject.put("EmailOtp", "0");
+
+                            JSONObject smsBody = new JSONObject();
+                            smsBody.put("TemplateId", "9");
+                            smsBody.put("TemplateLanguage", "en");
+                            smsBody.put("Phone", globalMethods.getMultiUserCustomer(user.getEmailAddress()).getString("phoneNumber"));
+                            smsBody.put("otp", code);
+                            globalMethods.sendSMSNotification(smsBody);
+                        }
+                        registrationStoreService.pinOtp(jsonObject);
+
+                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                .put("statusDescription", "success")
+                                .put("statusMessage", "Account validation Reset request was successful");
+                    }, () -> {
+                        responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                                .put("statusDescription", "failed to process request")
+                                .put("errorDescription", "User does not exist")
+                                .put("statusMessage", "User does not exist");
+                    });
+        } catch (Exception ex) {
+            log.log(Level.WARNING, "Pass Reset Error : " + ex.getMessage());
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("errorDescription", ex.getMessage())
+                    .put("statusMessage", "internal system error");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseMap.toString());
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
+    }
+    @RequestMapping(value = {"/validate-confirm-otp"}, method = {RequestMethod.POST}, produces = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<?> validateConfirmOtp(@RequestBody String code) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            JSONObject jsonObject = new JSONObject(code);
+            loginValidationRepository.findLoginValidationByEmailAddressOrPhoneNumber(jsonObject.getString("user"), jsonObject.getString("user"))
+                    .ifPresentOrElse(user -> {
+                        if (user.getOtpHash().substring(0, 4).equals(jsonObject.getString("code")) && jsonObject.getString("type").equals("phone")) {
+                            user.setStatus(1);
+                            loginValidationRepository.save(user);
+
+                            final UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmailAddress());
+                            String userToken = jwtTokenUtil.generateToken(userDetails);
+                            responseMap.put("jwttoken", userToken);
+                            user.setPasswordResetTokenStatus(1);
+                            user.setIsPhoneValidated(1);
+                            loginValidationRepository.save(user);
+
+                            responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                    .put("statusDescription", "success")
+                                    .put("statusMessage", "Phone validation was successful");
+                        } else if (user.getEmailAddress().substring(0, 4).equals(jsonObject.getString("code")) && jsonObject.getString("type").equals("phone")) {
+                            user.setStatus(1);
+                            loginValidationRepository.save(user);
+
+                            final UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmailAddress());
+                            String userToken = jwtTokenUtil.generateToken(userDetails);
+                            responseMap.put("jwttoken", userToken);
+                            user.setPasswordResetTokenStatus(1);
+                            user.setIsPhoneValidated(1);
+                            loginValidationRepository.save(user);
+
+                            responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                    .put("statusDescription", "success")
+                                    .put("statusMessage", "Email validation was successful");
+                        } else {
+                            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                                    .put("statusDescription", "Code is not valid or expired")
+                                    .put("errorDescription", "Code is not valid or expired")
+                                    .put("statusMessage", "Code is not valid or expired");
+                        }
+                    }, () -> {
+                        responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                                .put("statusDescription", "Code is not valid or expired")
+                                .put("errorDescription", "Code is not valid or expired")
+                                .put("statusMessage", "Token is not valid or expired");
+                    });
+        } catch (Exception ex) {
+            log.log(Level.WARNING, "Confirm Code Error : " + ex.getMessage());
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("errorDescription", ex.getMessage())
+                    .put("statusMessage", "internal system error");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseMap.toString());
+
         }
         return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
     }
@@ -497,7 +707,10 @@ public class AuthenticationController {
             String password = globalMethods.getGeneratePassword();
             String passwordHash = bcryptEncoder.encode(password);
             request.put("password", passwordHash);
-
+            String otpCode = globalMethods.getMobileValidationCode();
+            request.put("otpCode", otpCode);
+            String otpEmailCode = globalMethods.getMobileValidationCode();
+            request.put("otpEmailCode", otpEmailCode);
             responseMap = registrationStoreService.doCustomerRegistration(request);
 
             int exists = responseMap.getInt("exists");
@@ -519,6 +732,11 @@ public class AuthenticationController {
                         .put("statusDescription", "success. Use current login details")
                         .put("statusMessage", "registration successful. Use current login details");
             } else {
+                request.put("PhoneOtp", "1");
+                request.put("EmailOtp", "1");
+
+                registrationStoreService.pinOtp(request);
+
                 responseMap.put("statusCode", ResponseCodes.SUCCESS)
                         .put("userId", userId)
                         .put("statusDescription", "success")
@@ -534,6 +752,14 @@ public class AuthenticationController {
                 emailPayload.put("EmailSubject", "COMMERCE PAL REGISTRATION");
                 emailPayload.put("EmailMessage", "Password Reset");
                 globalMethods.sendEmailNotification(emailPayload);
+
+
+                JSONObject smsBody = new JSONObject();
+                smsBody.put("TemplateId", "1");
+                smsBody.put("TemplateLanguage", "en");
+                smsBody.put("Otp", password);
+                smsBody.put("Phone", request.getString("msisdn").substring(request.getString("msisdn").length() - 9));
+                globalMethods.sendSMSNotification(smsBody);
             }
 
         } catch (Exception e) {

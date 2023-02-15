@@ -65,7 +65,12 @@ public class MultiUserService {
         try {
             String password = globalMethods.generatePassword();
             String passwordHash = bcryptEncoder.encode(password);
+            String otpCode = globalMethods.getMobileValidationCode();
             request.put("password", passwordHash);
+            request.put("otpCode", otpCode);
+            String otpEmailCode = globalMethods.getMobileValidationCode();
+            request.put("otpEmailCode", otpEmailCode);
+
             switch (request.getString("userType")) {
                 case "MERCHANT":
                     request.put("msisdn", request.getString("ownerPhoneNumber"));
@@ -114,6 +119,11 @@ public class MultiUserService {
                 String msg = "Registration successful. Use current login details";
                 emailClient.emailSender(msg, request.getString("email").trim(), "REGISTRATION");
             } else {
+                request.put("PhoneOtp", "1");
+                request.put("EmailOtp", "1");
+
+                registrationStoreService.pinOtp(request);
+
                 responseMap.put("statusCode", ResponseCodes.SUCCESS)
                         .put("userId", userId)
                         .put("statusDescription", "success")
@@ -133,6 +143,7 @@ public class MultiUserService {
                 JSONObject smsBody = new JSONObject();
                 smsBody.put("TemplateId", "1");
                 smsBody.put("TemplateLanguage", "en");
+                smsBody.put("Otp", password);
                 smsBody.put("Phone", request.getString("msisdn").substring(request.getString("msisdn").length() - 9));
                 globalMethods.sendSMSNotification(smsBody);
 

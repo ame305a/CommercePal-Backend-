@@ -262,7 +262,8 @@ public class ProductManagementController {
 
         return ResponseEntity.ok(responseMap.toString());
     }
-
+    @RequestMapping(value = {"/GetOwnerProductById"}, method = {RequestMethod.GET}, produces = {"application/json"})
+    @ResponseBody
     public ResponseEntity<?> getProductOwner(@RequestParam("product") String product) {
         AtomicReference<JSONObject> responseMap = new AtomicReference<>(new JSONObject());
         productRepository.findById(Long.valueOf(product))
@@ -275,7 +276,7 @@ public class ProductManagementController {
                     } else {
                         responseMap.get().put("statusCode", ResponseCodes.SUCCESS)
                                 .put("statusDescription", "success")
-                                .put("detail", "WareHouse Product")
+                                .put("data", "WareHouse Product")
                                 .put("statusMessage", "Request Successful");
                     }
                 }, () -> {

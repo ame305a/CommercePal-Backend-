@@ -34,8 +34,18 @@ public class LoginValidation {
     @Column(name = "PinChange")
     private Integer pinChange;
     @Basic
+    @Column(name = "IsPhoneValidated")
+    private Integer isPhoneValidated;
+    @Basic
+    @Column(name = "IsEmailValidated")
+    private Integer isEmailValidated;
+    @Basic
     @Column(name = "OTPHash")
     private String otpHash;
+    @Basic
+    @Column(name = "EmailOtpHash")
+    private String emailOtpHash;
+
     @Basic
     @Column(name = "OTPRequired")
     private Byte otpRequired;
@@ -51,7 +61,6 @@ public class LoginValidation {
     @Basic
     @Column(name = "UserOneSignalId")
     private String userOneSignalId;
-
     @Basic
     @Column(name = "Status")
     private Integer status;
