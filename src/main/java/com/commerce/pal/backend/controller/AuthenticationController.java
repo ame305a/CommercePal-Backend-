@@ -474,6 +474,7 @@ public class AuthenticationController {
         }
         return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
     }
+
     @RequestMapping(value = {"/validate-confirm-otp"}, method = {RequestMethod.POST}, produces = {"application/json"})
     @ResponseBody
     public ResponseEntity<?> validateConfirmOtp(@RequestBody String code) {
@@ -482,7 +483,7 @@ public class AuthenticationController {
             JSONObject jsonObject = new JSONObject(code);
             loginValidationRepository.findLoginValidationByEmailAddressOrPhoneNumber(jsonObject.getString("user"), jsonObject.getString("user"))
                     .ifPresentOrElse(user -> {
-                        if (user.getOtpHash().substring(0, 4).equals(jsonObject.getString("code")) && jsonObject.getString("type").equals("phone")) {
+                        if (user.getOtpHash().equals(jsonObject.getString("code")) && jsonObject.getString("type").equals("PHONE")) {
                             user.setStatus(1);
                             loginValidationRepository.save(user);
 
@@ -496,7 +497,7 @@ public class AuthenticationController {
                             responseMap.put("statusCode", ResponseCodes.SUCCESS)
                                     .put("statusDescription", "success")
                                     .put("statusMessage", "Phone validation was successful");
-                        } else if (user.getEmailAddress().substring(0, 4).equals(jsonObject.getString("code")) && jsonObject.getString("type").equals("phone")) {
+                        } else if (user.getEmailOtpHash().equals(jsonObject.getString("code")) && jsonObject.getString("type").equals("EMAIL")) {
                             user.setStatus(1);
                             loginValidationRepository.save(user);
 
