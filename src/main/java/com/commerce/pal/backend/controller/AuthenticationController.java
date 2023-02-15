@@ -180,6 +180,7 @@ public class AuthenticationController {
                                 .put("userToken", token)
                                 .put("refreshToken", token)
                                 .put("changePin", userLogin.getPinChange())
+                                .put("isEmailValidated", userLogin.getIsEmailValidated())
                                 .put("isPhoneValidated", userLogin.getIsPhoneValidated())
                                 .put("statusMessage", "login successful");
                     });
