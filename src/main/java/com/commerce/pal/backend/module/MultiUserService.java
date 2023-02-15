@@ -143,7 +143,7 @@ public class MultiUserService {
                 JSONObject smsBody = new JSONObject();
                 smsBody.put("TemplateId", "1");
                 smsBody.put("TemplateLanguage", "en");
-                smsBody.put("Otp", password);
+                smsBody.put("otp", password);
                 smsBody.put("Phone", request.getString("msisdn").substring(request.getString("msisdn").length() - 9));
                 globalMethods.sendSMSNotification(smsBody);
 

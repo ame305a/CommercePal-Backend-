@@ -122,11 +122,11 @@ public class AuthenticationController {
                                 .put("changePin", userLogin.getPinChange())
                                 .put("isPhoneValidated", userLogin.getIsPhoneValidated())
                                 .put("isEmailValidated", userLogin.getIsEmailValidated())
-                                .put("statusMessage", "login successful");
+                                .put("statusMessage", "successful");
                     }, () -> {
                         responseMap.put("statusCode", ResponseCodes.SYSTEM_LOGIN_NOT_SUCCESSFUL)
-                                .put("statusDescription", "login failed invalid details")
-                                .put("statusMessage", "login failed invalid details");
+                                .put("statusDescription", "failed invalid details")
+                                .put("statusMessage", "failed invalid details");
                     });
         } catch (Exception e) {
             log.log(Level.INFO, e.getMessage());
@@ -280,7 +280,6 @@ public class AuthenticationController {
         }
         return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
     }
-
 
     @RequestMapping(value = {"/password-type-reset"}, method = {RequestMethod.POST}, produces = {"application/json"})
     @ResponseBody
@@ -757,7 +756,7 @@ public class AuthenticationController {
                 JSONObject smsBody = new JSONObject();
                 smsBody.put("TemplateId", "1");
                 smsBody.put("TemplateLanguage", "en");
-                smsBody.put("Otp", password);
+                smsBody.put("otp", password);
                 smsBody.put("Phone", request.getString("msisdn").substring(request.getString("msisdn").length() - 9));
                 globalMethods.sendSMSNotification(smsBody);
             }
