@@ -30,6 +30,7 @@ public class EndPointConstant {
             /*
             REGISTRATION
              */
+            versioning + "/auth-user",
             versioning + "/authenticate",
             versioning + "/password-reset",
             versioning + "/confirm-code",
