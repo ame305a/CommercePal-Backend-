@@ -51,5 +51,6 @@ public class EndPointConstant {
              */
             versioning + "/service/**",
             versioning + "/service/sale/**",
+
     };
 }
