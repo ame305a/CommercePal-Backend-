@@ -23,6 +23,7 @@ public class ServiceController {
     private final CityRepository cityRepository;
     private final RegionRepository regionRepository;
     private final CountryRepository countryRepository;
+    private final AppVersionRepository appVersionRepository;
     private final PaymentMethodRepository paymentMethodRepository;
     private final PaymentMethodItemRepository paymentMethodItemRepository;
 
@@ -31,12 +32,14 @@ public class ServiceController {
                              CityRepository cityRepository,
                              RegionRepository regionRepository,
                              CountryRepository countryRepository,
+                             AppVersionRepository appVersionRepository,
                              PaymentMethodRepository paymentMethodRepository,
                              PaymentMethodItemRepository paymentMethodItemRepository) {
         this.bankRepository = bankRepository;
         this.cityRepository = cityRepository;
         this.regionRepository = regionRepository;
         this.countryRepository = countryRepository;
+        this.appVersionRepository = appVersionRepository;
         this.paymentMethodRepository = paymentMethodRepository;
         this.paymentMethodItemRepository = paymentMethodItemRepository;
     }
@@ -116,6 +119,32 @@ public class ServiceController {
                 .put("data", banks)
                 .put("statusDescription", "Product Passed")
                 .put("statusMessage", "Product Passed");
+
+        return ResponseEntity.status(HttpStatus.OK).body(response.toString());
+    }
+
+    @RequestMapping(value = {"/app-version"}, method = {RequestMethod.GET}, produces = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<?> appVersion() {
+        JSONObject one = new JSONObject();
+        appVersionRepository.findById(1)
+                .ifPresent(appVersion -> {
+                    one.put("AndroidVersion", appVersion.getAndroidVersion());
+                    one.put("IosVersion", appVersion.getIosVersion());
+                    one.put("AndroidUpdate", appVersion.getAndroidVersion());
+                    one.put("AndroidUpdateType", appVersion.getAndroidUpdateType());
+                    one.put("AndroidComment", appVersion.getAndroidComment());
+                    one.put("IosUpdate", appVersion.getIosUpdate());
+                    one.put("iosUpdateType", appVersion.getIosUpdateType());
+                    one.put("IosComment", appVersion.getIosComment());
+                    one.put("SessionTimeout", appVersion.getSessionTimeout());
+                });
+
+        JSONObject response = new JSONObject();
+        response.put("statusCode", ResponseCodes.SUCCESS)
+                .put("data", one)
+                .put("statusDescription", "Success")
+                .put("statusMessage", "Success");
 
         return ResponseEntity.status(HttpStatus.OK).body(response.toString());
     }
