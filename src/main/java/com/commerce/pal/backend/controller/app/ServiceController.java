@@ -169,7 +169,7 @@ public class ServiceController {
                         item.put("name", paymentMethodItem.getName());
                         item.put("paymentType", paymentMethodItem.getPaymentType());
                         item.put("iconUrl", paymentMethodItem.getIconUrl());
-                        item.put("iconUrl", paymentMethodItem.getIconUrl());
+                        item.put("paymentInstruction", paymentMethodItem.getPaymentInstruction());
                         items.add(item);
                     }
                 });
