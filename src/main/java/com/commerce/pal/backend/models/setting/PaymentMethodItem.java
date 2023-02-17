@@ -33,6 +33,9 @@ public class PaymentMethodItem {
     @Column(name = "IconUrl")
     private String iconUrl;
     @Basic
+    @Column(name = "PaymentInstruction")
+    private String paymentInstruction;
+    @Basic
     @Column(name = "Status")
     private Integer status;
     @Basic
