@@ -4,6 +4,7 @@ import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.models.product.ProductFeature;
 import com.commerce.pal.backend.models.product.UoM;
 import com.commerce.pal.backend.repo.product.ProductFeatureRepository;
+import com.commerce.pal.backend.repo.product.ProductFeatureValueRepository;
 import com.commerce.pal.backend.repo.product.UoMRepository;
 import lombok.extern.java.Log;
 import org.json.JSONObject;
@@ -26,12 +27,14 @@ import java.util.logging.Level;
 public class ProductFeaturesManagementController {
     private final UoMRepository uoMRepository;
     private final ProductFeatureRepository productFeatureRepository;
+    private final ProductFeatureValueRepository productFeatureValueRepository;
 
     @Autowired
     public ProductFeaturesManagementController(UoMRepository uoMRepository,
-                                               ProductFeatureRepository productFeatureRepository) {
+                                               ProductFeatureRepository productFeatureRepository, ProductFeatureValueRepository productFeatureValueRepository) {
         this.uoMRepository = uoMRepository;
         this.productFeatureRepository = productFeatureRepository;
+        this.productFeatureValueRepository = productFeatureValueRepository;
     }
 
     @RequestMapping(value = {"/add-feature"}, method = {RequestMethod.POST}, produces = {"application/json"})
@@ -96,7 +99,7 @@ public class ProductFeaturesManagementController {
         try {
             JSONObject jsonObject = new JSONObject(parent);
 
-            Long res = productFeatureRepository.removeProductFeatureById(jsonObject.getLong("id"));
+            Long res = productFeatureValueRepository.removeProductFeatureValueById(jsonObject.getLong("id"));
 
             log.log(Level.INFO, "Del Res: " + String.valueOf(res));
             responseMap.put("statusCode", ResponseCodes.SUCCESS)

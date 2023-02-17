@@ -3,6 +3,7 @@ package com.commerce.pal.backend.repo.product;
 import com.commerce.pal.backend.models.product.ProductFeatureValue;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,4 +20,7 @@ public interface ProductFeatureValueRepository extends JpaRepository<ProductFeat
 
 
     Optional<ProductFeatureValue> findProductFeatureValuesByProductFeatureIdAndProductId(Long featureId, Long subProdId);
+
+    @Transactional
+    Long removeProductFeatureValueById(Long id);
 }
