@@ -36,6 +36,7 @@ public class EndPointConstant {
             versioning + "/confirm-code",
             versioning + "/registration",
             versioning + "/client/registration",
+            versioning + "/password-type-reset",
 
             /*
             CATEGORIES
