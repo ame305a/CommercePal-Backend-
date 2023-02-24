@@ -505,7 +505,7 @@ public class AuthenticationController {
                             String userToken = jwtTokenUtil.generateToken(userDetails);
                             responseMap.put("jwttoken", userToken);
                             user.setPasswordResetTokenStatus(1);
-                            user.setIsPhoneValidated(1);
+                            user.setIsEmailValidated(1);
                             loginValidationRepository.save(user);
 
                             responseMap.put("statusCode", ResponseCodes.SUCCESS)
