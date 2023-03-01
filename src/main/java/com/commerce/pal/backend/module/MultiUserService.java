@@ -145,6 +145,7 @@ public class MultiUserService {
                 smsBody.put("TemplateLanguage", "en");
                 smsBody.put("otp", password);
                 smsBody.put("Phone", request.getString("msisdn").substring(request.getString("msisdn").length() - 9));
+                smsBody.put("hash", globalMethods.getHashkey());
                 globalMethods.sendSMSNotification(smsBody);
 
             }

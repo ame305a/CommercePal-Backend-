@@ -5,6 +5,7 @@ import com.commerce.pal.backend.models.LoginValidation;
 import com.commerce.pal.backend.module.transaction.AccountService;
 import com.commerce.pal.backend.repo.LoginValidationRepository;
 import com.commerce.pal.backend.repo.product.ProductRepository;
+import com.commerce.pal.backend.repo.setting.AppVersionRepository;
 import com.commerce.pal.backend.repo.setting.CityRepository;
 import com.commerce.pal.backend.repo.user.*;
 import com.commerce.pal.backend.repo.user.business.BusinessRepository;
@@ -44,6 +45,7 @@ public class GlobalMethods {
     private final SmsEmailPushService smsEmailPushService;
     private final MessengerRepository messengerRepository;
     private final DistributorRepository distributorRepository;
+    private final AppVersionRepository appVersionRepository;
     private final LoginValidationRepository loginValidationRepository;
 
     @Autowired
@@ -58,6 +60,7 @@ public class GlobalMethods {
                          SmsEmailPushService smsEmailPushService,
                          MessengerRepository messengerRepository,
                          DistributorRepository distributorRepository,
+                         AppVersionRepository appVersionRepository,
                          LoginValidationRepository loginValidationRepository) {
         this.smsLogging = smsLogging;
         this.cityRepository = cityRepository;
@@ -70,6 +73,7 @@ public class GlobalMethods {
         this.smsEmailPushService = smsEmailPushService;
         this.messengerRepository = messengerRepository;
         this.distributorRepository = distributorRepository;
+        this.appVersionRepository = appVersionRepository;
         this.loginValidationRepository = loginValidationRepository;
     }
 
@@ -325,5 +329,14 @@ public class GlobalMethods {
                     name.set(city.getCity());
                 });
         return name.get();
+    }
+
+    public String getHashkey() {
+        AtomicReference<String> mes = new AtomicReference<>("");
+        appVersionRepository.findById(1)
+                .ifPresent(appVersion -> {
+                    mes.set("\n " + appVersion.getSmsHash());
+                });
+        return mes.get();
     }
 }

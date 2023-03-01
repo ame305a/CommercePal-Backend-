@@ -260,6 +260,7 @@ public class AuthenticationController {
                         smsBody.put("TemplateLanguage", "en");
                         smsBody.put("Phone", globalMethods.getMultiUserCustomer(userEmail).getString("phoneNumber"));
                         smsBody.put("otp", code);
+                        smsBody.put("hash", globalMethods.getHashkey());
                         globalMethods.sendSMSNotification(smsBody);
 
                         responseMap.put("statusCode", ResponseCodes.SUCCESS)
@@ -315,6 +316,7 @@ public class AuthenticationController {
                         smsBody.put("TemplateLanguage", "en");
                         smsBody.put("Phone", globalMethods.getMultiUserCustomer(user.getEmailAddress()).getString("phoneNumber"));
                         smsBody.put("otp", code);
+                        smsBody.put("hash", globalMethods.getHashkey());
                         globalMethods.sendSMSNotification(smsBody);
 
                         responseMap.put("statusCode", ResponseCodes.SUCCESS)
@@ -451,6 +453,7 @@ public class AuthenticationController {
                             smsBody.put("TemplateLanguage", "en");
                             smsBody.put("Phone", globalMethods.getMultiUserCustomer(user.getEmailAddress()).getString("phoneNumber"));
                             smsBody.put("otp", code);
+                            smsBody.put("hash", globalMethods.getHashkey());
                             globalMethods.sendSMSNotification(smsBody);
                         }
                         registrationStoreService.pinOtp(jsonObject);
@@ -760,6 +763,7 @@ public class AuthenticationController {
                 smsBody.put("TemplateLanguage", "en");
                 smsBody.put("otp", password);
                 smsBody.put("Phone", request.getString("msisdn").substring(request.getString("msisdn").length() - 9));
+                smsBody.put("hash", globalMethods.getHashkey());
                 globalMethods.sendSMSNotification(smsBody);
             }
 

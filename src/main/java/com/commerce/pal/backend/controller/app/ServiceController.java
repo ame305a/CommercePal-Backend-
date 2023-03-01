@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 
 @Log
@@ -138,6 +139,7 @@ public class ServiceController {
                     one.put("iosUpdateType", appVersion.getIosUpdateType());
                     one.put("IosComment", appVersion.getIosComment());
                     one.put("SessionTimeout", appVersion.getSessionTimeout());
+                    one.put("SmsHash", appVersion.getSmsHash());
                 });
 
         JSONObject response = new JSONObject();
@@ -147,6 +149,35 @@ public class ServiceController {
                 .put("statusMessage", "Success");
 
         return ResponseEntity.status(HttpStatus.OK).body(response.toString());
+    }
+
+    @RequestMapping(value = "/post-hash", method = RequestMethod.POST)
+    public ResponseEntity<?> postHash(@RequestBody String authRequest) {
+        JSONObject responseMap = new JSONObject();
+        try {
+            JSONObject reqBdy = new JSONObject(authRequest);
+            appVersionRepository.findById(1)
+                    .ifPresentOrElse(appVersion -> {
+                        appVersion.setSmsHash(reqBdy.getString("hash"));
+                        appVersionRepository.save(appVersion);
+                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                .put("statusDescription", "success")
+                                .put("statusMessage", "successful");
+                    }, () -> {
+                        responseMap.put("statusCode", ResponseCodes.SYSTEM_LOGIN_NOT_SUCCESSFUL)
+                                .put("statusDescription", "failed invalid details")
+                                .put("statusMessage", "failed invalid details");
+                    });
+        } catch (Exception e) {
+            log.log(Level.INFO, e.getMessage());
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("errorDescription", e.getMessage())
+                    .put("statusMessage", "internal system error");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseMap.toString());
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
+
     }
 
     @RequestMapping(value = {"/payment-method"}, method = {RequestMethod.GET}, produces = {"application/json"})

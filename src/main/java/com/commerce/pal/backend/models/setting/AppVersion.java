@@ -41,5 +41,7 @@ public class AppVersion {
     @Basic
     @Column(name = "SessionTimeout")
     private Integer sessionTimeout;
-
+    @Basic
+    @Column(name = "SmsHash")
+    private String smsHash;
 }
