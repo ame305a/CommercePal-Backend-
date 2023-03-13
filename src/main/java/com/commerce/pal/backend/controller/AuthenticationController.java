@@ -115,7 +115,7 @@ public class AuthenticationController {
         try {
             JSONObject reqBdy = new JSONObject(authRequest);
             loginValidationRepository.findLoginValidationByEmailAddressOrPhoneNumber(
-                            reqBdy.getString("user"), reqBdy.getString("user"))
+                    reqBdy.getString("user"), reqBdy.getString("user"))
                     .ifPresentOrElse(userLogin -> {
                         responseMap.put("statusCode", ResponseCodes.SUCCESS)
                                 .put("statusDescription", "success")
@@ -347,7 +347,7 @@ public class AuthenticationController {
         try {
             JSONObject jsonObject = new JSONObject(code);
             loginValidationRepository.findLoginValidationByEmailAddressOrPhoneNumberAndPasswordResetTokenStatus(
-                            jsonObject.getString("user"), jsonObject.getString("user"), 0)
+                    jsonObject.getString("user"), jsonObject.getString("user"), 0)
                     .ifPresentOrElse(user -> {
                         if (user.getPasswordResetTokenExpire().equals(Timestamp.from(Instant.now()))) {
                         }
@@ -705,6 +705,7 @@ public class AuthenticationController {
     @RequestMapping(value = "/registration", method = RequestMethod.POST)
     public ResponseEntity<?> customerRegistration(@RequestBody String registration) {
         JSONObject responseMap = new JSONObject();
+        log.log(Level.INFO, registration);
 
         try {
             JSONObject request = new JSONObject(registration);
