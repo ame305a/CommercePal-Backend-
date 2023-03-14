@@ -95,6 +95,7 @@ public class ProductFeaturesManagementController {
     @RequestMapping(value = {"/delete-feature"}, method = {RequestMethod.POST}, produces = {"application/json"})
     @ResponseBody
     public ResponseEntity<?> deleteProductFeature(@RequestBody String parent) {
+        log.log(Level.INFO,"DELETE FEATURE : " + parent);
         JSONObject responseMap = new JSONObject();
         try {
             JSONObject jsonObject = new JSONObject(parent);

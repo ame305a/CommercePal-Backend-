@@ -17,6 +17,7 @@ import com.commerce.pal.backend.repo.user.*;
 import com.commerce.pal.backend.repo.user.business.BusinessRepository;
 import com.commerce.pal.backend.utils.GlobalMethods;
 import lombok.extern.java.Log;
+import org.asynchttpclient.RequestBuilder;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -46,8 +47,8 @@ import java.util.logging.Level;
 @SuppressWarnings("Duplicates")
 public class AuthenticationController {
 
-    @Value(value = "${org.java.frontend.confirm.reset.token}")
-    private String passwordResetUrl;
+    @Value(value = "${commerce.pal.payment.promotion.url}")
+    private String promoUrl;
 
     @Value(value = "${org.java.trial.attempts}")
     private Integer trialsAttempt;
@@ -496,6 +497,15 @@ public class AuthenticationController {
                             user.setPasswordResetTokenStatus(1);
                             user.setIsPhoneValidated(1);
                             loginValidationRepository.save(user);
+
+                            JSONObject promo = new JSONObject();
+                            promo.put("Phone", user.getPhoneNumber());
+                            promo.put("Device", user.getDeviceId());
+                            RequestBuilder builder = new RequestBuilder("POST");
+                            builder.addHeader("Content-Type", "application/json")
+                                    .setBody(promo.toString())
+                                    .setUrl(promoUrl)
+                                    .build();
 
                             responseMap.put("statusCode", ResponseCodes.SUCCESS)
                                     .put("statusDescription", "success")

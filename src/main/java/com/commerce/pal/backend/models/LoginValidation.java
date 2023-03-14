@@ -25,6 +25,9 @@ public class LoginValidation {
     @Column(name = "PinHash")
     private String pinHash;
     @Basic
+    @Column(name = "DeviceId")
+    private String deviceId;
+    @Basic
     @Column(name = "PinAttempt")
     private Integer pinAttempt;
     @Basic
