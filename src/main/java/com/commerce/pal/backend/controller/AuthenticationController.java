@@ -4,7 +4,6 @@ import com.commerce.pal.backend.common.JwtTokenUtil;
 import com.commerce.pal.backend.common.JwtUserDetailsService;
 import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.module.database.RegistrationStoreService;
-import com.commerce.pal.backend.integ.notification.email.EmailClient;
 import com.commerce.pal.backend.models.LoginValidation;
 import com.commerce.pal.backend.module.DistributorService;
 import com.commerce.pal.backend.module.users.AgentService;
@@ -16,6 +15,7 @@ import com.commerce.pal.backend.repo.LoginValidationRepository;
 import com.commerce.pal.backend.repo.user.*;
 import com.commerce.pal.backend.repo.user.business.BusinessRepository;
 import com.commerce.pal.backend.utils.GlobalMethods;
+import com.commerce.pal.backend.utils.HttpProcessor;
 import lombok.extern.java.Log;
 import org.asynchttpclient.RequestBuilder;
 import org.json.JSONObject;
@@ -64,6 +64,7 @@ public class AuthenticationController {
     @Autowired
     private JwtUserDetailsService userDetailsService;
 
+    private final HttpProcessor httpProcessor;
     private final AgentService agentService;
     private final GlobalMethods globalMethods;
     private final MerchantService merchantService;
@@ -80,7 +81,8 @@ public class AuthenticationController {
     private final LoginValidationRepository loginValidationRepository;
 
     @Autowired
-    public AuthenticationController(AgentService agentService,
+    public AuthenticationController(HttpProcessor httpProcessor,
+                                    AgentService agentService,
                                     GlobalMethods globalMethods,
                                     MerchantService merchantService,
                                     BusinessService businessService,
@@ -94,6 +96,7 @@ public class AuthenticationController {
                                     DistributorRepository distributorRepository,
                                     RegistrationStoreService registrationStoreService,
                                     LoginValidationRepository loginValidationRepository) {
+        this.httpProcessor = httpProcessor;
         this.globalMethods = globalMethods;
         this.agentService = agentService;
         this.merchantService = merchantService;
@@ -506,7 +509,7 @@ public class AuthenticationController {
                                     .setBody(promo.toString())
                                     .setUrl(promoUrl)
                                     .build();
-
+                            httpProcessor.processProperRequest(builder);
                             responseMap.put("statusCode", ResponseCodes.SUCCESS)
                                     .put("statusDescription", "success")
                                     .put("statusMessage", "Phone validation was successful");
