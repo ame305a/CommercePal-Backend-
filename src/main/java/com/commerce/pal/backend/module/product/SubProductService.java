@@ -1,10 +1,10 @@
 package com.commerce.pal.backend.module.product;
 
 import com.commerce.pal.backend.common.ResponseCodes;
-import com.commerce.pal.backend.models.order.Order;
 import com.commerce.pal.backend.models.product.ProductFeatureValue;
 import com.commerce.pal.backend.models.product.SubProduct;
 import com.commerce.pal.backend.models.product.SubProductImage;
+import com.commerce.pal.backend.module.database.ProductDatabaseService;
 import com.commerce.pal.backend.repo.product.*;
 import lombok.extern.java.Log;
 import org.json.JSONArray;
@@ -26,16 +26,19 @@ import java.util.logging.Level;
 public class SubProductService {
 
     private final SubProductRepository subProductRepository;
+    private final ProductDatabaseService productDatabaseService;
     private final ProductFeatureRepository productFeatureRepository;
     private final SubProductImageRepository subProductImageRepository;
     private final ProductFeatureValueRepository productFeatureValueRepository;
 
     @Autowired
     public SubProductService(SubProductRepository subProductRepository,
+                             ProductDatabaseService productDatabaseService,
                              ProductFeatureRepository productFeatureRepository,
                              SubProductImageRepository subProductImageRepository,
                              ProductFeatureValueRepository productFeatureValueRepository) {
         this.subProductRepository = subProductRepository;
+        this.productDatabaseService = productDatabaseService;
         this.productFeatureRepository = productFeatureRepository;
         this.subProductImageRepository = subProductImageRepository;
         this.productFeatureValueRepository = productFeatureValueRepository;
@@ -56,9 +59,10 @@ public class SubProductService {
                         detail.put("mobileThumbnail", sub.getMobileThumbnail() != null ? sub.getMobileThumbnail() : "");
                         detail.put("IsDiscounted", sub.getIsDiscounted());
                         detail.put("UnitPrice", sub.getUnitPrice());
+                        Double discountAmount = 0D;
                         if (sub.getIsDiscounted().equals(1)) {
                             detail.put("DiscountType", sub.getDiscountType());
-                            Double discountAmount = 0D;
+
                             if (sub.getDiscountType().equals("FIXED")) {
                                 detail.put("DiscountValue", sub.getDiscountValue());
                                 detail.put("DiscountAmount", sub.getDiscountValue());
@@ -77,6 +81,10 @@ public class SubProductService {
                             detail.put("offerPrice", sub.getUnitPrice());
                             detail.put("discountDescription", sub.getDiscountValue() + " " + "ETB");
                         }
+
+                        BigDecimal productDis = new BigDecimal(sub.getUnitPrice().doubleValue() - discountAmount);
+                        JSONObject chargeBdy = productDatabaseService.calculateProductPrice(productDis);
+                        detail.put("offerPrice", chargeBdy.getBigDecimal("FinalPrice"));
                         ArrayList<String> images = new ArrayList<String>();
                         subProductImageRepository.findSubProductImagesBySubProductId(sub.getSubProductId()).forEach(
                                 image -> {

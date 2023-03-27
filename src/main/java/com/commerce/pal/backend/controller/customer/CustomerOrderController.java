@@ -1,11 +1,13 @@
 package com.commerce.pal.backend.controller.customer;
 
+import com.amazonaws.services.dynamodbv2.xspec.B;
 import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.integ.notification.email.EmailClient;
 import com.commerce.pal.backend.models.LoginValidation;
 import com.commerce.pal.backend.models.order.LoanOrder;
 import com.commerce.pal.backend.models.order.Order;
 import com.commerce.pal.backend.models.order.OrderItem;
+import com.commerce.pal.backend.module.database.ProductDatabaseService;
 import com.commerce.pal.backend.repo.order.LoanOrderRepository;
 import com.commerce.pal.backend.repo.order.OrderItemRepository;
 import com.commerce.pal.backend.repo.order.OrderRepository;
@@ -56,6 +58,7 @@ public class CustomerOrderController {
     private final OrderItemRepository orderItemRepository;
     private final SubProductRepository subProductRepository;
     private final DeliveryFeeRepository deliveryFeeRepository;
+    private final ProductDatabaseService productDatabaseService;
     private final ShipmentPricingRepository shipmentPricingRepository;
     private final CustomerAddressRepository customerAddressRepository;
 
@@ -69,6 +72,7 @@ public class CustomerOrderController {
                                    OrderItemRepository orderItemRepository,
                                    SubProductRepository subProductRepository,
                                    DeliveryFeeRepository deliveryFeeRepository,
+                                   ProductDatabaseService productDatabaseService,
                                    ShipmentPricingRepository shipmentPricingRepository,
                                    CustomerAddressRepository customerAddressRepository) {
         this.globalMethods = globalMethods;
@@ -79,6 +83,7 @@ public class CustomerOrderController {
         this.orderItemRepository = orderItemRepository;
         this.subProductRepository = subProductRepository;
         this.deliveryFeeRepository = deliveryFeeRepository;
+        this.productDatabaseService = productDatabaseService;
         this.shipmentPricingRepository = shipmentPricingRepository;
         this.customerAddressRepository = customerAddressRepository;
     }
@@ -152,9 +157,15 @@ public class CustomerOrderController {
                                                 orderItem.setDiscountValue(new BigDecimal(0));
                                                 orderItem.setDiscountAmount(new BigDecimal(0));
                                             }
-                                            orderItem.setTotalAmount(new BigDecimal(product.getUnitPrice().doubleValue() * Double.valueOf(orderItem.getQuantity())));
+                                            // Get Charges
+                                            BigDecimal productDis = new BigDecimal(subProduct.getUnitPrice().doubleValue() - orderItem.getDiscountAmount().doubleValue());
+                                            JSONObject chargeBdy = productDatabaseService.calculateProductPrice(productDis);
+                                            orderItem.setChargeId(chargeBdy.getInt("ChargeId"));
+                                            orderItem.setChargeAmount(chargeBdy.getBigDecimal("Charge"));
+                                            orderItem.setTotalCharge(new BigDecimal(chargeBdy.getBigDecimal("Charge").doubleValue() * Double.valueOf(orderItem.getQuantity())));
+                                            orderItem.setTotalAmount(new BigDecimal(chargeBdy.getBigDecimal("FinalPrice").doubleValue() * Double.valueOf(orderItem.getQuantity())));
                                             orderItem.setTotalDiscount(new BigDecimal(orderItem.getDiscountAmount().doubleValue() * Double.valueOf(orderItem.getQuantity())));
-//                                            orderItem.setTotalAmount(new BigDecimal((product.getUnitPrice().doubleValue() * Double.valueOf(orderItem.getQuantity())) - orderItem.getTotalDiscount().doubleValue()));
+
                                             orderItem.setStatus(0);
                                             orderItem.setSettlementStatus(0);
                                             orderItem.setStatusDescription("Pending Payment and Shipping");

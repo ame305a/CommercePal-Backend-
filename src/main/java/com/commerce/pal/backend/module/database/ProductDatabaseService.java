@@ -8,6 +8,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.ParameterMode;
 import javax.persistence.PersistenceContext;
 import javax.persistence.StoredProcedureQuery;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -95,6 +96,41 @@ public class ProductDatabaseService {
             retDet.put("productId", 0);
         }
         return retDet;
+    }
+
+    public JSONObject calculateProductPrice(BigDecimal priceProduct) {
+        JSONObject transResponse = new JSONObject();
+        try {
+            StoredProcedureQuery query = entityManager.createStoredProcedureQuery("GetProductChargeCommission");
+            query.registerStoredProcedureParameter(1, BigDecimal.class, ParameterMode.IN);
+            query.setParameter(1, priceProduct);
+
+            List response = query.getResultList();
+            response.forEach(res -> {
+                try {
+                    List<?> resData = new ArrayList();
+                    if (res.getClass().isArray()) {
+                        resData = Arrays.asList((Object[]) res);
+                    } else if (res instanceof Collection) {
+                        resData = new ArrayList((Collection) res);
+                    }
+                    transResponse.put("Status", resData.get(0).toString());
+                    transResponse.put("Narration", resData.get(1).toString());
+                    transResponse.put("ChargeId", resData.get(2).toString());
+                    transResponse.put("Charge", resData.get(3).toString());
+                    transResponse.put("FinalPrice", resData.get(4).toString());
+                } catch (Exception ex) {
+                    log.log(Level.WARNING, ex.getMessage());
+                    transResponse.put("Status", "99");
+                    transResponse.put("Narration", ex.getMessage());
+                }
+            });
+        } catch (Exception ex) {
+            log.log(Level.WARNING, ex.getMessage());
+            transResponse.put("Status", "99");
+            transResponse.put("Narration", ex.getMessage());
+        }
+        return transResponse;
     }
 
     public JSONObject updateMerchantStatus(JSONObject data) {

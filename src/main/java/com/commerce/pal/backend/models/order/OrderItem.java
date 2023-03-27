@@ -49,6 +49,19 @@ public class OrderItem {
     @Column(name = "DiscountAmount")
     private BigDecimal discountAmount;
     @Basic
+    @Column(name = "DiscountAmount")
+    private BigDecimal discountAmount;
+    @Basic
+    @Column(name = "ChargeId")
+    private Integer chargeId;
+    @Basic
+    @Column(name = "ChargeAmount")
+    private BigDecimal chargeAmount;
+    @Basic
+    @Column(name = "TotalCharge")
+    private BigDecimal totalCharge;
+
+    @Basic
     @Column(name = "TotalAmount")
     private BigDecimal totalAmount;
     @Basic
