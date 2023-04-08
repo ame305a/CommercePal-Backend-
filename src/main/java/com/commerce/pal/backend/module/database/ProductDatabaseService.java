@@ -114,11 +114,11 @@ public class ProductDatabaseService {
                     } else if (res instanceof Collection) {
                         resData = new ArrayList((Collection) res);
                     }
+
                     transResponse.put("Status", resData.get(0).toString());
-                    transResponse.put("Narration", resData.get(1).toString());
-                    transResponse.put("ChargeId", resData.get(2).toString());
-                    transResponse.put("Charge", resData.get(3).toString());
-                    transResponse.put("FinalPrice", resData.get(4).toString());
+                    transResponse.put("ChargeId", resData.get(1).toString());
+                    transResponse.put("Charge", resData.get(2).toString());
+                    transResponse.put("FinalPrice", resData.get(3).toString());
                 } catch (Exception ex) {
                     log.log(Level.WARNING, ex.getMessage());
                     transResponse.put("Status", "99");
