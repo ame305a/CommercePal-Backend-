@@ -118,10 +118,16 @@ public class CustomerOrderController {
                         newOrder.get().setCountryCode("ET");
                         newOrder.get().setTax(new BigDecimal(0));
                         newOrder.get().setDeliveryPrice(new BigDecimal(0));
+                        newOrder.get().setPromotionId(0);
+                        newOrder.get().setPromotionAmount(new BigDecimal(0));
+                        newOrder.get().setReferralUserType("ZZ");
+                        newOrder.get().setReferralUserId(0);
                         newOrder.set(orderRepository.save(newOrder.get()));
                         AtomicReference<Double> totalAmount = new AtomicReference<>(0d);
                         AtomicReference<Double> totalDiscount = new AtomicReference<>(0d);
+                        AtomicReference<Double> totalCharge = new AtomicReference<>(0d);
                         AtomicReference<Integer> count = new AtomicReference<>(0);
+
                         items.forEach(item -> {
                             count.set(count.get() + 1);
                             JSONObject itmValue = new JSONObject(item.toString());
@@ -179,6 +185,7 @@ public class CustomerOrderController {
                                             orderItemRepository.save(orderItem);
                                             totalAmount.set(totalAmount.get() + orderItem.getTotalAmount().doubleValue());
                                             totalDiscount.set(totalDiscount.get() + orderItem.getTotalDiscount().doubleValue());
+                                            totalCharge.set(totalCharge.get() + orderItem.getTotalCharge().doubleValue());
                                         }, () -> {
                                             newOrder.get().setStatus(5);
                                             newOrder.get().setStatusDescription("Failure as one of the products is invalid");
@@ -189,9 +196,10 @@ public class CustomerOrderController {
                                     });
                         });
 
-
                         newOrder.get().setTotalPrice(new BigDecimal(totalAmount.get() - totalDiscount.get()).setScale(2, RoundingMode.CEILING));
                         newOrder.get().setDiscount(new BigDecimal(totalDiscount.get()).setScale(2, RoundingMode.CEILING));
+                        newOrder.get().setCharge(new BigDecimal(totalCharge.get()).setScale(2, RoundingMode.CEILING));
+
                         orderRepository.save(newOrder.get());
                         if (newOrder.get().getStatus().equals(5)) {
                             responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
@@ -256,10 +264,14 @@ public class CustomerOrderController {
                                 proValue.put("DiscountValue", new BigDecimal(0));
                                 proValue.put("DiscountAmount", new BigDecimal(0));
                             }
+
                             //Find the Delivery Price
                             proValue.put("TotalUnitPrice", new BigDecimal(subProduct.getUnitPrice().doubleValue() * Double.valueOf(request.getInt("quantity"))));
                             proValue.put("TotalDiscount", new BigDecimal(proValue.getBigDecimal("DiscountAmount").doubleValue() * Double.valueOf(request.getInt("quantity"))));
                             proValue.put("FinalPrice", proValue.getBigDecimal("TotalUnitPrice").doubleValue() - proValue.getBigDecimal("TotalDiscount").doubleValue());
+                            BigDecimal productDis = new BigDecimal(proValue.getBigDecimal("TotalUnitPrice").doubleValue() - proValue.getBigDecimal("TotalDiscount").doubleValue());
+                            JSONObject chargeBdy = productDatabaseService.calculateProductPrice(productDis);
+                            proValue.put("FinalPrice", chargeBdy.getBigDecimal("FinalPrice"));
                             responseMap.put("statusCode", ResponseCodes.SUCCESS)
                                     .put("productPricing", proValue)
                                     .put("statusDescription", "Product Passed")
@@ -469,4 +481,5 @@ public class CustomerOrderController {
         }
         return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
     }
+
 }

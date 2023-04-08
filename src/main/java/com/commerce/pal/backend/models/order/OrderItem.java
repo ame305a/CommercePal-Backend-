@@ -49,9 +49,6 @@ public class OrderItem {
     @Column(name = "DiscountAmount")
     private BigDecimal discountAmount;
     @Basic
-    @Column(name = "DiscountAmount")
-    private BigDecimal discountAmount;
-    @Basic
     @Column(name = "ChargeId")
     private Integer chargeId;
     @Basic
