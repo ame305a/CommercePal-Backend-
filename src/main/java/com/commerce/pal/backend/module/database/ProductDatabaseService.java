@@ -105,11 +105,11 @@ public class ProductDatabaseService {
             query.registerStoredProcedureParameter("TransactionAmount", BigDecimal.class, ParameterMode.IN);
             query.setParameter("TransactionAmount", priceProduct);
             query.registerStoredProcedureParameter("ChargeId", Integer.class, ParameterMode.OUT);
-            query.registerStoredProcedureParameter("Charge", String.class, ParameterMode.OUT);
+            query.registerStoredProcedureParameter("TransactionCharge", String.class, ParameterMode.OUT);
             query.registerStoredProcedureParameter("FinalPrice", String.class, ParameterMode.OUT);
             query.execute();
             transResponse.put("ChargeId", query.getOutputParameterValue("ChargeId"));
-            transResponse.put("Charge", query.getOutputParameterValue("Charge"));
+            transResponse.put("Charge", query.getOutputParameterValue("TransactionCharge"));
             transResponse.put("FinalPrice", query.getOutputParameterValue("FinalPrice"));
 
         } catch (Exception ex) {
