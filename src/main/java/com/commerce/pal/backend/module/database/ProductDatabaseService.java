@@ -102,29 +102,16 @@ public class ProductDatabaseService {
         JSONObject transResponse = new JSONObject();
         try {
             StoredProcedureQuery query = entityManager.createStoredProcedureQuery("GetProductChargeCommission");
-            query.registerStoredProcedureParameter(1, BigDecimal.class, ParameterMode.IN);
-            query.setParameter(1, priceProduct);
+            query.registerStoredProcedureParameter("TransactionAmount", BigDecimal.class, ParameterMode.IN);
+            query.setParameter("TransactionAmount", priceProduct);
+            query.registerStoredProcedureParameter("ChargeId", Integer.class, ParameterMode.OUT);
+            query.registerStoredProcedureParameter("Charge", String.class, ParameterMode.OUT);
+            query.registerStoredProcedureParameter("FinalPrice", String.class, ParameterMode.OUT);
+            query.execute();
+            transResponse.put("ChargeId", query.getOutputParameterValue("ChargeId"));
+            transResponse.put("Charge", query.getOutputParameterValue("Charge"));
+            transResponse.put("FinalPrice", query.getOutputParameterValue("FinalPrice"));
 
-            List response = query.getResultList();
-            response.forEach(res -> {
-                try {
-                    List<?> resData = new ArrayList();
-                    if (res.getClass().isArray()) {
-                        resData = Arrays.asList((Object[]) res);
-                    } else if (res instanceof Collection) {
-                        resData = new ArrayList((Collection) res);
-                    }
-
-                    transResponse.put("Status", resData.get(0).toString());
-                    transResponse.put("ChargeId", resData.get(1).toString());
-                    transResponse.put("Charge", resData.get(2).toString());
-                    transResponse.put("FinalPrice", resData.get(3).toString());
-                } catch (Exception ex) {
-                    log.log(Level.WARNING, ex.getMessage());
-                    transResponse.put("Status", "99");
-                    transResponse.put("Narration", ex.getMessage());
-                }
-            });
         } catch (Exception ex) {
             log.log(Level.WARNING, ex.getMessage());
             transResponse.put("Status", "99");
