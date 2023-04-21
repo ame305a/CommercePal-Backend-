@@ -4,6 +4,7 @@ import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.module.product.CategoryService;
 import com.commerce.pal.backend.module.product.ProductService;
 import com.commerce.pal.backend.repo.product.ProductFeatureRepository;
+import com.commerce.pal.backend.repo.product.SubProductRepository;
 import com.commerce.pal.backend.repo.product.categories.BrandImageRepository;
 import com.commerce.pal.backend.repo.product.categories.ProductCategoryRepository;
 import com.commerce.pal.backend.repo.product.ProductRepository;
@@ -36,6 +37,7 @@ public class ProductController {
     private final SpecificationsDao specificationsDao;
     private final ProductRepository productRepository;
     private final BrandImageRepository brandImageRepository;
+    private final SubProductRepository subProductRepository;
     private final ProductFeatureRepository productFeatureRepository;
     private final ProductCategoryRepository productCategoryRepository;
     private final ProductSubCategoryRepository productSubCategoryRepository;
@@ -48,6 +50,7 @@ public class ProductController {
                              SpecificationsDao specificationsDao,
                              ProductRepository productRepository,
                              BrandImageRepository brandImageRepository,
+                             SubProductRepository subProductRepository,
                              ProductFeatureRepository productFeatureRepository,
                              ProductCategoryRepository productCategoryRepository,
                              ProductSubCategoryRepository productSubCategoryRepository) {
@@ -57,6 +60,7 @@ public class ProductController {
         this.specificationsDao = specificationsDao;
         this.productRepository = productRepository;
         this.brandImageRepository = brandImageRepository;
+        this.subProductRepository = subProductRepository;
         this.productFeatureRepository = productFeatureRepository;
         this.productCategoryRepository = productCategoryRepository;
         this.productSubCategoryRepository = productSubCategoryRepository;
@@ -328,37 +332,45 @@ public class ProductController {
             JSONObject request = new JSONObject(checkOut);
             productRepository.findById(Long.valueOf(request.getInt("productId")))
                     .ifPresentOrElse(product -> {
-                        JSONObject proValue = new JSONObject();
-                        proValue.put("UnitPrice", product.getUnitPrice());
-                        proValue.put("Quantity", request.getInt("quantity"));
-                        proValue.put("IsDiscounted", product.getIsDiscounted());
-                        if (product.getIsDiscounted().equals(1)) {
-                            proValue.put("DiscountType", product.getDiscountType());
+                        subProductRepository.findSubProductsByProductIdAndSubProductId(
+                                product.getProductId(), Long.valueOf(request.getInt("subProductId"))
+                        ).ifPresentOrElse(subProduct -> {
+                            JSONObject proValue = new JSONObject();
+                            proValue.put("UnitPrice", subProduct.getUnitPrice());
+                            proValue.put("Quantity", request.getInt("quantity"));
+                            proValue.put("IsDiscounted", subProduct.getIsDiscounted());
+                            if (product.getIsDiscounted().equals(1)) {
+                                proValue.put("DiscountType", subProduct.getDiscountType());
 
-                            Double discountAmount = 0D;
-                            if (product.getDiscountType().equals("FIXED")) {
-                                proValue.put("DiscountValue", product.getDiscountValue());
-                                proValue.put("DiscountAmount", product.getDiscountValue());
+                                Double discountAmount = 0D;
+                                if (product.getDiscountType().equals("FIXED")) {
+                                    proValue.put("DiscountValue", subProduct.getDiscountValue());
+                                    proValue.put("DiscountAmount", subProduct.getDiscountValue());
+                                } else {
+                                    discountAmount = subProduct.getUnitPrice().doubleValue() * subProduct.getDiscountValue().doubleValue() / 100;
+                                    proValue.put("DiscountValue", subProduct.getDiscountValue());
+                                    proValue.put("DiscountAmount", new BigDecimal(discountAmount));
+                                }
+                                proValue.put("offerPrice", subProduct.getUnitPrice().doubleValue() - discountAmount);
                             } else {
-                                discountAmount = product.getUnitPrice().doubleValue() * product.getDiscountValue().doubleValue() / 100;
-                                proValue.put("DiscountValue", product.getDiscountValue());
-                                proValue.put("DiscountAmount", new BigDecimal(discountAmount));
+                                proValue.put("DiscountType", "NotDiscounted");
+                                proValue.put("DiscountValue", new BigDecimal(0));
+                                proValue.put("DiscountAmount", new BigDecimal(0));
+                                proValue.put("offerPrice", subProduct.getUnitPrice().doubleValue());
                             }
-                            proValue.put("offerPrice", product.getUnitPrice().doubleValue() - discountAmount);
-                        } else {
-                            proValue.put("DiscountType", "NotDiscounted");
-                            proValue.put("DiscountValue", new BigDecimal(0));
-                            proValue.put("DiscountAmount", new BigDecimal(0));
-                            proValue.put("offerPrice", product.getUnitPrice().doubleValue());
-                        }
 
-                        proValue.put("TotalUnitPrice", new BigDecimal(product.getUnitPrice().doubleValue() * Double.valueOf(request.getInt("quantity"))));
-                        proValue.put("TotalDiscount", new BigDecimal(proValue.getBigDecimal("DiscountAmount").doubleValue() * Double.valueOf(request.getInt("quantity"))));
-                        proValue.put("FinalPrice", proValue.getBigDecimal("TotalUnitPrice").doubleValue() - proValue.getBigDecimal("TotalDiscount").doubleValue());
-                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
-                                .put("productPricing", proValue)
-                                .put("statusDescription", "Product Passed")
-                                .put("statusMessage", "Product Passed");
+                            proValue.put("TotalUnitPrice", new BigDecimal(subProduct.getUnitPrice().doubleValue() * Double.valueOf(request.getInt("quantity"))));
+                            proValue.put("TotalDiscount", new BigDecimal(proValue.getBigDecimal("DiscountAmount").doubleValue() * Double.valueOf(request.getInt("quantity"))));
+                            proValue.put("FinalPrice", proValue.getBigDecimal("TotalUnitPrice").doubleValue() - proValue.getBigDecimal("TotalDiscount").doubleValue());
+                            responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                    .put("productPricing", proValue)
+                                    .put("statusDescription", "Product Passed")
+                                    .put("statusMessage", "Product Passed");
+                        }, () -> {
+                            responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
+                                    .put("statusDescription", "Invalid Product Passed")
+                                    .put("statusMessage", "Invalid Product Passed");
+                        });
                     }, () -> {
                         responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
                                 .put("statusDescription", "Invalid Product Passed")
