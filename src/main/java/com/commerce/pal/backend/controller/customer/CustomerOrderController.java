@@ -259,10 +259,12 @@ public class CustomerOrderController {
                                     proValue.put("DiscountValue", subProduct.getDiscountValue());
                                     proValue.put("DiscountAmount", new BigDecimal(discountAmount));
                                 }
+                                proValue.put("offerPrice", subProduct.getUnitPrice().doubleValue() - discountAmount);
                             } else {
                                 proValue.put("DiscountType", "NotDiscounted");
                                 proValue.put("DiscountValue", new BigDecimal(0));
                                 proValue.put("DiscountAmount", new BigDecimal(0));
+                                proValue.put("offerPrice", subProduct.getUnitPrice().doubleValue());
                             }
 
                             //Find the Delivery Price
