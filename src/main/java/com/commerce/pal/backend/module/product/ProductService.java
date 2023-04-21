@@ -307,7 +307,6 @@ public class ProductService {
     public JSONObject getProductListDetailsAlready(Product pro) {
         JSONObject detail = new JSONObject();
         try {
-
             detail.put("unique_id", globalMethods.generateUniqueString(pro.getProductId().toString()));
             detail.put("ProductId", pro.getProductId());
             detail.put("ownerType", pro.getOwnerType());

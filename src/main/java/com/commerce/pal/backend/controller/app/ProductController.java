@@ -73,7 +73,6 @@ public class ProductController {
         return ResponseEntity.ok(responseMap.toString());
     }
 
-
     @RequestMapping(value = {"/get-brands"}, method = {RequestMethod.GET}, produces = {"application/json"})
     @ResponseBody
     public ResponseEntity<?> getBrands(@RequestParam("parentCat") Optional<String> parentCat) {
@@ -345,11 +344,14 @@ public class ProductController {
                                 proValue.put("DiscountValue", product.getDiscountValue());
                                 proValue.put("DiscountAmount", new BigDecimal(discountAmount));
                             }
+                            proValue.put("offerPrice", product.getUnitPrice().doubleValue() - discountAmount);
                         } else {
                             proValue.put("DiscountType", "NotDiscounted");
                             proValue.put("DiscountValue", new BigDecimal(0));
                             proValue.put("DiscountAmount", new BigDecimal(0));
+                            proValue.put("offerPrice", product.getUnitPrice().doubleValue());
                         }
+
                         proValue.put("TotalUnitPrice", new BigDecimal(product.getUnitPrice().doubleValue() * Double.valueOf(request.getInt("quantity"))));
                         proValue.put("TotalDiscount", new BigDecimal(proValue.getBigDecimal("DiscountAmount").doubleValue() * Double.valueOf(request.getInt("quantity"))));
                         proValue.put("FinalPrice", proValue.getBigDecimal("TotalUnitPrice").doubleValue() - proValue.getBigDecimal("TotalDiscount").doubleValue());
