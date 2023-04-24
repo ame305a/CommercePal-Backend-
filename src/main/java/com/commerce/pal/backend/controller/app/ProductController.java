@@ -1,6 +1,7 @@
 package com.commerce.pal.backend.controller.app;
 
 import com.commerce.pal.backend.common.ResponseCodes;
+import com.commerce.pal.backend.module.database.ProductDatabaseService;
 import com.commerce.pal.backend.module.product.CategoryService;
 import com.commerce.pal.backend.module.product.ProductService;
 import com.commerce.pal.backend.repo.product.ProductFeatureRepository;
@@ -38,10 +39,10 @@ public class ProductController {
     private final ProductRepository productRepository;
     private final BrandImageRepository brandImageRepository;
     private final SubProductRepository subProductRepository;
+    private final ProductDatabaseService productDatabaseService;
     private final ProductFeatureRepository productFeatureRepository;
     private final ProductCategoryRepository productCategoryRepository;
     private final ProductSubCategoryRepository productSubCategoryRepository;
-
 
     @Autowired
     public ProductController(GlobalMethods globalMethods,
@@ -51,6 +52,7 @@ public class ProductController {
                              ProductRepository productRepository,
                              BrandImageRepository brandImageRepository,
                              SubProductRepository subProductRepository,
+                             ProductDatabaseService productDatabaseService,
                              ProductFeatureRepository productFeatureRepository,
                              ProductCategoryRepository productCategoryRepository,
                              ProductSubCategoryRepository productSubCategoryRepository) {
@@ -61,6 +63,7 @@ public class ProductController {
         this.productRepository = productRepository;
         this.brandImageRepository = brandImageRepository;
         this.subProductRepository = subProductRepository;
+        this.productDatabaseService = productDatabaseService;
         this.productFeatureRepository = productFeatureRepository;
         this.productCategoryRepository = productCategoryRepository;
         this.productSubCategoryRepository = productSubCategoryRepository;
@@ -339,29 +342,35 @@ public class ProductController {
                             proValue.put("UnitPrice", subProduct.getUnitPrice());
                             proValue.put("Quantity", request.getInt("quantity"));
                             proValue.put("IsDiscounted", subProduct.getIsDiscounted());
-                            if (product.getIsDiscounted().equals(1)) {
+                            Double discountAmount = 0D;
+                            if (subProduct.getIsDiscounted().equals(1)) {
                                 proValue.put("DiscountType", subProduct.getDiscountType());
-
-                                Double discountAmount = 0D;
-                                if (product.getDiscountType().equals("FIXED")) {
+                                if (subProduct.getDiscountType().equals("FIXED")) {
                                     proValue.put("DiscountValue", subProduct.getDiscountValue());
                                     proValue.put("DiscountAmount", subProduct.getDiscountValue());
+                                    proValue.put("discountDescription", subProduct.getDiscountValue() + " " + product.getCurrency());
                                 } else {
                                     discountAmount = subProduct.getUnitPrice().doubleValue() * subProduct.getDiscountValue().doubleValue() / 100;
                                     proValue.put("DiscountValue", subProduct.getDiscountValue());
                                     proValue.put("DiscountAmount", new BigDecimal(discountAmount));
+                                    proValue.put("discountDescription", subProduct.getDiscountValue() + "% Discount");
                                 }
                                 proValue.put("offerPrice", subProduct.getUnitPrice().doubleValue() - discountAmount);
                             } else {
                                 proValue.put("DiscountType", "NotDiscounted");
                                 proValue.put("DiscountValue", new BigDecimal(0));
                                 proValue.put("DiscountAmount", new BigDecimal(0));
-                                proValue.put("offerPrice", subProduct.getUnitPrice().doubleValue());
+                                proValue.put("offerPrice", subProduct.getUnitPrice());
+                                proValue.put("discountDescription", subProduct.getDiscountValue() + " " + product.getCurrency());
                             }
+                            BigDecimal subProductPrice = new BigDecimal(subProduct.getUnitPrice().doubleValue() - discountAmount);
+                            JSONObject chargeBdy = productDatabaseService.calculateProductPrice(subProductPrice);
+                            proValue.put("offerPrice", chargeBdy.getBigDecimal("FinalPrice").doubleValue());
 
-                            proValue.put("TotalUnitPrice", new BigDecimal(subProduct.getUnitPrice().doubleValue() * Double.valueOf(request.getInt("quantity"))));
+                            proValue.put("TotalUnitPrice", new BigDecimal(chargeBdy.getBigDecimal("FinalPrice").doubleValue() * Double.valueOf(request.getInt("quantity"))));
                             proValue.put("TotalDiscount", new BigDecimal(proValue.getBigDecimal("DiscountAmount").doubleValue() * Double.valueOf(request.getInt("quantity"))));
                             proValue.put("FinalPrice", proValue.getBigDecimal("TotalUnitPrice").doubleValue() - proValue.getBigDecimal("TotalDiscount").doubleValue());
+
                             responseMap.put("statusCode", ResponseCodes.SUCCESS)
                                     .put("productPricing", proValue)
                                     .put("statusDescription", "Product Passed")

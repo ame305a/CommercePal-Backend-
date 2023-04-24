@@ -314,7 +314,11 @@ public class CustomerOrderController {
                                     LoanOrder loanOrder = new LoanOrder();
                                     loanOrder.setOrderId(order.getOrderId());
                                     loanOrder.setCustomerId(order.getCustomerId());
-                                    loanOrder.setAmount(new BigDecimal(order.getTotalPrice().doubleValue() - order.getDiscount().doubleValue()));
+
+                                    BigDecimal amount = new BigDecimal(order.getTotalPrice().doubleValue() + order.getDeliveryPrice().doubleValue());
+                                    amount = amount.setScale(2, RoundingMode.CEILING);
+
+                                    loanOrder.setAmount(amount);
                                     AtomicReference<String> customerName = new AtomicReference<>("");
                                     customerRepository.findCustomerByCustomerId(order.getCustomerId())
                                             .ifPresent(customer -> {
@@ -368,7 +372,6 @@ public class CustomerOrderController {
                                     payloadBody.append("<br/>");
                                     payloadBody.append("<br/>");
                                     payloadBody.append("Time : " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Timestamp.from(Instant.now())));
-
 
                                     for (String email : emails) {
                                         emailClient.emailSender(payloadBody.toString(), email, "Loan Order Request - Ref (" + order.getOrderRef() + ")");
