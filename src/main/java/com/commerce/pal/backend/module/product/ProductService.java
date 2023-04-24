@@ -29,6 +29,7 @@ public class ProductService {
     private final CategoryService categoryService;
     private final ProductRepository productRepository;
     private final SubProductService subProductService;
+    private final SubProductRepository subProductRepository;
     private final ProductMoreRepository productMoreRepository;
     private final ProductDatabaseService productDatabaseService;
     private final ProductImageRepository productImageRepository;
@@ -40,6 +41,7 @@ public class ProductService {
                           CategoryService categoryService,
                           ProductRepository productRepository,
                           SubProductService subProductService,
+                          SubProductRepository subProductRepository,
                           ProductMoreRepository productMoreRepository,
                           ProductDatabaseService productDatabaseService,
                           ProductImageRepository productImageRepository,
@@ -49,6 +51,7 @@ public class ProductService {
         this.categoryService = categoryService;
         this.productRepository = productRepository;
         this.subProductService = subProductService;
+        this.subProductRepository = subProductRepository;
         this.productMoreRepository = productMoreRepository;
         this.productDatabaseService = productDatabaseService;
         this.productImageRepository = productImageRepository;
@@ -212,6 +215,36 @@ public class ProductService {
                             detail.put("offerPrice", pro.getUnitPrice());
                             detail.put("discountDescription", pro.getDiscountValue() + " " + pro.getCurrency());
                         }
+
+                        subProductRepository.findSubProductsByProductIdAndSubProductId(
+                                pro.getProductId(), pro.getPrimarySubProduct())
+                                .ifPresent(subProduct -> {
+                                    Double discountAmount = 0D;
+                                    if (subProduct.getIsDiscounted().equals(1)) {
+                                        detail.put("DiscountType", subProduct.getDiscountType());
+                                        if (pro.getDiscountType().equals("FIXED")) {
+                                            detail.put("DiscountValue", subProduct.getDiscountValue());
+                                            detail.put("DiscountAmount", subProduct.getDiscountValue());
+                                            detail.put("discountDescription", subProduct.getDiscountValue() + " " + pro.getCurrency());
+                                        } else {
+                                            discountAmount = pro.getUnitPrice().doubleValue() * pro.getDiscountValue().doubleValue() / 100;
+                                            detail.put("DiscountValue", subProduct.getDiscountValue());
+                                            detail.put("DiscountAmount", new BigDecimal(discountAmount));
+                                            detail.put("discountDescription", subProduct.getDiscountValue() + "% Discount");
+                                        }
+                                        detail.put("offerPrice", subProduct.getUnitPrice().doubleValue() - discountAmount);
+                                    } else {
+                                        detail.put("DiscountType", "NotDiscounted");
+                                        detail.put("DiscountValue", new BigDecimal(0));
+                                        detail.put("DiscountAmount", new BigDecimal(0));
+                                        detail.put("offerPrice", subProduct.getUnitPrice());
+                                        detail.put("discountDescription", subProduct.getDiscountValue() + " " + pro.getCurrency());
+                                    }
+                                    BigDecimal subProductPrice = new BigDecimal(subProduct.getUnitPrice().doubleValue() - discountAmount);
+                                    JSONObject chargeBdy = productDatabaseService.calculateProductPrice(subProductPrice);
+                                    detail.put("offerPrice", chargeBdy.getBigDecimal("FinalPrice").doubleValue());
+                                });
+
                         ArrayList<String> images = new ArrayList<String>();
                         productImageRepository.findProductImagesByProductId(pro.getProductId()).forEach(
                                 image -> {
@@ -345,6 +378,37 @@ public class ProductService {
                 detail.put("offerPrice", pro.getUnitPrice());
                 detail.put("discountDescription", pro.getDiscountValue() + " " + pro.getCurrency());
             }
+
+
+            subProductRepository.findSubProductsByProductIdAndSubProductId(
+                    pro.getProductId(), pro.getPrimarySubProduct())
+                    .ifPresent(subProduct -> {
+                        Double discountAmount = 0D;
+                        if (subProduct.getIsDiscounted().equals(1)) {
+                            detail.put("DiscountType", subProduct.getDiscountType());
+                            if (pro.getDiscountType().equals("FIXED")) {
+                                detail.put("DiscountValue", subProduct.getDiscountValue());
+                                detail.put("DiscountAmount", subProduct.getDiscountValue());
+                                detail.put("discountDescription", subProduct.getDiscountValue() + " " + pro.getCurrency());
+                            } else {
+                                discountAmount = pro.getUnitPrice().doubleValue() * pro.getDiscountValue().doubleValue() / 100;
+                                detail.put("DiscountValue", subProduct.getDiscountValue());
+                                detail.put("DiscountAmount", new BigDecimal(discountAmount));
+                                detail.put("discountDescription", subProduct.getDiscountValue() + "% Discount");
+                            }
+                            detail.put("offerPrice", subProduct.getUnitPrice().doubleValue() - discountAmount);
+                        } else {
+                            detail.put("DiscountType", "NotDiscounted");
+                            detail.put("DiscountValue", new BigDecimal(0));
+                            detail.put("DiscountAmount", new BigDecimal(0));
+                            detail.put("offerPrice", subProduct.getUnitPrice());
+                            detail.put("discountDescription", subProduct.getDiscountValue() + " " + pro.getCurrency());
+                        }
+                        BigDecimal subProductPrice = new BigDecimal(subProduct.getUnitPrice().doubleValue() - discountAmount);
+                        JSONObject chargeBdy = productDatabaseService.calculateProductPrice(subProductPrice);
+                        detail.put("offerPrice", chargeBdy.getBigDecimal("FinalPrice").doubleValue());
+                    });
+
             detail.put("currency", pro.getCurrency());
             detail.put("productRating", 4.2);
             detail.put("ratingCount", 30);
@@ -398,6 +462,36 @@ public class ProductService {
                             detail.put("offerPrice", pro.getUnitPrice());
                             detail.put("discountDescription", pro.getDiscountValue() + " " + pro.getCurrency());
                         }
+
+                        subProductRepository.findSubProductsByProductIdAndSubProductId(
+                                pro.getProductId(), pro.getPrimarySubProduct())
+                                .ifPresent(subProduct -> {
+                                    Double discountAmount = 0D;
+                                    if (subProduct.getIsDiscounted().equals(1)) {
+                                        detail.put("DiscountType", subProduct.getDiscountType());
+                                        if (pro.getDiscountType().equals("FIXED")) {
+                                            detail.put("DiscountValue", subProduct.getDiscountValue());
+                                            detail.put("DiscountAmount", subProduct.getDiscountValue());
+                                            detail.put("discountDescription", subProduct.getDiscountValue() + " " + pro.getCurrency());
+                                        } else {
+                                            discountAmount = pro.getUnitPrice().doubleValue() * pro.getDiscountValue().doubleValue() / 100;
+                                            detail.put("DiscountValue", subProduct.getDiscountValue());
+                                            detail.put("DiscountAmount", new BigDecimal(discountAmount));
+                                            detail.put("discountDescription", subProduct.getDiscountValue() + "% Discount");
+                                        }
+                                        detail.put("offerPrice", subProduct.getUnitPrice().doubleValue() - discountAmount);
+                                    } else {
+                                        detail.put("DiscountType", "NotDiscounted");
+                                        detail.put("DiscountValue", new BigDecimal(0));
+                                        detail.put("DiscountAmount", new BigDecimal(0));
+                                        detail.put("offerPrice", subProduct.getUnitPrice());
+                                        detail.put("discountDescription", subProduct.getDiscountValue() + " " + pro.getCurrency());
+                                    }
+                                    BigDecimal subProductPrice = new BigDecimal(subProduct.getUnitPrice().doubleValue() - discountAmount);
+                                    JSONObject chargeBdy = productDatabaseService.calculateProductPrice(subProductPrice);
+                                    detail.put("offerPrice", chargeBdy.getBigDecimal("FinalPrice").doubleValue());
+                                });
+
                         detail.put("currency", pro.getCurrency());
                         detail.put("productRating", 4.2);
                         detail.put("ratingCount", 30);
@@ -452,6 +546,36 @@ public class ProductService {
                         detail.put("offerPrice", pro.getUnitPrice());
                         detail.put("discountDescription", pro.getDiscountValue() + " " + pro.getCurrency());
 
+
+                        subProductRepository.findSubProductsByProductIdAndSubProductId(
+                                pro.getProductId(), pro.getPrimarySubProduct())
+                                .ifPresent(subProduct -> {
+                                    Double discountAmount = 0D;
+                                    if (subProduct.getIsDiscounted().equals(1)) {
+                                        detail.put("DiscountType", subProduct.getDiscountType());
+                                        if (subProduct.getDiscountType().equals("FIXED")) {
+                                            detail.put("DiscountValue", subProduct.getDiscountValue());
+                                            detail.put("DiscountAmount", subProduct.getDiscountValue());
+                                            detail.put("discountDescription", subProduct.getDiscountValue() + " " + pro.getCurrency());
+                                        } else {
+                                            discountAmount = subProduct.getUnitPrice().doubleValue() * subProduct.getDiscountValue().doubleValue() / 100;
+                                            detail.put("DiscountValue", subProduct.getDiscountValue());
+                                            detail.put("DiscountAmount", new BigDecimal(discountAmount));
+                                            detail.put("discountDescription", subProduct.getDiscountValue() + "% Discount");
+                                        }
+                                        detail.put("offerPrice", subProduct.getUnitPrice().doubleValue() - discountAmount);
+                                    } else {
+                                        detail.put("DiscountType", "NotDiscounted");
+                                        detail.put("DiscountValue", new BigDecimal(0));
+                                        detail.put("DiscountAmount", new BigDecimal(0));
+                                        detail.put("offerPrice", subProduct.getUnitPrice());
+                                        detail.put("discountDescription", subProduct.getDiscountValue() + " " + pro.getCurrency());
+                                    }
+                                    BigDecimal subProductPrice = new BigDecimal(subProduct.getUnitPrice().doubleValue() - discountAmount);
+                                    JSONObject chargeBdy = productDatabaseService.calculateProductPrice(subProductPrice);
+                                    detail.put("offerPrice", chargeBdy.getBigDecimal("FinalPrice").doubleValue());
+                                });
+
                         // detail.put("discountExpiry", pro.getDiscountExpiryDate().toString());
                         detail.put("currency", pro.getCurrency());
                         detail.put("productRating", 4.2);
@@ -479,7 +603,7 @@ public class ProductService {
                         detail.put("mobileThumbnail", pro.getMobileThumbnail() != null ? pro.getMobileThumbnail() : "");
                         detail.put("ProductParentCategoryId", pro.getProductParentCateoryId());
                         detail.put("ProductDescription", pro.getProductDescription());
-                        detail.put("subProductInfo", subProductService.getSubProductInfo(subProduct));
+                        detail.put("subProductInfo", subProductService.getSubProductInfo(subProduct, pro.getCurrency()));
                     });
         } catch (Exception e) {
             log.log(Level.WARNING, e.getMessage());

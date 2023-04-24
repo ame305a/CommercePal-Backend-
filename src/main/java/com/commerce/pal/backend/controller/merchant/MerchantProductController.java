@@ -411,7 +411,7 @@ public class MerchantProductController {
                     List<SearchCriteria> params = new ArrayList<SearchCriteria>();
                     params.add(new SearchCriteria("merchantId", ":", merchant.getMerchantId()));
                     AtomicReference<JSONObject> detail = new AtomicReference<>(new JSONObject());
-                    detail.set(subProductService.getSubProductInfo(Long.valueOf(subProduct)));
+                    detail.set(subProductService.getSubProductInfo(Long.valueOf(subProduct),"ETB"));
                     responseMap.put("statusCode", ResponseCodes.SUCCESS)
                             .put("statusDescription", "success")
                             .put("detail", detail.get())

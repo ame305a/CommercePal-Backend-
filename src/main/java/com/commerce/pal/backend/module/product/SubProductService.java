@@ -1,6 +1,7 @@
 package com.commerce.pal.backend.module.product;
 
 import com.commerce.pal.backend.common.ResponseCodes;
+import com.commerce.pal.backend.models.product.Product;
 import com.commerce.pal.backend.models.product.ProductFeatureValue;
 import com.commerce.pal.backend.models.product.SubProduct;
 import com.commerce.pal.backend.models.product.SubProductImage;
@@ -44,7 +45,7 @@ public class SubProductService {
         this.productFeatureValueRepository = productFeatureValueRepository;
     }
 
-    public JSONObject getSubProductInfo(Long subProduct) {
+    public JSONObject getSubProductInfo(Long subProduct, String currency) {
         JSONObject detail = new JSONObject();
         try {
             subProductRepository.findById(subProduct)
@@ -62,11 +63,10 @@ public class SubProductService {
                         Double discountAmount = 0D;
                         if (sub.getIsDiscounted().equals(1)) {
                             detail.put("DiscountType", sub.getDiscountType());
-
                             if (sub.getDiscountType().equals("FIXED")) {
                                 detail.put("DiscountValue", sub.getDiscountValue());
                                 detail.put("DiscountAmount", sub.getDiscountValue());
-                                detail.put("discountDescription", sub.getDiscountValue() + " " + "ETB");
+                                detail.put("discountDescription", sub.getDiscountValue() + " " + currency);
                             } else {
                                 discountAmount = sub.getUnitPrice().doubleValue() * sub.getDiscountValue().doubleValue() / 100;
                                 detail.put("DiscountValue", sub.getDiscountValue());
@@ -79,11 +79,11 @@ public class SubProductService {
                             detail.put("DiscountValue", new BigDecimal(0));
                             detail.put("DiscountAmount", new BigDecimal(0));
                             detail.put("offerPrice", sub.getUnitPrice());
-                            detail.put("discountDescription", sub.getDiscountValue() + " " + "ETB");
+                            detail.put("discountDescription", sub.getDiscountValue() + " " + currency);
                         }
+                        BigDecimal subProductPrice = new BigDecimal(sub.getUnitPrice().doubleValue() - discountAmount);
+                        JSONObject chargeBdy = productDatabaseService.calculateProductPrice(subProductPrice);
 
-                        BigDecimal productDis = new BigDecimal(sub.getUnitPrice().doubleValue() - discountAmount);
-                        JSONObject chargeBdy = productDatabaseService.calculateProductPrice(productDis);
                         detail.put("offerPrice", chargeBdy.getBigDecimal("FinalPrice"));
                         ArrayList<String> images = new ArrayList<String>();
                         subProductImageRepository.findSubProductImagesBySubProductId(sub.getSubProductId()).forEach(
@@ -120,7 +120,7 @@ public class SubProductService {
         List<JSONObject> subProducts = new ArrayList<>();
         subProductRepository.findSubProductsByProductId(product)
                 .forEach(subProduct -> {
-                    subProducts.add(getSubProductInfo(subProduct.getSubProductId()));
+                    subProducts.add(getSubProductInfo(subProduct.getSubProductId(),"ETB"));
                 });
         return subProducts;
     }

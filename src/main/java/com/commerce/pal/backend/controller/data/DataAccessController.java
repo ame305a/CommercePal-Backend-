@@ -64,7 +64,7 @@ public class DataAccessController {
                     responseMap = productService.getProductLimitedDetails(jsonObject.getLong("TypeId"));
                     break;
                 case "SUB-PRODUCT":
-                    responseMap = subProductService.getSubProductInfo(jsonObject.getLong("TypeId"));
+                    responseMap = subProductService.getSubProductInfo(jsonObject.getLong("TypeId"), "ETB");
                     break;
                 case "PRODUCT-AND-SUB":
                     responseMap = productService.getSubProductInfo(jsonObject.getLong("TypeId"), jsonObject.getLong("SubProductId"));
