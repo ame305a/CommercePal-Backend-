@@ -4,6 +4,7 @@ import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.models.LoginValidation;
 import com.commerce.pal.backend.module.product.CategoryService;
 import com.commerce.pal.backend.module.product.ProductService;
+import com.commerce.pal.backend.repo.product.ProductRepository;
 import com.commerce.pal.backend.repo.product.categories.ProductCategoryRepository;
 import com.commerce.pal.backend.repo.product.categories.ProductSubCategoryRepository;
 import com.commerce.pal.backend.repo.user.business.BusinessRepository;
@@ -30,6 +31,7 @@ public class BusinessShoppingController {
     private final ProductService productService;
     private final CategoryService categoryService;
     private final SpecificationsDao specificationsDao;
+    private final ProductRepository productRepository;
     private final BusinessRepository businessRepository;
     private final ProductCategoryRepository productCategoryRepository;
     private final ProductSubCategoryRepository productSubCategoryRepository;
@@ -39,13 +41,14 @@ public class BusinessShoppingController {
                                       ProductService productService,
                                       CategoryService categoryService,
                                       SpecificationsDao specificationsDao,
-                                      BusinessRepository businessRepository,
+                                      ProductRepository productRepository, BusinessRepository businessRepository,
                                       ProductCategoryRepository productCategoryRepository,
                                       ProductSubCategoryRepository productSubCategoryRepository) {
         this.globalMethods = globalMethods;
         this.productService = productService;
         this.categoryService = categoryService;
         this.specificationsDao = specificationsDao;
+        this.productRepository = productRepository;
         this.businessRepository = businessRepository;
         this.productCategoryRepository = productCategoryRepository;
         this.productSubCategoryRepository = productSubCategoryRepository;
@@ -59,11 +62,10 @@ public class BusinessShoppingController {
         LoginValidation user = globalMethods.fetchUserDetails();
         businessRepository.findBusinessByEmailAddress(user.getEmailAddress())
                 .ifPresentOrElse(business -> {
-                    productCategoryRepository.findProductCategoriesByParentCategoryId(Long.valueOf(business.getBusinessSector()))
-                            .forEach(cat -> {
-                                JSONObject detail = categoryService.getCategoryInfo(cat.getId());
-                                details.add(detail);
-                            });
+                    productCategoryRepository.findAll().forEach(cat -> {
+                        JSONObject detail = categoryService.getCategoryInfo(cat.getId());
+                        details.add(detail);
+                    });
                 }, () -> {
                     responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
                             .put("statusDescription", "Merchant Does not exists")
@@ -85,19 +87,12 @@ public class BusinessShoppingController {
         LoginValidation user = globalMethods.fetchUserDetails();
         businessRepository.findBusinessByEmailAddress(user.getEmailAddress())
                 .ifPresentOrElse(business -> {
-                    productCategoryRepository.findProductCategoryByIdAndParentCategoryId(
-                                    Long.valueOf(category), Long.valueOf(business.getBusinessSector()))
-                            .ifPresentOrElse(cat -> {
-                                productSubCategoryRepository.findProductSubCategoriesByProductCategoryId(Long.valueOf(category))
-                                        .forEach(subCat -> {
-                                            JSONObject detail = categoryService.getSubCategoryInfo(subCat.getId());
-                                            details.add(detail);
-                                        });
-                            }, () -> {
-                                responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
-                                        .put("statusDescription", "Business Does not exists")
-                                        .put("statusMessage", "Business Does not exists");
+                    productSubCategoryRepository.findProductSubCategoriesByProductCategoryId(Long.valueOf(category))
+                            .forEach(subCat -> {
+                                JSONObject detail = categoryService.getSubCategoryInfo(subCat.getId());
+                                details.add(detail);
                             });
+
                 }, () -> {
                     responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
                             .put("statusDescription", "Business Does not exists")
@@ -207,6 +202,31 @@ public class BusinessShoppingController {
                             .put("statusDescription", "Merchant Does not exists")
                             .put("statusMessage", "Merchant Does not exists");
                 });
+        return ResponseEntity.ok(responseMap.toString());
+    }
+
+    @RequestMapping(value = {"/search-products"}, method = {RequestMethod.GET}, produces = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<?> searchProducts(@RequestParam("parent") Optional<String> parent,
+                                            @RequestParam("reqName") String reqName) {
+        JSONObject responseMap = new JSONObject();
+
+        List<SearchCriteria> params = new ArrayList<SearchCriteria>();
+
+        List<JSONObject> details = new ArrayList<>();
+        productRepository.findProductByProductId(reqName, reqName, reqName, reqName, "WHOLESALE")
+                .forEach(pro -> {
+                    JSONObject detail = productService.getProductListDetailsAlready(pro);
+                    details.add(detail);
+                });
+        if (details.isEmpty()) {
+            responseMap.put("statusCode", ResponseCodes.NOT_EXIST);
+        } else {
+            responseMap.put("statusCode", ResponseCodes.SUCCESS);
+        }
+        responseMap.put("statusDescription", "success")
+                .put("details", details)
+                .put("statusMessage", "Request Successful");
         return ResponseEntity.ok(responseMap.toString());
     }
 }
