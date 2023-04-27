@@ -219,11 +219,10 @@ public class BusinessOrderController {
     }
 
     @RequestMapping(value = "/get-pricing", method = RequestMethod.POST)
-    public ResponseEntity<?> getPricing(@RequestBody String checkOut) {
+    public ResponseEntity<?> updatePricing(@RequestBody String checkOut) {
         JSONObject responseMap = new JSONObject();
         try {
             JSONObject request = new JSONObject(checkOut);
-            LoginValidation user = globalMethods.fetchUserDetails();
             productRepository.findById(Long.valueOf(request.getInt("productId")))
                     .ifPresentOrElse(product -> {
                         subProductRepository.findSubProductsByProductIdAndSubProductId(
@@ -245,18 +244,21 @@ public class BusinessOrderController {
                                     proValue.put("DiscountValue", subProduct.getDiscountValue());
                                     proValue.put("DiscountAmount", new BigDecimal(discountAmount));
                                 }
+                                proValue.put("offerPrice", subProduct.getUnitPrice().doubleValue() - discountAmount);
                             } else {
                                 proValue.put("DiscountType", "NotDiscounted");
                                 proValue.put("DiscountValue", new BigDecimal(0));
                                 proValue.put("DiscountAmount", new BigDecimal(0));
+                                proValue.put("offerPrice", subProduct.getUnitPrice().doubleValue());
                             }
-                            //Find the Delivery Price
-                            JSONObject deliveryPrice = getRate(globalMethods.getMerchantCity(product.getMerchantId()), globalMethods.customerRepository(user.getEmailAddress()), product.getShipmentType());
-                            proValue = globalMethods.mergeJSONObjects(proValue, deliveryPrice);
 
+                            //Find the Delivery Price
                             proValue.put("TotalUnitPrice", new BigDecimal(subProduct.getUnitPrice().doubleValue() * Double.valueOf(request.getInt("quantity"))));
                             proValue.put("TotalDiscount", new BigDecimal(proValue.getBigDecimal("DiscountAmount").doubleValue() * Double.valueOf(request.getInt("quantity"))));
                             proValue.put("FinalPrice", proValue.getBigDecimal("TotalUnitPrice").doubleValue() - proValue.getBigDecimal("TotalDiscount").doubleValue());
+                            BigDecimal productDis = new BigDecimal(proValue.getBigDecimal("TotalUnitPrice").doubleValue() - proValue.getBigDecimal("TotalDiscount").doubleValue());
+                            JSONObject chargeBdy = productDatabaseService.calculateProductPrice(productDis);
+                            proValue.put("FinalPrice", chargeBdy.getBigDecimal("FinalPrice"));
                             responseMap.put("statusCode", ResponseCodes.SUCCESS)
                                     .put("productPricing", proValue)
                                     .put("statusDescription", "Product Passed")
