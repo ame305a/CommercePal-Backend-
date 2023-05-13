@@ -209,7 +209,6 @@ public class BusinessService {
                         payload.get().put("TillNumberImage", business.getTillNumberImage());
                         payload.get().put("CommercialCertImage", business.getCommercialCertImage());
                         payload.get().put("ShopImage", business.getShopImage());
-
                         payload.get().put("Status", business.getStatus().toString());
                         payload.get().put("termOfService", business.getTermsOfServiceStatus());
                         JSONObject customer = globalMethods.getMultiUserCustomer(business.getEmailAddress());

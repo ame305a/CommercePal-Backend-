@@ -115,6 +115,10 @@ public class BusinessOrderController {
                         newOrder.get().setCountryCode("ET");
                         newOrder.get().setTax(new BigDecimal(0));
                         newOrder.get().setDeliveryPrice(new BigDecimal(0));
+                        newOrder.get().setPromotionId(0);
+                        newOrder.get().setPromotionAmount(new BigDecimal(0));
+                        newOrder.get().setReferralUserType("ZZ");
+                        newOrder.get().setReferralUserId(0);
                         newOrder.set(orderRepository.save(newOrder.get()));
                         AtomicReference<Double> totalAmount = new AtomicReference<>(0d);
                         AtomicReference<Double> totalDiscount = new AtomicReference<>(0d);
