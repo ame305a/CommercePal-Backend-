@@ -401,7 +401,7 @@ public class BusinessOrderController {
             orderRepository.findOrderByOrderRef(reqBody.getString("orderRef"))
                     .ifPresentOrElse(order -> {
                         businessRepository.findBusinessByBusinessIdAndEmailAddress(
-                                        order.getBusinessId(), user.getEmailAddress())
+                                order.getBusinessId(), user.getEmailAddress())
                                 .ifPresentOrElse(business -> {
                                     if (order.getStatus().equals(0)) {
                                         AtomicReference<BigDecimal> totalDeliveryFee = new AtomicReference<>(new BigDecimal(0));
@@ -417,9 +417,9 @@ public class BusinessOrderController {
                                                     itemDeliveryFee = new BigDecimal(itemDeliveryValue.doubleValue() * orderItem.getTotalAmount().doubleValue());
                                                     itemDeliveryFee = itemDeliveryFee.setScale(2, RoundingMode.CEILING);
                                                     orderItem.setDeliveryPrice(itemDeliveryFee);
-                                                    totalDeliveryFee.set(new BigDecimal(itemDeliveryFee.doubleValue() + totalDeliveryFee.get().doubleValue()));
+                                                    totalDeliveryFee.set(itemDeliveryFee.add(totalDeliveryFee.get()));
                                                 });
-                                        totalDeliveryFee.set(new BigDecimal(totalDeliveryFee.get().doubleValue()).setScale(0, RoundingMode.UP));
+
                                         order.setPreferredLocationType("B");
                                         order.setUserAddressId(business.getBusinessId());
                                         order.setIsUserAddressAssigned(1);

@@ -1,6 +1,5 @@
 package com.commerce.pal.backend.controller.customer;
 
-import com.amazonaws.services.dynamodbv2.xspec.B;
 import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.integ.notification.email.EmailClient;
 import com.commerce.pal.backend.models.LoginValidation;
@@ -433,10 +432,8 @@ public class CustomerOrderController {
                                                                     itemDeliveryFee = new BigDecimal(itemDeliveryValue.doubleValue() * orderItem.getTotalAmount().doubleValue());
                                                                     itemDeliveryFee = itemDeliveryFee.setScale(2, RoundingMode.CEILING);
                                                                     orderItem.setDeliveryPrice(itemDeliveryFee);
-                                                                    totalDeliveryFee.set(new BigDecimal(itemDeliveryFee.doubleValue() + totalDeliveryFee.get().doubleValue()));
+                                                                    totalDeliveryFee.set(itemDeliveryFee.add(totalDeliveryFee.get()));
                                                                 });
-
-                                                        totalDeliveryFee.set(new BigDecimal(totalDeliveryFee.get().doubleValue()).setScale(0, RoundingMode.UP));
                                                         order.setPreferredLocationType("C");
                                                         order.setUserAddressId(customerAddress.getId());
                                                         order.setIsUserAddressAssigned(1);
