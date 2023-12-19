@@ -1,13 +1,19 @@
 package com.commerce.pal.backend.module;
 
 import com.commerce.pal.backend.common.ResponseCodes;
+import com.commerce.pal.backend.models.user.Distributor;
 import com.commerce.pal.backend.repo.user.DistributorRepository;
 import com.commerce.pal.backend.utils.GlobalMethods;
 import lombok.extern.java.Log;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -152,6 +158,8 @@ public class DistributorService {
                         payload.get().put("distributorType", distributor.getDistributorType());
                         payload.get().put("idImage", distributor.getIdImage());
                         payload.get().put("photoImage", distributor.getPhotoImage());
+                        payload.get().put("tillNumber", distributor.getTillNumber());
+                        payload.get().put("commissionAccount", distributor.getCommissionAccount());
 
                         payload.get().put("IdImage", distributor.getIdImage());
                         payload.get().put("PhotoImage", distributor.getPhotoImage());
@@ -187,5 +195,56 @@ public class DistributorService {
                     }
                 });
         return payload.get();
+    }
+
+
+    //Retrieves a paginated list of Distributors with support for sorting, filtering, searching, and date range.
+    public JSONObject getAllDistributors(
+            int page,
+            int size,
+            Sort sort,
+            Integer status,
+            String searchKeyword,
+            Timestamp startDate,
+            Timestamp endDate
+    ) {
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<Distributor> distributorPage = distributorRepository.findBySearchKeywordAndDateAndStatus(searchKeyword, startDate, endDate, status, pageable);
+
+        List<JSONObject> distributors = new ArrayList<>();
+        distributorPage.getContent().stream()
+                .forEach(distributor -> {
+                    JSONObject detail = new JSONObject();
+
+                    detail.put("distributorName", distributor.getDistributorName());
+                    detail.put("distributorType", distributor.getDistributorType());
+                    detail.put("status", distributor.getStatus());
+                    detail.put("createdBy", distributor.getCreatedBy());
+                    detail.put("createdDate", distributor.getCreatedDate());
+                    detail.put("deactivatedBy", distributor.getDeactivatedBy());
+                    detail.put("deactivatedDate", distributor.getDeactivatedDate());
+                    detail.put("activatedBy", distributor.getActivatedBy());
+                    detail.put("activatedDate", distributor.getActivatedDate());
+
+                    distributors.add(detail);
+                });
+
+        JSONObject paginationInfo = new JSONObject();
+        paginationInfo.put("pageNumber", distributorPage.getNumber())
+                .put("pageSize", distributorPage.getSize())
+                .put("totalElements", distributorPage.getTotalElements())
+                .put("totalPages", distributorPage.getTotalPages());
+
+        JSONObject data = new JSONObject();
+        data.put("distributors", distributors).
+                put("paginationInfo", paginationInfo);
+
+        JSONObject response = new JSONObject();
+        response.put("statusCode", ResponseCodes.SUCCESS)
+                .put("statusDescription", "Distributor Passed")
+                .put("statusMessage", "Distributor Passed")
+                .put("data", data);
+
+        return response;
     }
 }
