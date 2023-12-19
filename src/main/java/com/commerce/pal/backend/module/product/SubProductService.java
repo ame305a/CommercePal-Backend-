@@ -170,7 +170,7 @@ public class SubProductService {
     public void updateInsertFeatures(Long subProductId, JSONArray features) {
         subProductRepository.findById(subProductId)
                 .ifPresent(subProduct -> {
-                    features.forEach(feature -> {
+                     features.forEach(feature -> {
                         JSONObject featureValue = new JSONObject(feature.toString());
                         productFeatureValueRepository.findProductFeatureValuesByProductFeatureIdAndProductId(
                                 featureValue.getLong("FeatureId"), subProductId

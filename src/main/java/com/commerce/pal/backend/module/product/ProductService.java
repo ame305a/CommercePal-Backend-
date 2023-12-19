@@ -2,12 +2,18 @@ package com.commerce.pal.backend.module.product;
 
 import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.models.product.Product;
+import com.commerce.pal.backend.models.user.Merchant;
 import com.commerce.pal.backend.module.database.ProductDatabaseService;
 import com.commerce.pal.backend.repo.product.*;
+import com.commerce.pal.backend.repo.user.MerchantRepository;
 import com.commerce.pal.backend.utils.GlobalMethods;
 import lombok.extern.java.Log;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -18,7 +24,9 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
+
 
 @Log
 @Service
@@ -35,6 +43,7 @@ public class ProductService {
     private final ProductImageRepository productImageRepository;
     private final ProductCategoryService productCategoryService;
     private final ProductMoreTemplateRepository productMoreTemplateRepository;
+    private final MerchantRepository merchantRepository;
 
     @Autowired
     public ProductService(GlobalMethods globalMethods,
@@ -46,7 +55,7 @@ public class ProductService {
                           ProductDatabaseService productDatabaseService,
                           ProductImageRepository productImageRepository,
                           ProductCategoryService productCategoryService,
-                          ProductMoreTemplateRepository productMoreTemplateRepository) {
+                          ProductMoreTemplateRepository productMoreTemplateRepository, MerchantRepository merchantRepository) {
         this.globalMethods = globalMethods;
         this.categoryService = categoryService;
         this.productRepository = productRepository;
@@ -57,6 +66,7 @@ public class ProductService {
         this.productImageRepository = productImageRepository;
         this.productCategoryService = productCategoryService;
         this.productMoreTemplateRepository = productMoreTemplateRepository;
+        this.merchantRepository = merchantRepository;
     }
 
     public JSONObject doAddProduct(JSONObject request) {
@@ -217,7 +227,7 @@ public class ProductService {
                         }
 
                         subProductRepository.findSubProductsByProductIdAndSubProductId(
-                                pro.getProductId(), pro.getPrimarySubProduct())
+                                        pro.getProductId(), pro.getPrimarySubProduct())
                                 .ifPresent(subProduct -> {
                                     Double discountAmount = 0D;
                                     if (subProduct.getIsDiscounted().equals(1)) {
@@ -381,7 +391,7 @@ public class ProductService {
 
 
             subProductRepository.findSubProductsByProductIdAndSubProductId(
-                    pro.getProductId(), pro.getPrimarySubProduct())
+                            pro.getProductId(), pro.getPrimarySubProduct())
                     .ifPresent(subProduct -> {
                         Double discountAmount = 0D;
                         if (subProduct.getIsDiscounted().equals(1)) {
@@ -464,7 +474,7 @@ public class ProductService {
                         }
 
                         subProductRepository.findSubProductsByProductIdAndSubProductId(
-                                pro.getProductId(), pro.getPrimarySubProduct())
+                                        pro.getProductId(), pro.getPrimarySubProduct())
                                 .ifPresent(subProduct -> {
                                     Double discountAmount = 0D;
                                     if (subProduct.getIsDiscounted().equals(1)) {
@@ -548,7 +558,7 @@ public class ProductService {
 
 
                         subProductRepository.findSubProductsByProductIdAndSubProductId(
-                                pro.getProductId(), pro.getPrimarySubProduct())
+                                        pro.getProductId(), pro.getPrimarySubProduct())
                                 .ifPresent(subProduct -> {
                                     Double discountAmount = 0D;
                                     if (subProduct.getIsDiscounted().equals(1)) {
@@ -610,4 +620,60 @@ public class ProductService {
         }
         return detail;
     }
+
+
+    //Retrieves a paginated list of products with support for sorting, filtering, searching, and date range.
+    public JSONObject getAllProducts(int page, int size, Sort sort, Long filterByCategory, Integer status, Long merchantId,String searchKeyword, Timestamp startDate, Timestamp endDate) {
+
+        // Create a PageRequest with page number, size, and sorting
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<Product> productPage = productRepository.findByFilterAndMerchantAndDateAndStatus(filterByCategory, searchKeyword, startDate, endDate, status,merchantId, pageable);
+
+        List<JSONObject> products = new ArrayList<>();
+        productPage.getContent().stream()
+                .forEach(pro -> {
+                    JSONObject detail = new JSONObject();
+
+                    String merchantName = "";
+                    Optional<Merchant> optionalMerchant = merchantRepository.findMerchantByMerchantId(pro.getMerchantId());
+                    if (optionalMerchant.isPresent()) {
+                        Merchant merchant = optionalMerchant.get();
+                        merchantName = merchant.getMerchantName();
+                    }
+
+                    detail.put("productName", pro.getProductName());
+                    detail.put("ownerType", pro.getOwnerType());
+                    detail.put("merchantName", merchantName);
+                    detail.put("shortDescription", pro.getShortDescription() != null ? pro.getShortDescription() : "");
+                    detail.put("productType", pro.getProductType());
+                    detail.put("status", pro.getStatus());
+                    detail.put("unitPrice", pro.getUnitPrice());
+                    detail.put("quantity", pro.getQuantity());
+                    detail.put("unitPrice", pro.getUnitPrice());
+                    detail.put("unitOfMeasure", pro.getUnitOfMeasure());
+                    detail.put("createdBy", pro.getCreatedBy());
+                    detail.put("createdDate", pro.getCreatedDate());
+                    detail.put("verifiedBy", pro.getVerifiedBy());
+
+                    products.add(detail);
+                });
+
+        JSONObject paginationInfo = new JSONObject();
+        paginationInfo.put("pageNumber", productPage.getNumber())
+                .put("pageSize", productPage.getSize())
+                .put("totalElements", productPage.getTotalElements())
+                .put("totalPages", productPage.getTotalPages());
+
+        JSONObject data = new JSONObject();
+        data.put("products", products).put("paginationInfo", paginationInfo);
+
+        JSONObject response = new JSONObject();
+        response.put("statusCode", ResponseCodes.SUCCESS)
+                .put("statusDescription", "Product Passed")
+                .put("statusMessage", "Product Passed")
+                .put("data", data);
+
+        return response;
+    }
+
 }
