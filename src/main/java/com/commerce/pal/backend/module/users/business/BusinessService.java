@@ -1,13 +1,19 @@
 package com.commerce.pal.backend.module.users.business;
 
 import com.commerce.pal.backend.common.ResponseCodes;
+import com.commerce.pal.backend.models.user.business.Business;
 import com.commerce.pal.backend.repo.user.business.BusinessRepository;
 import com.commerce.pal.backend.utils.GlobalMethods;
 import lombok.extern.java.Log;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -240,6 +246,58 @@ public class BusinessService {
                     .put("statusMessage", e.getMessage());
         }
         return responseMap;
+    }
+
+
+    //Retrieves a paginated list of Business for report with support for sorting, filtering, searching, and date range.
+    public JSONObject getAllBusiness(
+            int page,
+            int size,
+            Sort sort,
+            Integer status,
+            String searchKeyword,
+            Timestamp startDate,
+            Timestamp endDate
+    ) {
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<Business> businessPage = businessRepository.findByFilterAndDateAndStatus(searchKeyword, startDate, endDate, status, pageable);
+
+        List<JSONObject> businesses = new ArrayList<>();
+        businessPage.getContent().stream()
+                .forEach(business -> {
+                    JSONObject detail = new JSONObject();
+
+                    detail.put("OwnerType", business.getOwnerType());
+                    detail.put("BusinessName", business.getBusinessName());
+                    detail.put("BusinessSector", business.getBusinessSector());
+                    detail.put("Status", business.getStatus());
+                    detail.put("City", business.getCity());
+                    detail.put("Location", business.getLocation());
+                    detail.put("PhysicalAddress", business.getPhysicalAddress());
+                    detail.put("VerifiedBy", business.getVerifiedBy());
+                    detail.put("VerifiedDate", business.getVerifiedDate());
+                    detail.put("ActivatedBy", business.getActivatedBy());
+                    detail.put("ActivatedDate", business.getActivatedDate());
+                    businesses.add(detail);
+                });
+
+        JSONObject paginationInfo = new JSONObject();
+        paginationInfo.put("pageNumber", businessPage.getNumber())
+                .put("pageSize", businessPage.getSize())
+                .put("totalElements", businessPage.getTotalElements())
+                .put("totalPages", businessPage.getTotalPages());
+
+        JSONObject data = new JSONObject();
+        data.put("business", businesses).
+                put("paginationInfo", paginationInfo);
+
+        JSONObject response = new JSONObject();
+        response.put("statusCode", ResponseCodes.SUCCESS)
+                .put("statusDescription", "Business Passed")
+                .put("statusMessage", "Business Passed")
+                .put("data", data);
+
+        return response;
     }
 
 }

@@ -1,11 +1,16 @@
 package com.commerce.pal.backend.module.users;
 
 import com.commerce.pal.backend.common.ResponseCodes;
+import com.commerce.pal.backend.models.user.Messenger;
 import com.commerce.pal.backend.repo.user.MessengerRepository;
 import com.commerce.pal.backend.utils.GlobalMethods;
 import lombok.extern.java.Log;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -194,7 +199,7 @@ public class MessengerService {
         messengerRepository.findMessengerByMessengerId(messengerId)
                 .ifPresent(messenger -> {
                     try {
-                        payload.get() .put("userId", messenger.getMessengerId());
+                        payload.get().put("userId", messenger.getMessengerId());
                         payload.get().put("ownerPhoneNumber", messenger.getOwnerPhoneNumber());
                         payload.get().put("email", messenger.getEmailAddress());
                         payload.get().put("ownerType", messenger.getOwnerType());
@@ -230,6 +235,57 @@ public class MessengerService {
                     }
                 });
         return payload.get();
+    }
+
+
+    //Retrieves a paginated list of Messengers with support for sorting, filtering, searching, and date range.
+    public JSONObject getAllMessengers(
+            int page,
+            int size,
+            Sort sort,
+            Integer status,
+            Timestamp startDate,
+            Timestamp endDate
+    ) {
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<Messenger> messengerPage = messengerRepository.findByStartDateBetweenAndStatus(startDate, endDate, status, pageable);
+
+        List<JSONObject> messengers = new ArrayList<>();
+        messengerPage.getContent().stream()
+                .forEach(messenger -> {
+                    JSONObject detail = new JSONObject();
+
+                    detail.put("ownerType", messenger.getOwnerType());
+                    detail.put("city", messenger.getCity());
+                    detail.put("status", messenger.getStatus());
+                    detail.put("authorizedBy", messenger.getAuthorizedBy());
+                    detail.put("authorizedDate", messenger.getAuthorizedDate());
+                    detail.put("createdDate", messenger.getCreatedDate());
+                    detail.put("deactivatedBy", messenger.getDeactivatedBy());
+                    detail.put("deactivatedDate", messenger.getDeactivatedDate());
+                    detail.put("activatedBy", messenger.getActivatedBy());
+                    detail.put("activatedDate", messenger.getActivatedDate());
+
+                    messengers.add(detail);
+                });
+
+        JSONObject paginationInfo = new JSONObject();
+        paginationInfo.put("pageNumber", messengerPage.getNumber())
+                .put("pageSize", messengerPage.getSize())
+                .put("totalElements", messengerPage.getTotalElements())
+                .put("totalPages", messengerPage.getTotalPages());
+
+        JSONObject data = new JSONObject();
+        data.put("distributors", messengers).
+                put("paginationInfo", paginationInfo);
+
+        JSONObject response = new JSONObject();
+        response.put("statusCode", ResponseCodes.SUCCESS)
+                .put("statusDescription", "Messenger Passed")
+                .put("statusMessage", "Messenger Passed")
+                .put("data", data);
+
+        return response;
     }
 
 }

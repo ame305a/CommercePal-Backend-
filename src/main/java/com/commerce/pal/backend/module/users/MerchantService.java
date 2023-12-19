@@ -1,14 +1,20 @@
 package com.commerce.pal.backend.module.users;
 
 import com.commerce.pal.backend.common.ResponseCodes;
+import com.commerce.pal.backend.models.user.Merchant;
 import com.commerce.pal.backend.module.product.ProductService;
 import com.commerce.pal.backend.repo.user.MerchantRepository;
 import com.commerce.pal.backend.utils.GlobalMethods;
 import lombok.extern.java.Log;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -275,5 +281,87 @@ public class MerchantService {
         return responseMap;
     }
 
+
+    //Retrieves a paginated list of Merchants with support for sorting, filtering, searching, and date range.
+    public JSONObject getAllMerchants(
+            int page,
+            int size,
+            Sort sort,
+            Integer status,
+            String searchKeyword,
+            Timestamp startDate,
+            Timestamp endDate
+    ) {
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<Merchant> merchantPage =
+                merchantRepository.findByFilterAndDateAndStatus(searchKeyword, startDate, endDate, status, pageable);
+
+        List<JSONObject> merchants = new ArrayList<>();
+        merchantPage.getContent().stream()
+                .forEach(merchant -> {
+                    JSONObject detail = new JSONObject();
+
+                    detail.put("OwnerType", merchant.getOwnerType());
+                    detail.put("merchantName", merchant.getMerchantName());
+                    detail.put("businessType", merchant.getBusinessType());
+                    detail.put("businessCategory", merchant.getBusinessCategory());
+                    detail.put("status", merchant.getStatus());
+                    detail.put("location", merchant.getLocation());
+                    detail.put("registeredBy", merchant.getRegisteredBy());
+                    detail.put("registeredDate", merchant.getRegisteredDate());
+                    detail.put("authorizedBy", merchant.getAuthorizedBy());
+                    detail.put("deactivatedBy", merchant.getDeactivatedBy());
+                    detail.put("deactivatedDate", merchant.getDeactivatedDate());
+                    detail.put("activatedBy", merchant.getActivatedBy());
+                    detail.put("activatedDate", merchant.getActivatedDate());
+
+                    merchants.add(detail);
+                });
+
+        JSONObject paginationInfo = new JSONObject();
+        paginationInfo.put("pageNumber", merchantPage.getNumber())
+                .put("pageSize", merchantPage.getSize())
+                .put("totalElements", merchantPage.getTotalElements())
+                .put("totalPages", merchantPage.getTotalPages());
+
+        JSONObject data = new JSONObject();
+        data.put("merchants", merchants).
+                put("paginationInfo", paginationInfo);
+
+        JSONObject response = new JSONObject();
+        response.put("statusCode", ResponseCodes.SUCCESS)
+                .put("statusDescription", "Merchant Passed")
+                .put("statusMessage", "Merchant Passed")
+                .put("data", data);
+
+        return response;
+    }
+
+    public JSONObject getAllMerchants(Sort sort) {
+        List<Merchant> merchantList = merchantRepository.findAll(sort);
+
+        List<JSONObject> merchants = new ArrayList<>();
+        merchantList.stream()
+                .forEach(merchant -> {
+                    JSONObject detail = new JSONObject();
+
+                    detail.put("merchantId", merchant.getMerchantId());
+                    detail.put("merchantName", merchant.getMerchantName());
+                    detail.put("status", merchant.getStatus());
+
+                    merchants.add(detail);
+                });
+
+        JSONObject data = new JSONObject();
+        data.put("merchants", merchants);
+
+        JSONObject response = new JSONObject();
+        response.put("statusCode", ResponseCodes.SUCCESS)
+                .put("statusDescription", "Merchant Passed")
+                .put("statusMessage", "Merchant Passed")
+                .put("data", data);
+
+        return response;
+    }
 
 }
