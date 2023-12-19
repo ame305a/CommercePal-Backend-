@@ -1,14 +1,15 @@
 package com.commerce.pal.backend.controller.portal;
 
 import com.commerce.pal.backend.common.ResponseCodes;
-import com.commerce.pal.backend.models.order.Order;
 import com.commerce.pal.backend.models.product.categories.BrandImage;
 import com.commerce.pal.backend.models.product.categories.ProductCategory;
 import com.commerce.pal.backend.models.product.categories.ProductParentCategory;
 import com.commerce.pal.backend.models.product.categories.ProductSubCategory;
 import com.commerce.pal.backend.module.product.CategoryService;
+import com.commerce.pal.backend.module.product.ProductCategoryService;
 import com.commerce.pal.backend.module.product.ProductService;
-import com.commerce.pal.backend.repo.product.*;
+import com.commerce.pal.backend.repo.product.ProductImageRepository;
+import com.commerce.pal.backend.repo.product.ProductRepository;
 import com.commerce.pal.backend.repo.product.categories.BrandImageRepository;
 import com.commerce.pal.backend.repo.product.categories.ProductCategoryRepository;
 import com.commerce.pal.backend.repo.product.categories.ProductParentCategoryRepository;
@@ -17,6 +18,8 @@ import com.commerce.pal.backend.service.specification.SpecificationsDao;
 import lombok.extern.java.Log;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,6 +46,7 @@ public class CategoriesController {
     private final ProductCategoryRepository productCategoryRepository;
     private final ProductSubCategoryRepository productSubCategoryRepository;
     private final ProductParentCategoryRepository productParentCategoryRepository;
+    private final ProductCategoryService productCategoryService;
 
     @Autowired
     public CategoriesController(ProductService productService,
@@ -53,7 +57,7 @@ public class CategoriesController {
                                 ProductImageRepository productImageRepository,
                                 ProductCategoryRepository productCategoryRepository,
                                 ProductSubCategoryRepository productSubCategoryRepository,
-                                ProductParentCategoryRepository productParentCategoryRepository) {
+                                ProductParentCategoryRepository productParentCategoryRepository, ProductCategoryService productCategoryService) {
         this.productService = productService;
         this.categoryService = categoryService;
         this.productRepository = productRepository;
@@ -63,6 +67,7 @@ public class CategoriesController {
         this.productCategoryRepository = productCategoryRepository;
         this.productSubCategoryRepository = productSubCategoryRepository;
         this.productParentCategoryRepository = productParentCategoryRepository;
+        this.productCategoryService = productCategoryService;
     }
 
 
@@ -362,5 +367,70 @@ public class CategoriesController {
                 .put("details", details)
                 .put("statusMessage", "Request Successful");
         return ResponseEntity.ok(responseMap.toString());
+    }
+
+    @RequestMapping(value = {"/report"}, method = {RequestMethod.GET}, produces = {"application/json"})
+    public ResponseEntity<?> getAllProductCategories(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDirection,
+            @RequestParam(required = false) Long filterByParentCategory,
+            @RequestParam(required = false) Integer status,
+            @RequestParam(required = false) String searchKeyword,
+            @RequestParam(required = false) Timestamp requestStartDate,
+            @RequestParam(required = false) Timestamp requestEndDate
+    ) {
+        try {
+            // If requestEndDate is not provided, set it to the current timestamp
+            if (requestEndDate == null)
+                requestEndDate = Timestamp.from(Instant.now());
+
+            // Default to sorting by category Name in ascending order if sortBy is not provided
+            if (sortBy == null || sortBy.isEmpty())
+                sortBy = "categoryName";
+
+            // Default to ascending order if sortDirection is not provided or is invalid
+            Sort.Direction direction = Sort.Direction.ASC;
+            if (sortDirection != null && sortDirection.equalsIgnoreCase("desc"))
+                direction = Sort.Direction.DESC;
+
+            Sort sort = Sort.by(direction, sortBy);
+
+            JSONObject response = productCategoryService.getAllProductCategories(page, size, sort, filterByParentCategory, status, searchKeyword, requestStartDate, requestEndDate);
+            return ResponseEntity.status(HttpStatus.OK).body(response.toString());
+        } catch (Exception e) {
+            log.log(Level.WARNING, "PRODUCT CATEGORY REPORT: " + e.getMessage());
+            JSONObject responseMap = new JSONObject();
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("statusMessage", "internal system error");
+
+            return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
+        }
+    }
+
+    @GetMapping(value = {"/get-all"}, produces = {"application/json"})
+    public ResponseEntity<?> getAllProductCategories(@RequestParam(defaultValue = "asc") String sortDirection) {
+        try {
+            // Default to ascending order if sortDirection is not provided or is invalid
+            Sort.Direction direction = Sort.Direction.ASC;
+            if (sortDirection != null && sortDirection.equalsIgnoreCase("desc"))
+                direction = Sort.Direction.DESC;
+
+            Sort sort = Sort.by(direction, "categoryName");
+
+            JSONObject response = productCategoryService.getAllProductCategories(sort);
+            return ResponseEntity.status(HttpStatus.OK).body(response.toString());
+
+        } catch (Exception e) {
+            log.log(Level.WARNING, "GET ALL PRODUCT CATEGORIES: " + e.getMessage());
+            JSONObject responseMap = new JSONObject();
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("statusMessage", "internal system error");
+
+            return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
+        }
     }
 }

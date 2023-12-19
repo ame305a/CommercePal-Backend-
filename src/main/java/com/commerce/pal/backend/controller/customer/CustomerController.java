@@ -4,6 +4,7 @@ import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.integ.notification.email.EmailClient;
 import com.commerce.pal.backend.models.LoginValidation;
 import com.commerce.pal.backend.models.user.CustomerAddress;
+import com.commerce.pal.backend.module.users.CustomerService;
 import com.commerce.pal.backend.repo.order.LoanOrderRepository;
 import com.commerce.pal.backend.repo.order.OrderItemRepository;
 import com.commerce.pal.backend.repo.order.OrderRepository;
@@ -17,6 +18,7 @@ import lombok.extern.java.Log;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -38,12 +40,12 @@ public class CustomerController {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
     private final LoanOrderRepository loanOrderRepository;
-
     private final CustomerRepository customerRepository;
     private final MerchantRepository merchantRepository;
     private final OrderItemRepository orderItemRepository;
     private final CustomerAddressRepository customerAddressRepository;
     private final ShipmentPricingRepository shipmentPricingRepository;
+    private final CustomerService customerService;
     @Value("${org.commerce.pal.loan.request.email}")
     private String loanRequestEmails;
 
@@ -59,7 +61,7 @@ public class CustomerController {
                               MerchantRepository merchantRepository,
                               OrderItemRepository orderItemRepository,
                               CustomerAddressRepository customerAddressRepository,
-                              ShipmentPricingRepository shipmentPricingRepository) {
+                              ShipmentPricingRepository shipmentPricingRepository, CustomerService customerService) {
         this.globalMethods = globalMethods;
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
@@ -69,6 +71,7 @@ public class CustomerController {
         this.orderItemRepository = orderItemRepository;
         this.customerAddressRepository = customerAddressRepository;
         this.shipmentPricingRepository = shipmentPricingRepository;
+        this.customerService = customerService;
     }
 
     @RequestMapping(value = "/update-user-info", method = RequestMethod.POST)
@@ -270,6 +273,48 @@ public class CustomerController {
                     .put("statusMessage", "internal system error");
         }
         return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
+    }
+
+
+    @RequestMapping(value = {"/report"}, method = {RequestMethod.GET}, produces = {"application/json"})
+    public ResponseEntity<?> getAllCustomers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDirection,
+            @RequestParam(required = false) Integer status,
+            @RequestParam(required = false) String searchKeyword,
+            @RequestParam(required = false) Timestamp requestStartDate,
+            @RequestParam(required = false) Timestamp requestEndDate
+    ) {
+        try {
+            // If requestEndDate is not provided, set it to the current timestamp
+            if (requestEndDate == null)
+                requestEndDate = Timestamp.from(Instant.now());
+
+            // Default to sorting by customer 1st name in ascending order if sortBy is not provided
+            if (sortBy == null || sortBy.isEmpty())
+                sortBy = "FirstName";
+
+            // Default to ascending order if sortDirection is not provided or is invalid
+            Sort.Direction direction = Sort.Direction.ASC;
+            if (sortDirection != null && sortDirection.equalsIgnoreCase("desc"))
+                direction = Sort.Direction.DESC;
+
+            Sort sort = Sort.by(direction, sortBy);
+
+            JSONObject response = customerService.getAllCustomers(page, size, sort, status, searchKeyword, requestStartDate, requestEndDate);
+            return ResponseEntity.status(HttpStatus.OK).body(response.toString());
+
+        } catch (Exception e) {
+            log.log(Level.WARNING, "CUSTOMER REPORT: " + e.getMessage());
+            JSONObject responseMap = new JSONObject();
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("statusMessage", "internal system error");
+
+            return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
+        }
     }
 
 }

@@ -3,6 +3,7 @@ package com.commerce.pal.backend.controller.portal;
 import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.models.transaction.AgentFloat;
 import com.commerce.pal.backend.module.transaction.AccountService;
+import com.commerce.pal.backend.module.transaction.AgentFloatService;
 import com.commerce.pal.backend.repo.transaction.AgentFloatRepository;
 import com.commerce.pal.backend.repo.user.AgentRepository;
 import com.commerce.pal.backend.service.specification.utils.SearchCriteria;
@@ -10,6 +11,7 @@ import com.commerce.pal.backend.utils.GlobalMethods;
 import lombok.extern.java.Log;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,16 +33,18 @@ public class TransactionController {
     private final AccountService accountService;
     private final AgentRepository agentRepository;
     private final AgentFloatRepository agentFloatRepository;
+    private final AgentFloatService agentFloatService;
 
     @Autowired
     public TransactionController(GlobalMethods globalMethods,
                                  AccountService accountService,
                                  AgentRepository agentRepository,
-                                 AgentFloatRepository agentFloatRepository) {
+                                 AgentFloatRepository agentFloatRepository, AgentFloatService agentFloatService) {
         this.globalMethods = globalMethods;
         this.accountService = accountService;
         this.agentRepository = agentRepository;
         this.agentFloatRepository = agentFloatRepository;
+        this.agentFloatService = agentFloatService;
     }
 
     @RequestMapping(value = {"/float-request"}, method = {RequestMethod.GET}, produces = {"application/json"})
@@ -197,6 +201,46 @@ public class TransactionController {
                     .put("statusMessage", "internal system error");
         }
         return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
+    }
+
+    @RequestMapping(value = {"/agent-float/report"}, method = {RequestMethod.GET}, produces = {"application/json"})
+    public ResponseEntity<?> getAllAgentFloats(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection,
+            @RequestParam(required = false) Integer status,
+            @RequestParam(required = false) Timestamp requestStartDate,
+            @RequestParam(required = false) Timestamp requestEndDate
+    ) {
+        try {
+            // If requestEndDate is not provided, set it to the current timestamp
+            if (requestEndDate == null)
+                requestEndDate = Timestamp.from(Instant.now());
+
+            // Default to sorting by requestDate in descending order if sortBy is not provided
+            if (sortBy == null || sortBy.isEmpty())
+                sortBy = "requestDate";
+
+            // Default to descending order if sortDirection is not provided or is invalid
+            Sort.Direction direction = Sort.Direction.DESC;
+            if (sortDirection != null && sortDirection.equalsIgnoreCase("asc"))
+                direction = Sort.Direction.ASC;
+
+            Sort sort = Sort.by(direction, sortBy);
+
+            JSONObject response = agentFloatService.getAllAgentFloats(page, size, sort, status, requestStartDate, requestEndDate);
+            return ResponseEntity.status(HttpStatus.OK).body(response.toString());
+
+        } catch (Exception e) {
+            log.log(Level.WARNING, "AGENT FLOAT REPORT: " + e.getMessage());
+            JSONObject responseMap = new JSONObject();
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("statusMessage", "internal system error");
+
+            return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
+        }
     }
 
 }
