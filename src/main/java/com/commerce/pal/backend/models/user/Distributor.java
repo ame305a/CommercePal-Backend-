@@ -59,6 +59,12 @@ public class Distributor {
     @Column(name = "Status")
     private Integer status;
     @Basic
+    @Column(name = "TillNumber")
+    private String tillNumber;
+    @Basic
+    @Column(name = "CommissionAccount")
+    private String commissionAccount;
+    @Basic
     @Column(name = "CanRegAgent")
     private Integer canRegAgent;
     @Basic

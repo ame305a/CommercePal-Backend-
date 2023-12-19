@@ -1,11 +1,10 @@
 package com.commerce.pal.backend.models.product;
 
-import lombok.*;
+import lombok.Data;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.Objects;
 
 @Data
 @Entity
