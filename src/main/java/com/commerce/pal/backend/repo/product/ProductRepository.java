@@ -1,9 +1,13 @@
 package com.commerce.pal.backend.repo.product;
 
 import com.commerce.pal.backend.models.product.Product;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,5 +41,20 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "SpecialInstruction LIKE %:prodIns%) AND Status = 1 AND ProductType = :type", nativeQuery = true)
     List<Product> findProductByProductId(String productName, String shortDes, String productDes, String prodIns, String type);
 
+    @Query(value = "SELECT * FROM Product p WHERE 1=1 " +
+            "AND (:filterByCategory IS NULL OR p.ProductCategoryId = :filterByCategory) " +
+            "AND (:searchKeyword IS NULL OR LOWER(p.ProductName) LIKE LOWER(CONCAT('%', :searchKeyword, '%')) OR LOWER(p.ShortDescription) LIKE LOWER(CONCAT('%', :searchKeyword, '%'))) " +
+            "AND (:startDate IS NULL OR p.CreatedDate BETWEEN CONVERT(date, :startDate) AND CONVERT(date, :endDate)) " +
+            "AND (:status IS NULL OR p.Status = :status)" +
+            "AND (:merchantId IS NULL OR p.MerchantId = :merchantId)",
+            nativeQuery = true)
+    Page<Product> findByFilterAndMerchantAndDateAndStatus(
+            @Param("filterByCategory") Long filterByCategory,
+            @Param("searchKeyword") String searchKeyword,
+            @Param("startDate") Timestamp startDate,
+            @Param("endDate") Timestamp endDate,
+            @Param("status") Integer status,
+            @Param("merchantId") Long merchantId,
+            Pageable pageable);
 
 }
