@@ -34,7 +34,7 @@ public class AWSS3ServiceImpl implements AWSS3Service {
         LOGGER.info("File upload in progress.");
         try {
             final File file = convertMultiPartFileToFile(multipartFile);
-            uploadFileToS3Bucket(bucketName + "/Mobile/Images", file);
+//            uploadFileToS3Bucket(bucketName + "/Mobile/Images", file);
             LOGGER.info("File upload is completed.");
             file.delete();    // To remove the file locally created in the project folder.
         } catch (final AmazonServiceException ex) {
@@ -53,11 +53,11 @@ public class AWSS3ServiceImpl implements AWSS3Service {
         return file;
     }
 
-    private void uploadFileToS3Bucket(final String bucketName, final File file) {
-        final String uniqueFileName = LocalDateTime.now() + "_" + file.getName();
-
-        LOGGER.info("Uploading file with name= " + uniqueFileName);
-        final PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, uniqueFileName, file);
-        amazonS3.putObject(putObjectRequest);
-    }
+//    private void uploadFileToS3Bucket(final String bucketName, final File file) {
+//        final String uniqueFileName = LocalDateTime.now() + "_" + file.getName();
+//
+//        LOGGER.info("Uploading file with name= " + uniqueFileName);
+//        final PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, uniqueFileName, file);
+//        amazonS3.putObject(putObjectRequest);
+//    }
 }

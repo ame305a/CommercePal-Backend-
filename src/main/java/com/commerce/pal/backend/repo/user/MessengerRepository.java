@@ -15,6 +15,8 @@ public interface MessengerRepository extends JpaRepository<Messenger, Long> {
 
     Optional<Messenger> findMessengerByEmailAddress(String email);
 
+    Optional<Messenger> findMessengerByEmailAddressOrOwnerPhoneNumber(String email, String ownerPhoneNumber);
+
     Optional<Messenger> findMessengerByMessengerId(Long id);
 
     List<Messenger> findMessengersByOwnerIdAndOwnerType(Integer owner, String ownerType);
@@ -23,10 +25,14 @@ public interface MessengerRepository extends JpaRepository<Messenger, Long> {
 
     @Query("SELECT m FROM Messenger m WHERE 1=1 " +
             "AND (:startDate IS NULL OR m.createdDate BETWEEN :startDate AND :endDate) " +
-            "AND (:status IS NULL OR m.status = :status)")
+            "AND (:status IS NULL OR m.status = :status)" +
+            "AND (:city IS NULL OR m.city = :city)"
+
+    )
     Page<Messenger> findByStartDateBetweenAndStatus(
             @Param("startDate") Timestamp startDate,
             @Param("endDate") Timestamp endDate,
             @Param("status") Integer status,
+            @Param("city") String city,
             Pageable pageable);
 }

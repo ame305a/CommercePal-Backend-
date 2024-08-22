@@ -1,11 +1,10 @@
 package com.commerce.pal.backend.models.order;
 
-import lombok.*;
+import lombok.Data;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.Objects;
 
 @Data
 @Entity
@@ -111,4 +110,10 @@ public class Order {
     @Basic
     @Column(name = "PaymentDate")
     private Timestamp paymentDate;
+    @Basic
+    @Column(name = "CustomerContacted")
+    private Integer customerContacted;
+    @Basic
+    @Column(name = "CustomerContactDate")
+    private Timestamp customerContactDate;
 }

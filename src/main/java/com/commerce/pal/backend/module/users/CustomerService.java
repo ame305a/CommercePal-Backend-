@@ -36,9 +36,9 @@ public class CustomerService {
         this.customerAddressRepository = customerAddressRepository;
     }
 
-    public JSONObject getMultiUserCustomer(String email) {
+    public JSONObject getMultiUserCustomer(String email, String phoneNumber) {
         JSONObject customerData = new JSONObject();
-        customerRepository.findCustomerByEmailAddress(email)
+        customerRepository.findByEmailAddressOrPhoneNumber(email, phoneNumber)
                 .ifPresent(customer -> {
                     customerData.put("firstName", customer.getFirstName());
                     customerData.put("lastName", customer.getLastName());
@@ -89,12 +89,13 @@ public class CustomerService {
             int size,
             Sort sort,
             Integer status,
+            String city,
             String searchKeyword,
             Timestamp startDate,
             Timestamp endDate
     ) {
         Pageable pageable = PageRequest.of(page, size, sort);
-        Page<Customer> customerPage = customerRepository.findByFilterAndDateAndStatus(searchKeyword, startDate, endDate, status, pageable);
+        Page<Customer> customerPage = customerRepository.findByFilterAndDateAndStatus(searchKeyword, startDate, endDate, status, city, pageable);
 
         List<JSONObject> customers = new ArrayList<>();
         customerPage.getContent().stream()

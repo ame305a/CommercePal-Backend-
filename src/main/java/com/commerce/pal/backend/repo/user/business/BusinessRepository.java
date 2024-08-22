@@ -15,6 +15,8 @@ public interface BusinessRepository extends JpaRepository<Business, Long> {
 
     Optional<Business> findBusinessByEmailAddress(String email);
 
+    Optional<Business> findBusinessByEmailAddressOrOwnerPhoneNumber(String email, String ownerPhoneNumber);
+
     Optional<Business> findBusinessByBusinessId(Long id);
 
     List<Business> findBusinessByOwnerIdAndOwnerType(Integer owner, String ownerType);
@@ -30,12 +32,14 @@ public interface BusinessRepository extends JpaRepository<Business, Long> {
     @Query(value = "SELECT * FROM Business b WHERE 1=1 " +
             "AND (:searchKeyword IS NULL OR LOWER(b.BusinessName) LIKE LOWER(CONCAT('%', :searchKeyword, '%')) OR LOWER(b.Country) LIKE LOWER(CONCAT('%', :searchKeyword, '%')) OR LOWER(b.City) LIKE LOWER(CONCAT('%', :searchKeyword, '%'))) " +
             "AND (:startDate IS NULL OR b.CreatedDate BETWEEN CONVERT(date, :startDate) AND CONVERT(date, :endDate)) " +
-            "AND (:status IS NULL OR b.Status = :status)",
+            "AND (:status IS NULL OR b.Status = :status)" +
+            "AND (:city IS NULL OR b.City = :city)",
             nativeQuery = true)
     Page<Business> findByFilterAndDateAndStatus(
             @Param("searchKeyword") String searchKeyword,
             @Param("startDate") Timestamp startDate,
             @Param("endDate") Timestamp endDate,
             @Param("status") Integer status,
+            @Param("city") Integer city,
             Pageable pageable);
 }

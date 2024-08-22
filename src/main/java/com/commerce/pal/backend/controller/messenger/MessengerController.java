@@ -165,6 +165,7 @@ public class MessengerController {
             @RequestParam(required = false) String sortBy,
             @RequestParam(defaultValue = "asc") String sortDirection,
             @RequestParam(required = false) Integer status,
+            @RequestParam(required = false) String city,
             @RequestParam(required = false) Timestamp requestStartDate,
             @RequestParam(required = false) Timestamp requestEndDate
     ) {
@@ -184,7 +185,7 @@ public class MessengerController {
 
             Sort sort = Sort.by(direction, sortBy);
 
-            JSONObject response = messengerService.getAllMessengers(page, size, sort, status, requestStartDate, requestEndDate);
+            JSONObject response = messengerService.getAllMessengers(page, size, sort, status, city, requestStartDate, requestEndDate);
             return ResponseEntity.status(HttpStatus.OK).body(response.toString());
         } catch (Exception e) {
             log.log(Level.WARNING, "MESSENGER REPORT: " + e.getMessage());

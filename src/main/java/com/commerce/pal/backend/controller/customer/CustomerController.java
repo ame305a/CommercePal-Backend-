@@ -5,11 +5,13 @@ import com.commerce.pal.backend.integ.notification.email.EmailClient;
 import com.commerce.pal.backend.models.LoginValidation;
 import com.commerce.pal.backend.models.user.CustomerAddress;
 import com.commerce.pal.backend.module.users.CustomerService;
+import com.commerce.pal.backend.module.users.referral_codes.ReferralCodeService;
 import com.commerce.pal.backend.repo.order.LoanOrderRepository;
 import com.commerce.pal.backend.repo.order.OrderItemRepository;
 import com.commerce.pal.backend.repo.order.OrderRepository;
 import com.commerce.pal.backend.repo.order.ShipmentPricingRepository;
 import com.commerce.pal.backend.repo.product.ProductRepository;
+import com.commerce.pal.backend.repo.setting.CityRepository;
 import com.commerce.pal.backend.repo.setting.RegionRepository;
 import com.commerce.pal.backend.repo.user.CustomerAddressRepository;
 import com.commerce.pal.backend.repo.user.CustomerRepository;
@@ -23,15 +25,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 
@@ -51,7 +51,9 @@ public class CustomerController {
     private final CustomerAddressRepository customerAddressRepository;
     private final ShipmentPricingRepository shipmentPricingRepository;
     private final RegionRepository regionRepository;
+    private final CityRepository cityRepository;
     private final CustomerService customerService;
+
     @Value("${org.commerce.pal.loan.request.email}")
     private String loanRequestEmails;
 
@@ -67,7 +69,7 @@ public class CustomerController {
                               MerchantRepository merchantRepository,
                               OrderItemRepository orderItemRepository,
                               CustomerAddressRepository customerAddressRepository,
-                              ShipmentPricingRepository shipmentPricingRepository, RegionRepository regionRepository, CustomerService customerService) {
+                              ShipmentPricingRepository shipmentPricingRepository, RegionRepository regionRepository, CustomerService customerService, CityRepository cityRepository, ReferralCodeService referralCodeService) {
         this.globalMethods = globalMethods;
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
@@ -79,6 +81,7 @@ public class CustomerController {
         this.shipmentPricingRepository = shipmentPricingRepository;
         this.regionRepository = regionRepository;
         this.customerService = customerService;
+        this.cityRepository = cityRepository;
     }
 
     @RequestMapping(value = "/update-user-info", method = RequestMethod.POST)
@@ -115,55 +118,52 @@ public class CustomerController {
         return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
     }
 
-    @RequestMapping(value = "/add-delivery-address", method = RequestMethod.POST)
-    public ResponseEntity<?> addDeliveryAddress(@RequestBody String checkOut) {
+    //TODO: make sure that the same address is not duplicated for the given customer
+    @PostMapping(value = "/add-delivery-address", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> addDeliveryAddress(@RequestBody String checkOut) {
         JSONObject responseMap = new JSONObject();
-        try {
-            JSONObject reqBody = new JSONObject(checkOut);
-            LoginValidation user = globalMethods.fetchUserDetails();
 
-            customerRepository.findCustomerByEmailAddress(user.getEmailAddress())
-                    .ifPresentOrElse(customer -> {
-                        AtomicReference<CustomerAddress> customerAddress = new AtomicReference<>(new CustomerAddress());
-                        customerAddress.get().setCustomerId(customer.getCustomerId());
-                        customerAddress.get().setCountry(reqBody.getString("country"));
-                        customerAddress.get().setPhysicalAddress(reqBody.getString("physicalAddress"));
+        JSONObject reqBody = new JSONObject(checkOut);
+        LoginValidation user = globalMethods.fetchUserDetails();
 
-                        // Check if latitude and longitude are provided, not null, and not blank
-                        if (reqBody.has("latitude") && reqBody.has("longitude")
-                                && !reqBody.isNull("latitude") && !reqBody.isNull("longitude")
-                                && !reqBody.getString("latitude").trim().isEmpty()
-                                && !reqBody.getString("longitude").trim().isEmpty()) {
+        customerRepository.findCustomerByEmailAddress(user.getEmailAddress())
+                .ifPresentOrElse(customer -> {
+                    AtomicReference<CustomerAddress> customerAddress = new AtomicReference<>(new CustomerAddress());
+                    customerAddress.get().setCustomerId(customer.getCustomerId());
+                    customerAddress.get().setCountry(reqBody.getString("country"));
+                    customerAddress.get().setPhysicalAddress(reqBody.getString("physicalAddress"));
 
-                            customerAddress.get().setLatitude(reqBody.getString("latitude"));
-                            customerAddress.get().setLongitude(reqBody.getString("longitude"));
-                        } else {
-                            // Use other address details if latitude and longitude are not provided
-                            customerAddress.get().setRegionId(reqBody.getInt("regionId"));
-                            customerAddress.get().setCity(reqBody.getInt("city"));
-                            customerAddress.get().setSubCity(reqBody.getString("subCity"));
-                            customerAddress.get().setPhoneNumber(reqBody.getString("phoneNumber"));
-                        }
+                    // Check if latitude and longitude are provided, not null, and not blank
+                    if (reqBody.has("latitude") && reqBody.has("longitude")
+                            && !reqBody.isNull("latitude") && !reqBody.isNull("longitude")
+                            && !reqBody.getString("latitude").trim().isEmpty()
+                            && !reqBody.getString("longitude").trim().isEmpty()) {
 
-                        customerAddress.get().setStatus(1);
-                        customerAddress.get().setCreatedDate(Timestamp.from(Instant.now()));
-                        customerAddress.set(customerAddressRepository.save(customerAddress.get()));
-                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
-                                .put("statusDescription", "success")
-                                .put("AddressId", customerAddress.get().getId())
-                                .put("statusMessage", "success");
-                    }, () -> {
-                        responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
-                                .put("statusDescription", "failed to process request")
-                                .put("statusMessage", "internal system error");
-                    });
-        } catch (Exception e) {
-            log.log(Level.WARNING, "CUSTOMER DELIVERY ADDRESS INFO : " + e.getMessage());
-            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
-                    .put("statusDescription", "failed to process request")
-                    .put("statusMessage", "internal system error");
-        }
-        return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
+                        customerAddress.get().setCity(reqBody.getInt("city"));
+                        customerAddress.get().setLatitude(reqBody.getString("latitude"));
+                        customerAddress.get().setLongitude(reqBody.getString("longitude"));
+                    } else {
+                        // Use other address details if latitude and longitude are not provided
+                        customerAddress.get().setRegionId(reqBody.getInt("regionId"));
+                        customerAddress.get().setCity(reqBody.getInt("city"));
+                        customerAddress.get().setSubCity(reqBody.getString("subCity"));
+                        customerAddress.get().setPhoneNumber(reqBody.getString("phoneNumber"));
+                    }
+
+                    customerAddress.get().setStatus(1);
+                    customerAddress.get().setCreatedDate(Timestamp.from(Instant.now()));
+                    customerAddress.set(customerAddressRepository.save(customerAddress.get()));
+                    responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                            .put("statusDescription", "success")
+                            .put("AddressId", customerAddress.get().getId())
+                            .put("statusMessage", "success");
+                }, () -> {
+                    responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                            .put("statusDescription", "Failed to process request")
+                            .put("statusMessage", "Internal system error");
+                });
+
+        return ResponseEntity.ok(responseMap.toString());
     }
 
 
@@ -304,13 +304,14 @@ public class CustomerController {
         return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
     }
 
-    @RequestMapping(value = {"/report"}, method = {RequestMethod.GET}, produces = {"application/json"})
-    public ResponseEntity<?> getAllCustomers(
+    @GetMapping(value = "/report", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> getAllCustomers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String sortBy,
             @RequestParam(defaultValue = "asc") String sortDirection,
             @RequestParam(required = false) Integer status,
+            @RequestParam(required = false) String city,
             @RequestParam(required = false) String searchKeyword,
             @RequestParam(required = false) Timestamp requestStartDate,
             @RequestParam(required = false) Timestamp requestEndDate
@@ -331,7 +332,7 @@ public class CustomerController {
 
             Sort sort = Sort.by(direction, sortBy);
 
-            JSONObject response = customerService.getAllCustomers(page, size, sort, status, searchKeyword, requestStartDate, requestEndDate);
+            JSONObject response = customerService.getAllCustomers(page, size, sort, status, city, searchKeyword, requestStartDate, requestEndDate);
             return ResponseEntity.status(HttpStatus.OK).body(response.toString());
 
         } catch (Exception e) {

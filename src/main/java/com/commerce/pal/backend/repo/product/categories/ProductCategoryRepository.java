@@ -14,7 +14,7 @@ public interface ProductCategoryRepository extends JpaRepository<ProductCategory
 
     List<ProductCategory> findProductCategoriesByParentCategoryId(Long id);
 
-    @Query(value = "SELECT * FROM ProductCategory pc WHERE 1=1 " +
+    @Query(value = "SELECT * FROM OrderFailureCategory pc WHERE 1=1 " +
             "AND (:filterByParentCategory IS NULL OR pc.ParentCategoryId = :filterByParentCategory) " +
             "AND (:searchKeyword IS NULL OR LOWER(pc.CategoryName) LIKE LOWER(CONCAT('%', :searchKeyword, '%'))) " +
             "AND (:startDate IS NULL OR pc.CreatedDate BETWEEN CONVERT(date, :startDate) AND CONVERT(date, :endDate)) " +

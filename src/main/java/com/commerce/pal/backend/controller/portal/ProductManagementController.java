@@ -1,11 +1,12 @@
 package com.commerce.pal.backend.controller.portal;
 
 import com.commerce.pal.backend.common.ResponseCodes;
+import com.commerce.pal.backend.models.product.Product;
 import com.commerce.pal.backend.models.product.ProductImage;
 import com.commerce.pal.backend.module.MultiUserService;
 import com.commerce.pal.backend.module.product.ProductService;
-import com.commerce.pal.backend.module.users.MerchantService;
 import com.commerce.pal.backend.module.product.SubProductService;
+import com.commerce.pal.backend.module.users.MerchantService;
 import com.commerce.pal.backend.repo.product.ProductImageRepository;
 import com.commerce.pal.backend.repo.product.ProductRepository;
 import com.commerce.pal.backend.repo.product.SubProductImageRepository;
@@ -15,11 +16,20 @@ import lombok.extern.java.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -37,7 +47,7 @@ public class ProductManagementController {
     /*
     0 - Pending
     1 - Approved
-    3 - Disable
+    3 - Disable/deactivated
     5 - Delete Product
     10 - Freeze
      */
@@ -100,6 +110,8 @@ public class ProductManagementController {
                         .put("statusMessage", "Product features not defined well");
             }
         } catch (Exception e) {
+            System.out.println(e.getMessage());
+            e.printStackTrace();
             log.log(Level.WARNING, e.getMessage());
             responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
                     .put("statusDescription", "failed to process request")
@@ -262,6 +274,7 @@ public class ProductManagementController {
 
         return ResponseEntity.ok(responseMap.toString());
     }
+
     @RequestMapping(value = {"/GetOwnerProductById"}, method = {RequestMethod.GET}, produces = {"application/json"})
     @ResponseBody
     public ResponseEntity<?> getProductOwner(@RequestParam("product") String product) {
@@ -287,6 +300,85 @@ public class ProductManagementController {
 
         return ResponseEntity.ok(responseMap.toString());
     }
+
+
+    @GetMapping(value = {"/all"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> approvedProducts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "asc") String sortDirection,
+            @RequestParam(defaultValue = "productName") String sortBy,
+            @RequestParam(required = false) String parent,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String subCat,
+            @RequestParam(required = false) Long productId,
+            @RequestParam(required = false) String productName,
+            @RequestParam(required = false) Integer status) {
+
+        if (productId != null && productName != null)
+            throw new IllegalArgumentException("productId and productName cannot be provided at the same time");
+
+        // Default to ascending order if sortDirection is not provided or is invalid
+        Sort.Direction direction = Sort.Direction.ASC;
+        if (sortDirection.equalsIgnoreCase("desc"))
+            direction = Sort.Direction.DESC;
+
+        Sort sort = Sort.by(direction, sortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<Product> productPage = productRepository.findAll((Root<Product> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            if (parent != null)
+                predicates.add(criteriaBuilder.equal(root.get("productParentCateoryId"), parent));
+            if (category != null)
+                predicates.add(criteriaBuilder.equal(root.get("productCategoryId"), category));
+            if (subCat != null)
+                predicates.add(criteriaBuilder.equal(root.get("productSubCategoryId"), subCat));
+            if (productId != null)
+                predicates.add(criteriaBuilder.equal(root.get("productId"), productId));
+//            if (productName != null)
+//                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("productName")), "%" + productName.toLowerCase() + "%"));
+
+            if (productName != null) {
+                String[] productNameParts = productName.split("\\s+");
+                List<Predicate> namePredicates = new ArrayList<>();
+                for (String part : productNameParts) {
+                    namePredicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("productName")), "%" + part.toLowerCase() + "%"));
+                }
+                predicates.add(criteriaBuilder.or(namePredicates.toArray(new Predicate[0])));
+            }
+
+            if (status != null)
+                predicates.add(criteriaBuilder.equal(root.get("status"), status));
+
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+        }, pageable);
+
+        List<JSONObject> details = new ArrayList<>();
+        productPage.forEach(pro -> {
+            JSONObject detail = productService.getProductDetail(pro);
+            details.add(detail);
+        });
+
+        JSONObject response = new JSONObject();
+        JSONObject paginationInfo = new JSONObject();
+        paginationInfo.put("pageNumber", productPage.getNumber())
+                .put("pageSize", productPage.getSize())
+                .put("totalElements", productPage.getTotalElements())
+                .put("totalPages", productPage.getTotalPages());
+
+        JSONObject data = new JSONObject();
+        data.put("products", details)
+                .put("paginationInfo", paginationInfo);
+
+        response.put("statusCode", ResponseCodes.SUCCESS)
+                .put("statusDescription", "Product Passed")
+                .put("statusMessage", "Product Passed")
+                .put("data", data);
+
+        return ResponseEntity.ok(response.toString());
+    }
+
 
     @RequestMapping(value = {"/approved"}, method = {RequestMethod.GET}, produces = {"application/json"})
     @ResponseBody

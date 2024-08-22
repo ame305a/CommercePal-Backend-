@@ -1,15 +1,24 @@
 package com.commerce.pal.backend.module.users;
 
 import com.commerce.pal.backend.common.ResponseCodes;
+import com.commerce.pal.backend.models.setting.Region;
+import com.commerce.pal.backend.models.user.Agent;
+import com.commerce.pal.backend.repo.setting.RegionRepository;
 import com.commerce.pal.backend.repo.user.AgentRepository;
 import com.commerce.pal.backend.utils.GlobalMethods;
 import lombok.extern.java.Log;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 
@@ -19,12 +28,14 @@ import java.util.logging.Level;
 public class AgentService {
     private final GlobalMethods globalMethods;
     private final AgentRepository agentRepository;
+    private final RegionRepository regionRepository;
 
     @Autowired
     public AgentService(GlobalMethods globalMethods,
-                        AgentRepository agentRepository) {
+                        AgentRepository agentRepository, RegionRepository regionRepository) {
         this.globalMethods = globalMethods;
         this.agentRepository = agentRepository;
+        this.regionRepository = regionRepository;
     }
 
     public JSONObject uploadDocs(String agentId, String fileType, String imageFileUrl) {
@@ -225,4 +236,69 @@ public class AgentService {
         return payload.get();
     }
 
+
+    //Retrieves a paginated list of Agents with support for sorting, filtering, searching, and date range.
+    public JSONObject getAllAgents(
+            int page,
+            int size,
+            Sort sort,
+            Integer status,
+            Integer city,
+            Integer regionId,
+            String searchKeyword,
+            Timestamp startDate,
+            Timestamp endDate
+    ) {
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<Agent> agentPage =
+                agentRepository.findByFilterAndDateAndStatus(searchKeyword, startDate, endDate, status, city, regionId, pageable);
+
+        List<JSONObject> agents = new ArrayList<>();
+        agentPage.getContent().stream()
+                .forEach(agent -> {
+                    JSONObject detail = new JSONObject();
+
+                    String regionName = "";
+                    Integer agentRegionId = agent.getRegionId();
+                    if (agentRegionId != null) {
+                        Optional<Region> optionalRegion = regionRepository.findById(regionId);
+                        if (optionalRegion.isPresent())
+                            regionName = optionalRegion.get().getRegionName();
+                    }
+
+                    detail.put("OwnerType", agent.getOwnerType() != null ? agent.getOwnerType() : "");
+                    detail.put("agentName", agent.getAgentName() != null ? agent.getAgentName() : "");
+                    detail.put("agentCategory", agent.getAgentCategory() != null ? agent.getAgentCategory() : "");
+                    detail.put("status", agent.getStatus() != null ? agent.getStatus() : "");
+                    detail.put("region", regionName);
+                    detail.put("location", agent.getLocation() != null ? agent.getLocation() : "");
+                    detail.put("registeredBy", agent.getRegisteredBy() != null ? agent.getRegisteredBy() : "");
+                    detail.put("createdDate", agent.getCreatedDate() != null ? agent.getCreatedDate() : "");
+                    detail.put("authorizedBy", agent.getAuthorizedBy() != null ? agent.getAuthorizedBy() : "");
+                    detail.put("deactivatedBy", agent.getDeactivatedBy() != null ? agent.getDeactivatedBy() : "");
+                    detail.put("deactivatedDate", agent.getDeactivatedDate() != null ? agent.getDeactivatedDate() : "");
+                    detail.put("activatedBy", agent.getActivatedBy() != null ? agent.getActivatedBy() : "");
+                    detail.put("activatedDate", agent.getActivatedDate() != null ? agent.getActivatedDate() : "");
+
+                    agents.add(detail);
+                });
+
+        JSONObject paginationInfo = new JSONObject();
+        paginationInfo.put("pageNumber", agentPage.getNumber())
+                .put("pageSize", agentPage.getSize())
+                .put("totalElements", agentPage.getTotalElements())
+                .put("totalPages", agentPage.getTotalPages());
+
+        JSONObject data = new JSONObject();
+        data.put("agents", agents).
+                put("paginationInfo", paginationInfo);
+
+        JSONObject response = new JSONObject();
+        response.put("statusCode", ResponseCodes.SUCCESS)
+                .put("statusDescription", "Agent Passed")
+                .put("statusMessage", "Agent Passed")
+                .put("data", data);
+
+        return response;
+    }
 }

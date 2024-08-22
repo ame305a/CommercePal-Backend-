@@ -38,6 +38,7 @@ public class SmsEmailPushService {
             JSONObject pushBdy = new JSONObject();
             pushBdy.put("Phone", phone);
             pushBdy.put("Message", message);
+
             RequestBuilder builder = new RequestBuilder("POST");
             builder.addHeader("Content-Type", "application/json")
                     .setBody(pushBdy.toString())

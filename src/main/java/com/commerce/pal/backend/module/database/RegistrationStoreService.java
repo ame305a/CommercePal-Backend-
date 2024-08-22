@@ -74,8 +74,11 @@ public class RegistrationStoreService {
             query.setParameter("@Branch", regHm.getString("branch"));
             query.setParameter("@RegisteredBy", regHm.getString("registeredBy"));
             query.registerStoredProcedureParameter("RegistrationExist", Integer.class, ParameterMode.OUT);
+
             query.execute();
             Integer exists = (Integer) query.getOutputParameterValue("RegistrationExist");
+            retDet.put("exists", exists);
+            retDet.put("test", exists);
             retDet.put("returnValue", exists);
             retDet.put("exists", exists);
         } catch (Exception ex) {
@@ -315,9 +318,7 @@ public class RegistrationStoreService {
     }
 
     public JSONObject doCustomerRegistration(JSONObject regHm) {
-
         JSONObject retDet = new JSONObject();
-
         try {
             StoredProcedureQuery query = entityManager.createStoredProcedureQuery("DoCustomerRegistration");
 
@@ -331,7 +332,12 @@ public class RegistrationStoreService {
             query.registerStoredProcedureParameter("Msisdn", String.class, ParameterMode.IN);
             query.registerStoredProcedureParameter("Channel", String.class, ParameterMode.IN);
             query.registerStoredProcedureParameter("DeviceId", String.class, ParameterMode.IN);
+            query.registerStoredProcedureParameter("ReferralCode", String.class, ParameterMode.IN);
+            query.registerStoredProcedureParameter("ReferringUserId", Long.class, ParameterMode.IN);
+            query.registerStoredProcedureParameter("ReferringUserType", String.class, ParameterMode.IN);
+            query.registerStoredProcedureParameter("TransRef", String.class, ParameterMode.IN);
             query.registerStoredProcedureParameter("RegisteredBy", String.class, ParameterMode.IN);
+
             query.setParameter("FirstName", regHm.getString("firstName"));
             query.setParameter("LastName", regHm.getString("lastName"));
             query.setParameter("Email", regHm.getString("email"));
@@ -342,7 +348,12 @@ public class RegistrationStoreService {
             query.setParameter("Msisdn", regHm.getString("msisdn"));
             query.setParameter("Channel", regHm.getString("channel"));
             query.setParameter("DeviceId", regHm.getString("deviceId"));
+            query.setParameter("ReferralCode", regHm.getString("referralCode"));
+            query.setParameter("ReferringUserId", regHm.getLong("referringUserId"));
+            query.setParameter("ReferringUserType", regHm.getString("referringUserType"));
+            query.setParameter("TransRef", regHm.getString("TransRef"));
             query.setParameter("RegisteredBy", regHm.getString("registeredBy"));
+
             query.registerStoredProcedureParameter("RegistrationExist", Integer.class, ParameterMode.OUT);
             query.execute();
             Integer exists = (Integer) query.getOutputParameterValue("RegistrationExist");
@@ -354,6 +365,80 @@ public class RegistrationStoreService {
         }
         return retDet;
     }
+
+
+    public void doSocialLoginCustomerRegistration(JSONObject regHm) {
+        StoredProcedureQuery query = entityManager.createStoredProcedureQuery("DoSocialLoginCustomerRegistration");
+
+        query.registerStoredProcedureParameter("FirstName", String.class, ParameterMode.IN);
+        query.registerStoredProcedureParameter("LastName", String.class, ParameterMode.IN);
+        query.registerStoredProcedureParameter("Email", String.class, ParameterMode.IN);
+        query.registerStoredProcedureParameter("Password", String.class, ParameterMode.IN);
+        query.registerStoredProcedureParameter("City", String.class, ParameterMode.IN);
+        query.registerStoredProcedureParameter("Country", String.class, ParameterMode.IN);
+        query.registerStoredProcedureParameter("Language", String.class, ParameterMode.IN);
+        query.registerStoredProcedureParameter("Channel", String.class, ParameterMode.IN);
+        query.registerStoredProcedureParameter("DeviceId", String.class, ParameterMode.IN);
+        query.registerStoredProcedureParameter("ReferralCode", String.class, ParameterMode.IN);
+        query.registerStoredProcedureParameter("RegisteredBy", String.class, ParameterMode.IN);
+        query.registerStoredProcedureParameter("OAuthProvider", String.class, ParameterMode.IN);
+        query.registerStoredProcedureParameter("ProviderUserId", String.class, ParameterMode.IN);
+        query.registerStoredProcedureParameter("RegistrationResult", Integer.class, ParameterMode.OUT);
+
+        query.setParameter("FirstName", regHm.getString("firstName"));
+        query.setParameter("LastName", regHm.optString("lastName", ""));
+        query.setParameter("Email", regHm.getString("email"));
+        query.setParameter("Password", regHm.getString("password"));
+        query.setParameter("City", regHm.getString("city"));
+        query.setParameter("Country", regHm.getString("country"));
+        query.setParameter("Language", regHm.getString("language"));
+        query.setParameter("Channel", regHm.getString("channel"));
+        query.setParameter("DeviceId", regHm.optString("deviceId"));
+        query.setParameter("ReferralCode", regHm.getString("referralCode"));
+        query.setParameter("OAuthProvider", regHm.getString("oAuthProvider"));
+        query.setParameter("ProviderUserId", regHm.getString("providerUserId"));
+
+        query.setParameter("RegisteredBy", regHm.getString("registeredBy"));
+
+        query.execute();
+        Integer registrationResult = (Integer) query.getOutputParameterValue("RegistrationResult");
+
+        if (registrationResult != 0)
+            throw new RuntimeException();
+    }
+
+    public void doUpdateCustomerAndLoginValidation(JSONObject regHm) {
+        StoredProcedureQuery query = entityManager.createStoredProcedureQuery("UpdateCustomerAndLoginValidation");
+
+        String phoneNumber = regHm.optString("phoneNumber", null);
+        String emailAddress = regHm.optString("emailAddress", null);
+
+        if (phoneNumber != null) {
+            query.registerStoredProcedureParameter("PhoneNumber", String.class, ParameterMode.IN);
+            query.setParameter("PhoneNumber", phoneNumber);
+        }
+
+        if (emailAddress != null) {
+            query.registerStoredProcedureParameter("EmailAddress", String.class, ParameterMode.IN);
+            query.setParameter("EmailAddress", emailAddress);
+        }
+
+        query.registerStoredProcedureParameter("ProviderUserId", String.class, ParameterMode.IN);
+        query.registerStoredProcedureParameter("Channel", String.class, ParameterMode.IN);
+        query.registerStoredProcedureParameter("DeviceId", String.class, ParameterMode.IN);
+        query.registerStoredProcedureParameter("OperationResult", Integer.class, ParameterMode.OUT);
+
+        query.setParameter("ProviderUserId", regHm.getString("providerUserId"));
+        query.setParameter("Channel", regHm.getString("channel"));
+        query.setParameter("DeviceId", regHm.optString("deviceId"));
+
+        query.execute();
+        Integer operationResult = (Integer) query.getOutputParameterValue("OperationResult");
+
+        if (operationResult != 0)
+            throw new RuntimeException();
+    }
+
 
     public JSONObject changeAccount(JSONObject request) {
         JSONObject transResponse = new JSONObject();

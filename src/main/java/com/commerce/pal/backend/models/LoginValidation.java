@@ -1,13 +1,10 @@
 package com.commerce.pal.backend.models;
 
+import com.commerce.pal.backend.utils.enumValues.SocialMedia;
 import lombok.*;
 
-import javax.persistence.Basic;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.sql.Timestamp;
-import java.util.Objects;
 
 @Data
 @Entity
@@ -48,7 +45,6 @@ public class LoginValidation {
     @Basic
     @Column(name = "EmailOtpHash")
     private String emailOtpHash;
-
     @Basic
     @Column(name = "OTPRequired")
     private Byte otpRequired;
@@ -70,4 +66,11 @@ public class LoginValidation {
     @Basic
     @Column(name = "CreatedDate")
     private Timestamp createdDate;
+    @Basic
+    @Column(name = "OAuthProvider")
+    @Enumerated(value = EnumType.STRING)
+    private SocialMedia oAuthProvider;
+    @Basic
+    @Column(name = "ProviderUserId")
+    private String providerUserId;
 }

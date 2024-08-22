@@ -141,4 +141,7 @@ public class Product {
     @Column(name = "VerifiedDate")
     private Timestamp verifiedDate;
 
+    @Column(name = "IsProductOnFlashSale")
+    private Integer isProductOnFlashSale;
+
 }

@@ -2,6 +2,7 @@ package com.commerce.pal.backend.module;
 
 import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.models.user.Distributor;
+import com.commerce.pal.backend.models.user.Merchant;
 import com.commerce.pal.backend.repo.user.DistributorRepository;
 import com.commerce.pal.backend.utils.GlobalMethods;
 import lombok.extern.java.Log;
@@ -13,6 +14,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -120,6 +125,46 @@ public class DistributorService {
         return responseMap;
     }
 
+    public JSONObject getAllUsers1(JSONObject req) {
+        Sort.Direction direction = Sort.Direction.ASC;
+        if (req.getString("sortDirection").equalsIgnoreCase("desc"))
+            direction = Sort.Direction.DESC;
+
+        String sortBy = req.getString("sortBy").isEmpty() ? "distributorName" : req.getString("sortBy");
+
+        Sort sort = Sort.by(direction, sortBy);
+        Pageable pageable = PageRequest.of(req.getInt("page"), req.getInt("size"), sort);
+
+        Page<Distributor> distributorPage = distributorRepository.findAll((Root<Distributor> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (!req.getString("fullName").isEmpty()) {
+                String[] distributorNameParts = req.getString("fullName").split("\\s+");
+                List<Predicate> namePredicates = new ArrayList<>();
+                for (String part : distributorNameParts) {
+                    namePredicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("distributorName")), "%" + part.toLowerCase() + "%"));
+                }
+                predicates.add(criteriaBuilder.or(namePredicates.toArray(new Predicate[0])));
+            }
+
+            if (req.getInt("status") != -1)
+                predicates.add(criteriaBuilder.equal(root.get("status"), req.getInt("status")));
+
+            if (req.getLong("id") != -1)
+                predicates.add(criteriaBuilder.equal(root.get("distributorId"), req.getLong("id")));
+
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+        }, pageable);
+
+        List<JSONObject> distributors = new ArrayList<>();
+        distributorPage.forEach(distributor -> {
+            JSONObject detail = getDistributorInfo(distributor);
+            distributors.add(detail);
+        });
+
+        return GlobalMethods.buildResponseWithPagination("distributors", distributors, distributorPage);
+    }
+
     public JSONObject getUser(JSONObject req) {
         JSONObject responseMap = new JSONObject();
         try {
@@ -163,7 +208,7 @@ public class DistributorService {
 
                         payload.get().put("IdImage", distributor.getIdImage());
                         payload.get().put("PhotoImage", distributor.getPhotoImage());
-                        
+
                         payload.get().put("district", distributor.getDistrict());
                         payload.get().put("location", distributor.getLocation());
                         payload.get().put("idNumber", distributor.getIdNumber());
@@ -197,6 +242,56 @@ public class DistributorService {
         return payload.get();
     }
 
+    public JSONObject getDistributorInfo(Distributor distributor) {
+        AtomicReference<JSONObject> payload = new AtomicReference<>(new JSONObject());
+        try {
+            payload.get().put("userId", distributor.getDistributorId());
+            payload.get().put("ownerPhoneNumber", distributor.getPhoneNumber());
+            payload.get().put("distributorName", distributor.getDistributorName());
+            payload.get().put("businessPhoneNumber", distributor.getPhoneNumber());
+            payload.get().put("email", distributor.getEmailAddress());
+            payload.get().put("name", distributor.getDistributorName());
+            payload.get().put("distributorType", distributor.getDistributorType());
+            payload.get().put("idImage", distributor.getIdImage());
+            payload.get().put("photoImage", distributor.getPhotoImage());
+            payload.get().put("tillNumber", distributor.getTillNumber());
+            payload.get().put("commissionAccount", distributor.getCommissionAccount());
+
+            payload.get().put("IdImage", distributor.getIdImage());
+            payload.get().put("PhotoImage", distributor.getPhotoImage());
+
+            payload.get().put("district", distributor.getDistrict());
+            payload.get().put("location", distributor.getLocation());
+            payload.get().put("idNumber", distributor.getIdNumber());
+            payload.get().put("country", distributor.getCountry());
+            payload.get().put("city", distributor.getCity());
+            payload.get().put("branch", distributor.getBranch());
+            if (distributor.getDistributorType().contains("A")) {
+                payload.get().put("canRegAgent", 1);
+            } else {
+                payload.get().put("canRegAgent", 0);
+            }
+            if (distributor.getDistributorType().contains("M")) {
+                payload.get().put("canRegMerchant", 1);
+            } else {
+                payload.get().put("canRegMerchant", 0);
+            }
+            if (distributor.getDistributorType().contains("B")) {
+                payload.get().put("canRegBusiness", 1);
+            } else {
+                payload.get().put("canRegBusiness", 0);
+            }
+            payload.get().put("Status", distributor.getStatus().toString());
+            payload.get().put("longitude", distributor.getLongitude());
+            payload.get().put("latitude", distributor.getLatitude());
+            JSONObject customer = globalMethods.getMultiUserCustomer(distributor.getEmailAddress());
+            payload.set(globalMethods.mergeJSONObjects(payload.get(), customer));
+        } catch (Exception ex) {
+            log.log(Level.WARNING, ex.getMessage());
+        }
+
+        return payload.get();
+    }
 
     //Retrieves a paginated list of Distributors with support for sorting, filtering, searching, and date range.
     public JSONObject getAllDistributors(
@@ -204,12 +299,13 @@ public class DistributorService {
             int size,
             Sort sort,
             Integer status,
+            String city,
             String searchKeyword,
             Timestamp startDate,
             Timestamp endDate
     ) {
         Pageable pageable = PageRequest.of(page, size, sort);
-        Page<Distributor> distributorPage = distributorRepository.findBySearchKeywordAndDateAndStatus(searchKeyword, startDate, endDate, status, pageable);
+        Page<Distributor> distributorPage = distributorRepository.findBySearchKeywordAndDateAndStatus(searchKeyword, startDate, endDate, status, city, pageable);
 
         List<JSONObject> distributors = new ArrayList<>();
         distributorPage.getContent().stream()

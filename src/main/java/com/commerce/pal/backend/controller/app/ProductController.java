@@ -1,6 +1,7 @@
 package com.commerce.pal.backend.controller.app;
 
 import com.commerce.pal.backend.common.ResponseCodes;
+import com.commerce.pal.backend.models.product.Product;
 import com.commerce.pal.backend.module.database.ProductDatabaseService;
 import com.commerce.pal.backend.module.product.CategoryService;
 import com.commerce.pal.backend.module.product.ProductService;
@@ -17,8 +18,14 @@ import lombok.extern.java.Log;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -203,104 +210,187 @@ public class ProductController {
         return ResponseEntity.ok(responseMap.toString());
     }
 
-    @RequestMapping(value = {"/get-products"}, method = {RequestMethod.GET}, produces = {"application/json"})
-    @ResponseBody
-    public ResponseEntity<?> getProducts(@RequestParam("parent") Optional<String> parent,
-                                         @RequestParam("category ") Optional<String> category,
-                                         @RequestParam("subCat") Optional<String> subCat,
-                                         @RequestParam("brand") Optional<String> brand,
-                                         @RequestParam("product") Optional<String> product,
-                                         @RequestParam("unique_id") Optional<String> uniqueId) {
-        JSONObject responseMap = new JSONObject();
+//    @RequestMapping(value = {"/get-products"}, method = {RequestMethod.GET}, produces = {"application/json"})
+//    @ResponseBody
+//    public ResponseEntity<?> getProducts(@RequestParam("parent") Optional<String> parent,
+//                                         @RequestParam("category ") Optional<String> category,
+//                                         @RequestParam("subCat") Optional<String> subCat,
+//                                         @RequestParam("brand") Optional<String> brand,
+//                                         @RequestParam("product") Optional<String> product,
+//                                         @RequestParam("unique_id") Optional<String> uniqueId) {
+//        JSONObject responseMap = new JSONObject();
+//
+//        List<SearchCriteria> params = new ArrayList<SearchCriteria>();
+//        parent.ifPresent(value -> {
+//            params.add(new SearchCriteria("productParentCateoryId", ":", value));
+//        });
+//        category.ifPresent(value -> {
+//            params.add(new SearchCriteria("productCategoryId", ":", value));
+//        });
+//        subCat.ifPresent(value -> {
+//            params.add(new SearchCriteria("productSubCategoryId", ":", value));
+//        });
+//        brand.ifPresent(value -> {
+//            params.add(new SearchCriteria("manufucturer", ":", value));
+//        });
+//        product.ifPresent(value -> {
+//            params.add(new SearchCriteria("productId", ":", value));
+//        });
+//        uniqueId.ifPresent(value -> {
+//            params.add(new SearchCriteria("productId", ":", Long.valueOf(globalMethods.getStringValue(value))));
+//        });
+//        params.add(new SearchCriteria("status", ":", 1));
+//        params.add(new SearchCriteria("productType", ":", "RETAIL"));
+//
+//
+//        List<JSONObject> details = new ArrayList<>();
+//        specificationsDao.getProducts(params)
+//                .forEach(pro -> {
+//                    JSONObject detail = productService.getProductDetail(pro.getProductId());
+//                    details.add(detail);
+//                });
+//
+//        if (details.isEmpty()) {
+//            responseMap.put("statusCode", ResponseCodes.NOT_EXIST);
+//        } else {
+//            responseMap.put("statusCode", ResponseCodes.SUCCESS);
+//        }
+//        responseMap.put("statusDescription", "success")
+//                .put("details", details)
+//                .put("statusMessage", "Request Successful");
+//        return ResponseEntity.ok(responseMap.toString());
+//    }
 
-        List<SearchCriteria> params = new ArrayList<SearchCriteria>();
-        parent.ifPresent(value -> {
-            params.add(new SearchCriteria("productParentCateoryId", ":", value));
+    @GetMapping(value = "/get-products", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> getProducts(@RequestParam("parent") Optional<String> parent,
+                                              @RequestParam("category") Optional<String> category,
+                                              @RequestParam("subCat") Optional<String> subCat,
+                                              @RequestParam("brand") Optional<String> brand,
+                                              @RequestParam("product") Optional<String> product,
+                                              @RequestParam("unique_id") Optional<String> uniqueId) {
+
+        List<Product> products = productRepository.findAll((Root<Product> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            parent.ifPresent(p -> predicates.add(criteriaBuilder.equal(root.get("productParentCateoryId"), p)));
+            category.ifPresent(c -> predicates.add(criteriaBuilder.equal(root.get("productCategoryId"), c)));
+            subCat.ifPresent(s -> predicates.add(criteriaBuilder.equal(root.get("productSubCategoryId"), s)));
+            brand.ifPresent(b -> predicates.add(criteriaBuilder.equal(root.get("manufucturer"), b)));
+            product.ifPresent(p -> predicates.add(criteriaBuilder.equal(root.get("productId"), p)));
+            uniqueId.ifPresent(u -> predicates.add(criteriaBuilder.equal(root.get("productId"), Long.valueOf(globalMethods.getStringValue(u)))));
+
+            predicates.add(criteriaBuilder.equal(root.get("status"), 1));
+            predicates.add(criteriaBuilder.equal(root.get("productType"), "RETAIL"));
+
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         });
-        category.ifPresent(value -> {
-            params.add(new SearchCriteria("productCategoryId", ":", value));
-        });
-        subCat.ifPresent(value -> {
-            params.add(new SearchCriteria("productSubCategoryId", ":", value));
-        });
-        brand.ifPresent(value -> {
-            params.add(new SearchCriteria("manufucturer", ":", value));
-        });
-        product.ifPresent(value -> {
-            params.add(new SearchCriteria("productId", ":", value));
-        });
-        uniqueId.ifPresent(value -> {
-            params.add(new SearchCriteria("productId", ":", Long.valueOf(globalMethods.getStringValue(value))));
-        });
-        params.add(new SearchCriteria("status", ":", 1));
-        params.add(new SearchCriteria("productType", ":", "RETAIL"));
+
         List<JSONObject> details = new ArrayList<>();
-        specificationsDao.getProducts(params)
-                .forEach(pro -> {
-                    JSONObject detail = productService.getProductDetail(pro.getProductId());
-                    details.add(detail);
-                });
-        if (details.isEmpty()) {
-            responseMap.put("statusCode", ResponseCodes.NOT_EXIST);
-        } else {
-            responseMap.put("statusCode", ResponseCodes.SUCCESS);
-        }
+        products.forEach(pro -> {
+            JSONObject detail = productService.getProductDetail(pro.getProductId());
+            details.add(detail);
+        });
+
+        JSONObject responseMap = new JSONObject();
+        if (details.isEmpty()) responseMap.put("statusCode", ResponseCodes.NOT_EXIST);
+        else responseMap.put("statusCode", ResponseCodes.SUCCESS);
+
         responseMap.put("statusDescription", "success")
                 .put("details", details)
                 .put("statusMessage", "Request Successful");
+
         return ResponseEntity.ok(responseMap.toString());
     }
 
-    @RequestMapping(value = {"/get-list-products"}, method = {RequestMethod.GET}, produces = {"application/json"})
-    @ResponseBody
-    public ResponseEntity<?> getListProducts(@RequestParam("parent") Optional<String> parent,
-                                             @RequestParam("category ") Optional<String> category,
-                                             @RequestParam("subCat") Optional<String> subCat,
-                                             @RequestParam("brand") Optional<String> brand,
-                                             @RequestParam("product") Optional<String> product,
-                                             @RequestParam("unique_id") Optional<String> uniqueId) {
-        JSONObject responseMap = new JSONObject();
+    @GetMapping(value = "/get-list-products", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> getListProducts(@RequestParam("parent") Optional<String> parent,
+                                                  @RequestParam("category ") Optional<String> category,
+                                                  @RequestParam("subCat") Optional<String> subCat,
+                                                  @RequestParam("brand") Optional<String> brand,
+                                                  @RequestParam("product") Optional<String> product,
+                                                  @RequestParam("unique_id") Optional<String> uniqueId) {
 
-        List<SearchCriteria> params = new ArrayList<SearchCriteria>();
-        parent.ifPresent(value -> {
-            params.add(new SearchCriteria("productParentCateoryId", ":", value));
-        });
-        category.ifPresent(value -> {
-            params.add(new SearchCriteria("productCategoryId", ":", value));
-        });
-        subCat.ifPresent(value -> {
-            params.add(new SearchCriteria("productSubCategoryId", ":", value));
-        });
-        brand.ifPresent(value -> {
-            params.add(new SearchCriteria("manufucturer", ":", value));
-        });
-        product.ifPresent(value -> {
-            params.add(new SearchCriteria("productId", ":", value));
-        });
-        uniqueId.ifPresent(value -> {
-            params.add(new SearchCriteria("productId", ":", Long.valueOf(globalMethods.getStringValue(value))));
+        List<Product> products = productRepository.findAll((Root<Product> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            parent.ifPresent(p -> predicates.add(criteriaBuilder.equal(root.get("productParentCateoryId"), p)));
+            category.ifPresent(c -> predicates.add(criteriaBuilder.equal(root.get("productCategoryId"), c)));
+            subCat.ifPresent(s -> predicates.add(criteriaBuilder.equal(root.get("productSubCategoryId"), s)));
+            brand.ifPresent(b -> predicates.add(criteriaBuilder.equal(root.get("manufucturer"), b)));
+            product.ifPresent(p -> predicates.add(criteriaBuilder.equal(root.get("productId"), p)));
+            uniqueId.ifPresent(u -> predicates.add(criteriaBuilder.equal(root.get("productId"), Long.valueOf(globalMethods.getStringValue(u)))));
+
+            predicates.add(criteriaBuilder.equal(root.get("status"), 1));
+            predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("quantity"), 1));
+            predicates.add(criteriaBuilder.equal(root.get("productType"), "RETAIL"));
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         });
 
-        params.add(new SearchCriteria("status", ":", 1));
-        params.add(new SearchCriteria("quantity", ">", 1));
-        params.add(new SearchCriteria("productType", ":", "RETAIL"));
         List<JSONObject> details = new ArrayList<>();
-        specificationsDao.getProducts(params)
-                .forEach(pro -> {
-                    JSONObject detail = productService.getProductListDetailsAlready(pro);
-                    detail.put("unique_id", globalMethods.generateUniqueString(pro.getProductId().toString()));
-                    details.add(detail);
-                });
-        if (details.isEmpty()) {
-            responseMap.put("statusCode", ResponseCodes.NOT_EXIST);
-        } else {
-            responseMap.put("statusCode", ResponseCodes.SUCCESS);
-        }
+        products.forEach(pro -> {
+            JSONObject detail = productService.getProductDetail(pro.getProductId());
+            details.add(detail);
+        });
+
+        JSONObject responseMap = new JSONObject();
+        if (details.isEmpty()) responseMap.put("statusCode", ResponseCodes.NOT_EXIST);
+        else responseMap.put("statusCode", ResponseCodes.SUCCESS);
+
         responseMap.put("statusDescription", "success")
                 .put("details", details)
                 .put("statusMessage", "Request Successful");
+
         return ResponseEntity.ok(responseMap.toString());
     }
+
+//    @RequestMapping(value = {"/get-list-products"}, method = {RequestMethod.GET}, produces = {"application/json"})
+//    @ResponseBody
+//    public ResponseEntity<?> getListProducts(@RequestParam("parent") Optional<String> parent,
+//                                             @RequestParam("category ") Optional<String> category,
+//                                             @RequestParam("subCat") Optional<String> subCat,
+//                                             @RequestParam("brand") Optional<String> brand,
+//                                             @RequestParam("product") Optional<String> product,
+//                                             @RequestParam("unique_id") Optional<String> uniqueId) {
+//        JSONObject responseMap = new JSONObject();
+//
+//        List<SearchCriteria> params = new ArrayList<SearchCriteria>();
+//        parent.ifPresent(value -> {
+//            params.add(new SearchCriteria("productParentCateoryId", ":", value));
+//        });
+//        category.ifPresent(value -> {
+//            params.add(new SearchCriteria("productCategoryId", ":", value));
+//        });
+//        subCat.ifPresent(value -> {
+//            params.add(new SearchCriteria("productSubCategoryId", ":", value));
+//        });
+//        brand.ifPresent(value -> {
+//            params.add(new SearchCriteria("manufucturer", ":", value));
+//        });
+//        product.ifPresent(value -> {
+//            params.add(new SearchCriteria("productId", ":", value));
+//        });
+//        uniqueId.ifPresent(value -> {
+//            params.add(new SearchCriteria("productId", ":", Long.valueOf(globalMethods.getStringValue(value))));
+//        });
+//
+//        params.add(new SearchCriteria("status", ":", 1));
+//        params.add(new SearchCriteria("quantity", ">", 1));
+//        params.add(new SearchCriteria("productType", ":", "RETAIL"));
+//        List<JSONObject> details = new ArrayList<>();
+//        specificationsDao.getProducts(params)
+//                .forEach(pro -> {
+//                    JSONObject detail = productService.getProductListDetailsAlready(pro);
+//                    detail.put("unique_id", globalMethods.generateUniqueString(pro.getProductId().toString()));
+//                    details.add(detail);
+//                });
+//        if (details.isEmpty()) {
+//            responseMap.put("statusCode", ResponseCodes.NOT_EXIST);
+//        } else {
+//            responseMap.put("statusCode", ResponseCodes.SUCCESS);
+//        }
+//        responseMap.put("statusDescription", "success")
+//                .put("details", details)
+//                .put("statusMessage", "Request Successful");
+//        return ResponseEntity.ok(responseMap.toString());
+//    }
 
 
     @RequestMapping(value = {"/search-products"}, method = {RequestMethod.GET}, produces = {"application/json"})

@@ -7,22 +7,21 @@ import com.commerce.pal.backend.models.order.LoanOrder;
 import com.commerce.pal.backend.models.order.Order;
 import com.commerce.pal.backend.models.order.OrderItem;
 import com.commerce.pal.backend.module.database.ProductDatabaseService;
-import com.commerce.pal.backend.repo.order.LoanOrderRepository;
-import com.commerce.pal.backend.repo.order.OrderItemRepository;
-import com.commerce.pal.backend.repo.order.OrderRepository;
-import com.commerce.pal.backend.repo.order.ShipmentPricingRepository;
+import com.commerce.pal.backend.repo.order.*;
 import com.commerce.pal.backend.repo.product.ProductRepository;
 import com.commerce.pal.backend.repo.product.SubProductRepository;
 import com.commerce.pal.backend.repo.setting.DeliveryFeeRepository;
 import com.commerce.pal.backend.repo.user.CustomerAddressRepository;
 import com.commerce.pal.backend.repo.user.CustomerRepository;
 import com.commerce.pal.backend.utils.GlobalMethods;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,14 +40,13 @@ import static com.commerce.pal.backend.common.ResponseCodes.MERCHANT_TO_CUSTOMER
 @RestController
 @RequestMapping({"/prime/api/v1/customer/order"})
 @SuppressWarnings("Duplicates")
+@RequiredArgsConstructor
 public class CustomerOrderController {
 
     @Value("${org.commerce.pal.loan.request.email}")
     private String loanRequestEmails;
-
     @Autowired
     private EmailClient emailClient;
-
     private final GlobalMethods globalMethods;
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
@@ -60,176 +58,157 @@ public class CustomerOrderController {
     private final ProductDatabaseService productDatabaseService;
     private final ShipmentPricingRepository shipmentPricingRepository;
     private final CustomerAddressRepository customerAddressRepository;
+    private final OrderFeedbackRepository orderFeedbackRepository;
+    private final CustomerOrderService customerOrderService;
 
-
-    @Autowired
-    public CustomerOrderController(GlobalMethods globalMethods,
-                                   OrderRepository orderRepository,
-                                   ProductRepository productRepository,
-                                   CustomerRepository customerRepository,
-                                   LoanOrderRepository loanOrderRepository,
-                                   OrderItemRepository orderItemRepository,
-                                   SubProductRepository subProductRepository,
-                                   DeliveryFeeRepository deliveryFeeRepository,
-                                   ProductDatabaseService productDatabaseService,
-                                   ShipmentPricingRepository shipmentPricingRepository,
-                                   CustomerAddressRepository customerAddressRepository) {
-        this.globalMethods = globalMethods;
-        this.orderRepository = orderRepository;
-        this.productRepository = productRepository;
-        this.customerRepository = customerRepository;
-        this.loanOrderRepository = loanOrderRepository;
-        this.orderItemRepository = orderItemRepository;
-        this.subProductRepository = subProductRepository;
-        this.deliveryFeeRepository = deliveryFeeRepository;
-        this.productDatabaseService = productDatabaseService;
-        this.shipmentPricingRepository = shipmentPricingRepository;
-        this.customerAddressRepository = customerAddressRepository;
+    @PostMapping(value = "/check-out", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> customerCheckOut1(@RequestBody String checkOut) {
+        JSONObject responseMap = customerOrderService.customerCheckOut(checkOut);
+        return ResponseEntity.ok(responseMap.toString());
     }
 
-    @RequestMapping(value = "/check-out", method = RequestMethod.POST)
-    public ResponseEntity<?> customerCheckOut(@RequestBody String checkOut) {
+    @PostMapping(value = "/check-out1", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> customerCheckOut(@RequestBody String checkOut) {
         JSONObject responseMap = new JSONObject();
         log.log(Level.INFO, checkOut);
-        try {
-            JSONObject request = new JSONObject(checkOut);
-            JSONArray items = request.getJSONArray("items");
-            String transRef = globalMethods.generateTrans();
-            LoginValidation user = globalMethods.fetchUserDetails();
 
-            customerRepository.findCustomerByEmailAddress(user.getEmailAddress())
-                    .ifPresentOrElse(customer -> {
-                        AtomicReference<Order> newOrder = new AtomicReference<>(new Order());
-                        newOrder.get().setCustomerId(customer.getCustomerId());
-                        newOrder.get().setMerchantId(0L);
-                        newOrder.get().setAgentId(0l);
-                        newOrder.get().setBusinessId(0L);
-                        newOrder.get().setOrderRef(transRef);
-                        newOrder.get().setPaymentMethod(request.getString("paymentMethod"));
-                        newOrder.get().setSaleType(MERCHANT_TO_CUSTOMER);
-                        newOrder.get().setOrderDate(Timestamp.from(Instant.now()));
-                        newOrder.get().setStatus(0);
-                        newOrder.get().setIsAgentInitiated(0);
-                        newOrder.get().setStatusDescription("Pending Payment and Shipping");
-                        newOrder.get().setIsUserAddressAssigned(0);
-                        newOrder.get().setPaymentStatus(0);
-                        newOrder.get().setCurrency("ETB");
-                        newOrder.get().setCountryCode("ET");
-                        newOrder.get().setTax(new BigDecimal(0));
-                        newOrder.get().setDeliveryPrice(new BigDecimal(0));
-                        newOrder.get().setPromotionId(0);
-                        newOrder.get().setPromotionAmount(new BigDecimal(0));
-                        newOrder.get().setReferralUserType("ZZ");
-                        newOrder.get().setReferralUserId(0);
-                        newOrder.set(orderRepository.save(newOrder.get()));
-                        AtomicReference<Double> totalAmount = new AtomicReference<>(0d);
-                        AtomicReference<Double> totalDiscount = new AtomicReference<>(0d);
-                        AtomicReference<Double> totalCharge = new AtomicReference<>(0d);
-                        AtomicReference<Integer> count = new AtomicReference<>(0);
+        JSONObject request = new JSONObject(checkOut);
+        JSONArray items = request.getJSONArray("items");
+        String transRef = globalMethods.generateTrans();
+        LoginValidation user = globalMethods.fetchUserDetails();
 
-                        items.forEach(item -> {
-                            count.set(count.get() + 1);
-                            JSONObject itmValue = new JSONObject(item.toString());
-                            productRepository.findById(Long.valueOf(itmValue.getInt("productId")))
-                                    .ifPresentOrElse(product -> {
-                                        subProductRepository.findSubProductsByProductIdAndSubProductId(
-                                                product.getProductId(), Long.valueOf(itmValue.getInt("subProductId"))
-                                        ).ifPresentOrElse(subProduct -> {
-                                            OrderItem orderItem = new OrderItem();
-                                            orderItem.setSubOrderNumber(transRef + "-" + count.get().toString());
-                                            orderItem.setOrderId(newOrder.get().getOrderId());
-                                            orderItem.setProductLinkingId(product.getProductId());
-                                            orderItem.setSubProductId(subProduct.getSubProductId());
-                                            orderItem.setMerchantId(product.getMerchantId());
-                                            orderItem.setUnitPrice(subProduct.getUnitPrice());
-                                            orderItem.setIsDiscount(subProduct.getIsDiscounted());
-                                            orderItem.setQuantity(itmValue.getInt("quantity"));
-                                            if (subProduct.getIsDiscounted().equals(1)) {
-                                                orderItem.setIsDiscount(1);
-                                                orderItem.setDiscountType(subProduct.getDiscountType());
-                                                Double discountAmount = 0D;
-                                                if (subProduct.getDiscountType().equals("FIXED")) {
-                                                    orderItem.setDiscountValue(subProduct.getDiscountValue());
-                                                    orderItem.setDiscountAmount(subProduct.getDiscountValue());
-                                                } else {
-                                                    discountAmount = subProduct.getUnitPrice().doubleValue() * subProduct.getDiscountValue().doubleValue() / 100;
-                                                    orderItem.setDiscountValue(subProduct.getDiscountValue());
-                                                    orderItem.setDiscountAmount(new BigDecimal(discountAmount));
-                                                }
+        customerRepository.findCustomerByEmailAddress(user.getEmailAddress())
+                .ifPresentOrElse(customer -> {
+                    AtomicReference<Order> newOrder = new AtomicReference<>(new Order());
+                    newOrder.get().setCustomerId(customer.getCustomerId());
+                    newOrder.get().setMerchantId(0L);
+                    newOrder.get().setAgentId(0L);
+                    newOrder.get().setBusinessId(0L);
+                    newOrder.get().setOrderRef(transRef);
+                    newOrder.get().setPaymentMethod(request.getString("paymentMethod"));
+                    newOrder.get().setSaleType(MERCHANT_TO_CUSTOMER);
+                    newOrder.get().setOrderDate(Timestamp.from(Instant.now()));
+                    newOrder.get().setStatus(0);
+                    newOrder.get().setIsAgentInitiated(0);
+                    newOrder.get().setStatusDescription("Pending Payment and Shipping");
+                    newOrder.get().setIsUserAddressAssigned(0);
+                    newOrder.get().setPaymentStatus(0);
+                    newOrder.get().setCurrency("ETB");
+                    newOrder.get().setCountryCode("ET");
+                    newOrder.get().setTax(new BigDecimal(0));
+                    newOrder.get().setDeliveryPrice(new BigDecimal(0));
+                    newOrder.get().setPromotionId(0);
+                    newOrder.get().setPromotionAmount(new BigDecimal(0));
+                    newOrder.get().setReferralUserType("ZZ");
+                    newOrder.get().setReferralUserId(0);
+                    newOrder.set(orderRepository.save(newOrder.get()));
+
+                    AtomicReference<Double> totalAmount = new AtomicReference<>(0d);
+                    AtomicReference<Double> totalDiscount = new AtomicReference<>(0d);
+                    AtomicReference<Double> totalCharge = new AtomicReference<>(0d);
+                    AtomicReference<Integer> count = new AtomicReference<>(0);
+
+                    items.forEach(item -> {
+                        count.set(count.get() + 1);
+                        JSONObject itmValue = new JSONObject(item.toString());
+                        productRepository.findById(Long.valueOf(itmValue.getInt("productId")))
+                                .ifPresentOrElse(product -> {
+                                    subProductRepository.findSubProductsByProductIdAndSubProductId(
+                                            product.getProductId(), Long.valueOf(itmValue.getInt("subProductId"))
+                                    ).ifPresentOrElse(subProduct -> {
+                                        OrderItem orderItem = new OrderItem();
+                                        orderItem.setSubOrderNumber(transRef + "-" + count.get().toString());
+                                        orderItem.setOrderId(newOrder.get().getOrderId());
+                                        orderItem.setProductLinkingId(product.getProductId());
+                                        orderItem.setSubProductId(subProduct.getSubProductId());
+                                        orderItem.setMerchantId(product.getMerchantId());
+                                        orderItem.setUnitPrice(subProduct.getUnitPrice());
+                                        orderItem.setIsDiscount(subProduct.getIsDiscounted());
+                                        orderItem.setQuantity(itmValue.getInt("quantity"));
+
+                                        if (subProduct.getIsDiscounted().equals(1)) {
+                                            orderItem.setIsDiscount(1);
+                                            orderItem.setDiscountType(subProduct.getDiscountType());
+                                            Double discountAmount = 0D;
+                                            if (subProduct.getDiscountType().equals("FIXED")) {
+                                                orderItem.setDiscountValue(subProduct.getDiscountValue());
+                                                orderItem.setDiscountAmount(subProduct.getDiscountValue());
                                             } else {
-                                                orderItem.setIsDiscount(0);
-                                                orderItem.setDiscountType("NotDiscounted");
-                                                orderItem.setDiscountValue(new BigDecimal(0));
-                                                orderItem.setDiscountAmount(new BigDecimal(0));
+                                                discountAmount = subProduct.getUnitPrice().doubleValue() * subProduct.getDiscountValue().doubleValue() / 100;
+                                                orderItem.setDiscountValue(subProduct.getDiscountValue());
+                                                orderItem.setDiscountAmount(new BigDecimal(discountAmount));
                                             }
-                                            // Get Charges
-                                            BigDecimal productDis = new BigDecimal(subProduct.getUnitPrice().doubleValue() - orderItem.getDiscountAmount().doubleValue());
-                                            JSONObject chargeBdy = productDatabaseService.calculateProductPrice(productDis);
-                                            orderItem.setChargeId(chargeBdy.getInt("ChargeId"));
-                                            orderItem.setChargeAmount(chargeBdy.getBigDecimal("Charge"));
-                                            orderItem.setTotalCharge(new BigDecimal(chargeBdy.getBigDecimal("Charge").doubleValue() * Double.valueOf(orderItem.getQuantity())));
-                                            orderItem.setTotalAmount(new BigDecimal(chargeBdy.getBigDecimal("FinalPrice").doubleValue() * Double.valueOf(orderItem.getQuantity())));
-                                            orderItem.setTotalDiscount(new BigDecimal(orderItem.getDiscountAmount().doubleValue() * Double.valueOf(orderItem.getQuantity())));
+                                        } else {
+                                            orderItem.setIsDiscount(0);
+                                            orderItem.setDiscountType("NotDiscounted");
+                                            orderItem.setDiscountValue(new BigDecimal(0));
+                                            orderItem.setDiscountAmount(new BigDecimal(0));
+                                        }
 
-                                            orderItem.setStatus(0);
-                                            orderItem.setSettlementStatus(0);
-                                            orderItem.setStatusDescription("Pending Payment and Shipping");
-                                            orderItem.setCreatedDate(Timestamp.from(Instant.now()));
-                                            orderItem.setDeliveryPrice(new BigDecimal(0));
-                                            orderItem.setTaxValue(new BigDecimal(0));
-                                            orderItem.setTaxAmount(new BigDecimal(0));
-                                            orderItem.setShipmentStatus(0);
-                                            orderItem.setAssignedWareHouseId(0);
-                                            orderItem.setUserShipmentStatus(0);
-                                            orderItemRepository.save(orderItem);
-                                            totalAmount.set(totalAmount.get() + orderItem.getTotalAmount().doubleValue());
-                                            totalDiscount.set(totalDiscount.get() + orderItem.getTotalDiscount().doubleValue());
-                                            totalCharge.set(totalCharge.get() + orderItem.getTotalCharge().doubleValue());
-                                        }, () -> {
-                                            newOrder.get().setStatus(5);
-                                            newOrder.get().setStatusDescription("Failure as one of the products is invalid");
-                                        });
+                                        // Get Charges
+                                        BigDecimal productDis = new BigDecimal(subProduct.getUnitPrice().doubleValue() - orderItem.getDiscountAmount().doubleValue());
+                                        JSONObject chargeBdy = productDatabaseService.calculateProductPrice(productDis);
+
+                                        orderItem.setChargeId(chargeBdy.getInt("ChargeId"));
+                                        orderItem.setChargeAmount(chargeBdy.getBigDecimal("Charge"));
+                                        orderItem.setTotalCharge(new BigDecimal(chargeBdy.getBigDecimal("Charge").doubleValue() * Double.valueOf(orderItem.getQuantity())));
+                                        orderItem.setTotalAmount(new BigDecimal(chargeBdy.getBigDecimal("FinalPrice").doubleValue() * Double.valueOf(orderItem.getQuantity())));
+                                        orderItem.setTotalDiscount(new BigDecimal(orderItem.getDiscountAmount().doubleValue() * Double.valueOf(orderItem.getQuantity())));
+                                        orderItem.setStatus(0);
+                                        orderItem.setSettlementStatus(0);
+                                        orderItem.setStatusDescription("Pending Payment and Shipping");
+                                        orderItem.setCreatedDate(Timestamp.from(Instant.now()));
+                                        orderItem.setDeliveryPrice(new BigDecimal(0));
+                                        orderItem.setTaxValue(new BigDecimal(0));
+                                        orderItem.setTaxAmount(new BigDecimal(0));
+                                        orderItem.setShipmentStatus(0);
+                                        orderItem.setAssignedWareHouseId(0);
+                                        orderItem.setUserShipmentStatus(0);
+
+                                        orderItemRepository.save(orderItem);
+                                        totalAmount.set(totalAmount.get() + orderItem.getTotalAmount().doubleValue());
+                                        totalDiscount.set(totalDiscount.get() + orderItem.getTotalDiscount().doubleValue());
+                                        totalCharge.set(totalCharge.get() + orderItem.getTotalCharge().doubleValue());
                                     }, () -> {
                                         newOrder.get().setStatus(5);
                                         newOrder.get().setStatusDescription("Failure as one of the products is invalid");
                                     });
-                        });
-
-                        newOrder.get().setTotalPrice(new BigDecimal(totalAmount.get() - totalDiscount.get()).setScale(2, RoundingMode.CEILING));
-                        newOrder.get().setDiscount(new BigDecimal(totalDiscount.get()).setScale(2, RoundingMode.CEILING));
-                        newOrder.get().setCharge(new BigDecimal(totalCharge.get()).setScale(2, RoundingMode.CEILING));
-
-                        orderRepository.save(newOrder.get());
-                        if (newOrder.get().getStatus().equals(5)) {
-                            responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
-                                    .put("statusDescription", newOrder.get().getStatusDescription())
-                                    .put("statusMessage", newOrder.get().getStatusDescription());
-                        } else {
-                            JSONObject checkoutSummary = new JSONObject();
-                            checkoutSummary.put("TotalCheckoutPrice", newOrder.get().getTotalPrice());
-                            checkoutSummary.put("TotalDiscountPrice", newOrder.get().getDiscount());
-                            checkoutSummary.put("VoucherDiscountAmount", 0.00);
-                            checkoutSummary.put("DeliveryFeeAmount", newOrder.get().getDeliveryPrice());
-                            checkoutSummary.put("FinalTotalCheckoutPrice", newOrder.get().getTotalPrice());
-
-                            responseMap.put("statusCode", ResponseCodes.SUCCESS)
-                                    .put("statusDescription", "Order was successful")
-                                    .put("OrderRef", transRef)
-                                    .put("checkoutSummary", checkoutSummary)
-                                    .put("statusMessage", "Order was successful");
-                        }
-                    }, () -> {
-                        responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
-                                .put("statusDescription", "Customer Does not exists")
-                                .put("statusMessage", "Customer Does not exists");
+                                }, () -> {
+                                    newOrder.get().setStatus(5);
+                                    newOrder.get().setStatusDescription("Failure as one of the products is invalid");
+                                });
                     });
-        } catch (Exception e) {
-            log.log(Level.WARNING, e.getMessage());
-            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
-                    .put("statusDescription", "failed to process request")
-                    .put("statusMessage", "internal system error");
-        }
-        return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
+
+                    newOrder.get().setTotalPrice(new BigDecimal(totalAmount.get() - totalDiscount.get()).setScale(2, RoundingMode.CEILING));
+                    newOrder.get().setDiscount(new BigDecimal(totalDiscount.get()).setScale(2, RoundingMode.CEILING));
+                    newOrder.get().setCharge(new BigDecimal(totalCharge.get()).setScale(2, RoundingMode.CEILING));
+
+                    orderRepository.save(newOrder.get());
+                    if (newOrder.get().getStatus().equals(5)) {
+                        responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
+                                .put("statusDescription", newOrder.get().getStatusDescription())
+                                .put("statusMessage", newOrder.get().getStatusDescription());
+                    } else {
+                        JSONObject checkoutSummary = new JSONObject();
+                        checkoutSummary.put("TotalCheckoutPrice", newOrder.get().getTotalPrice());
+                        checkoutSummary.put("TotalDiscountPrice", newOrder.get().getDiscount());
+                        checkoutSummary.put("VoucherDiscountAmount", 0.00);
+                        checkoutSummary.put("DeliveryFeeAmount", newOrder.get().getDeliveryPrice());
+                        checkoutSummary.put("FinalTotalCheckoutPrice", newOrder.get().getTotalPrice());
+
+                        responseMap.put("statusCode", ResponseCodes.SUCCESS)
+                                .put("statusDescription", "Order was successful")
+                                .put("OrderRef", transRef)
+                                .put("checkoutSummary", checkoutSummary)
+                                .put("statusMessage", "Order was successful");
+                    }
+                }, () -> {
+                    responseMap.put("statusCode", ResponseCodes.REQUEST_FAILED)
+                            .put("statusDescription", "Customer Does not exists")
+                            .put("statusMessage", "Customer Does not exists");
+                });
+
+        return ResponseEntity.ok(responseMap.toString());
     }
 
     @RequestMapping(value = "/get-pricing", method = RequestMethod.POST)
@@ -424,7 +403,7 @@ public class CustomerOrderController {
                                                                 .forEach(orderItem -> {
                                                                     BigDecimal itemDeliveryFee = new BigDecimal(0);
                                                                     BigDecimal itemDeliveryValue = new BigDecimal(0);
-                                                                    if (customerAddress.getCity().equals(globalMethods.getMerchantCity(orderItem.getMerchantId()))) {
+                                                                    if (customerAddress.getCity() != null && customerAddress.getCity().equals(globalMethods.getMerchantCity(orderItem.getMerchantId()))) {
                                                                         itemDeliveryValue = deliveryFeeRepository.findDeliveryFeeByDeliveryTypeAndCustomerType("SC", "C").get().getAmount();
                                                                     } else {
                                                                         itemDeliveryValue = deliveryFeeRepository.findDeliveryFeeByDeliveryTypeAndCustomerType("CC", "C").get().getAmount();
@@ -483,5 +462,4 @@ public class CustomerOrderController {
         }
         return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
     }
-
 }

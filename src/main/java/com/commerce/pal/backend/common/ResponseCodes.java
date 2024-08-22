@@ -25,8 +25,8 @@ public class ResponseCodes {
     public static final String MISSING_PARAMETER = "401";
     public static final String AGENTCODE_MISSING = "402";
     public static final String REQUEST_FAILED = "440";
+    public static final String RESOURCE_ALREADY_EXIST = "440";
     public static final String DUPLICATE_transactionId = "901";
-
     public static final String TRANSACTION_LIMIT_NOT_SET = "600";
     public static final String DAILY_LIMIT_EXCEEDED = "601";
     public static final String TRANSACTION_LIMIT_EXCEEDED = "602";

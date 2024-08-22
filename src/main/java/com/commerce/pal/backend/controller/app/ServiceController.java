@@ -6,9 +6,13 @@ import lombok.extern.java.Log;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.Column;
+import javax.persistence.Id;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -45,7 +49,7 @@ public class ServiceController {
         this.paymentMethodItemRepository = paymentMethodItemRepository;
     }
 
-    @RequestMapping(value = {"/countries"}, method = {RequestMethod.GET}, produces = {"application/json"})
+    @RequestMapping(value = {"/countries"}, method = {RequestMethod.GET}, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity<?> countryList() {
         List<JSONObject> countries = new ArrayList<>();
@@ -64,7 +68,7 @@ public class ServiceController {
         return ResponseEntity.status(HttpStatus.OK).body(response.toString());
     }
 
-    @RequestMapping(value = {"/regions"}, method = {RequestMethod.GET}, produces = {"application/json"})
+    @RequestMapping(value = {"/regions"}, method = {RequestMethod.GET}, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity<?> regionList() {
         List<JSONObject> list = new ArrayList<>();
@@ -84,7 +88,7 @@ public class ServiceController {
         return ResponseEntity.status(HttpStatus.OK).body(response.toString());
     }
 
-    @RequestMapping(value = {"/cities"}, method = {RequestMethod.GET}, produces = {"application/json"})
+    @RequestMapping(value = {"/cities"}, method = {RequestMethod.GET}, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity<?> citiesList() {
 
@@ -105,7 +109,7 @@ public class ServiceController {
         return ResponseEntity.status(HttpStatus.OK).body(response.toString());
     }
 
-    @RequestMapping(value = {"/banks"}, method = {RequestMethod.GET}, produces = {"application/json"})
+    @RequestMapping(value = {"/banks"}, method = {RequestMethod.GET}, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity<?> bankList() {
         List<JSONObject> banks = new ArrayList<>();
@@ -124,31 +128,55 @@ public class ServiceController {
         return ResponseEntity.status(HttpStatus.OK).body(response.toString());
     }
 
-    @RequestMapping(value = {"/app-version"}, method = {RequestMethod.GET}, produces = {"application/json"})
-    @ResponseBody
-    public ResponseEntity<?> appVersion() {
-        JSONObject one = new JSONObject();
-        appVersionRepository.findById(1)
-                .ifPresent(appVersion -> {
-                    one.put("AndroidVersion", appVersion.getAndroidVersion());
-                    one.put("IosVersion", appVersion.getIosVersion());
-                    one.put("AndroidUpdate", appVersion.getAndroidVersion());
-                    one.put("AndroidUpdateType", appVersion.getAndroidUpdateType());
-                    one.put("AndroidComment", appVersion.getAndroidComment());
-                    one.put("IosUpdate", appVersion.getIosUpdate());
-                    one.put("iosUpdateType", appVersion.getIosUpdateType());
-                    one.put("IosComment", appVersion.getIosComment());
-                    one.put("SessionTimeout", appVersion.getSessionTimeout());
-                    one.put("SmsHash", appVersion.getSmsHash());
+//    @GetMapping(value = "/app-version", produces = MediaType.APPLICATION_JSON_VALUE)
+//    public ResponseEntity<String> appVersion() {
+//        JSONObject appVersion = new JSONObject();
+//        appVersionRepository.findAll()
+//                .forEach(version -> {
+//                    String appType = version.getAppType();
+//                    String key = version.getPlatform() + (Character.toUpperCase(appType.charAt(0)) + appType.substring(1));
+//                    String value = version.getAppVersion();
+//                    appVersion.put(key, value);
+//                });
+//
+//        JSONObject response = new JSONObject();
+//        response.put("statusCode", ResponseCodes.SUCCESS)
+//                .put("data", appVersion)
+//                .put("statusDescription", "Success")
+//                .put("statusMessage", "Success");
+//
+//        return ResponseEntity.ok(response.toString());
+//    }
+
+    @GetMapping(value = "/app-version/details", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> appVersionDetails() {
+        List<JSONObject> appVersions = new ArrayList<>();
+        appVersionRepository.findAll()
+                .forEach(appVersion -> {
+                    JSONObject detail = new JSONObject();
+                    detail.put("id", appVersion.getId());
+                    detail.put("androidVersion", appVersion.getAndroidVersion());
+                    detail.put("iosVersion", appVersion.getIosVersion());
+
+                    detail.put("androidUpdate", appVersion.getAndroidUpdate());
+                    detail.put("androidUpdateType", appVersion.getAndroidUpdateType());
+                    detail.put("androidComment", appVersion.getAndroidComment());
+
+                    detail.put("iosUpdate", appVersion.getIosUpdate());
+                    detail.put("iosUpdateType", appVersion.getIosUpdateType());
+                    detail.put("iosComment", appVersion.getIosComment());
+
+
+                    appVersions.add(detail);
                 });
 
         JSONObject response = new JSONObject();
         response.put("statusCode", ResponseCodes.SUCCESS)
-                .put("data", one)
+                .put("data", appVersions)
                 .put("statusDescription", "Success")
                 .put("statusMessage", "Success");
 
-        return ResponseEntity.status(HttpStatus.OK).body(response.toString());
+        return ResponseEntity.ok(response.toString());
     }
 
     @RequestMapping(value = "/post-hash", method = RequestMethod.POST)
@@ -180,7 +208,7 @@ public class ServiceController {
 
     }
 
-    @RequestMapping(value = {"/payment-method"}, method = {RequestMethod.GET}, produces = {"application/json"})
+    @RequestMapping(value = {"/payment-method"}, method = {RequestMethod.GET}, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity<?> paymentMethodList(@RequestParam("userType") String userType) {
         List<JSONObject> paymentMethods = new ArrayList<>();

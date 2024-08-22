@@ -4,7 +4,6 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
-import java.util.Objects;
 
 @Data
 @Entity
@@ -58,5 +57,10 @@ public class Customer {
     @Basic
     @Column(name = "CreatedAt")
     private Timestamp createdAt;
-
+    //ReferralCode
+    @Column(name = "ReferralCode")
+    private String referralCode;
+    @Basic
+    @Column(name = "OAuthUserId")
+    private String OAuthUserId;
 }

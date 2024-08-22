@@ -17,6 +17,7 @@ public interface SpecialProductOrderRepository extends JpaRepository<SpecialProd
     @Query(value = "SELECT * FROM SpecialProductOrder sp WHERE 1=1 " +
             "AND (:searchKeyword IS NULL OR LOWER(sp.ProductName) LIKE LOWER(CONCAT('%', :searchKeyword, '%')) OR LOWER(sp.ProductDescription) LIKE LOWER(CONCAT('%', :searchKeyword, '%'))) " +
             "AND (:startDate IS NULL OR sp.RequestDate BETWEEN CONVERT(date, :startDate) AND CONVERT(date, :endDate)) " +
+            "AND (:productSubCategoryId IS NULL OR sp.ProductSubCategoryId = :productSubCategoryId)" +
             "AND (:status IS NULL OR sp.Status = :status)",
             nativeQuery = true)
     Page<SpecialProductOrder> findByFilterAndDateAndStatus(
@@ -24,6 +25,7 @@ public interface SpecialProductOrderRepository extends JpaRepository<SpecialProd
             @Param("startDate") Timestamp startDate,
             @Param("endDate") Timestamp endDate,
             @Param("status") Integer status,
+            @Param("productSubCategoryId") Long productSubCategoryId,
             Pageable pageable);
 
 }

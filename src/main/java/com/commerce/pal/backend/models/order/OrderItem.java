@@ -57,7 +57,6 @@ public class OrderItem {
     @Basic
     @Column(name = "TotalCharge")
     private BigDecimal totalCharge;
-
     @Basic
     @Column(name = "TotalAmount")
     private BigDecimal totalAmount;
@@ -97,7 +96,6 @@ public class OrderItem {
     @Basic
     @Column(name = "CreatedDate")
     private Timestamp createdDate;
-
     @Basic
     @Column(name = "SettlementStatus")
     private Integer settlementStatus;

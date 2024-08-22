@@ -1,12 +1,10 @@
 package com.commerce.pal.backend.models.order;
 
-import lombok.*;
+import lombok.Data;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
-import java.sql.Date;
 import java.sql.Timestamp;
-import java.util.Objects;
 
 @Data
 @Entity
@@ -22,11 +20,17 @@ public class SpecialProductOrder {
     @Column(name = "UserId")
     private Long userId;
     @Basic
+    @Column(name = "ProductSubCategoryId")
+    private Long productSubCategoryId;
+    @Basic
     @Column(name = "ProductName")
     private String productName;
     @Basic
     @Column(name = "ProductDescription")
     private String productDescription;
+    @Basic
+    @Column(name = "Quantity")
+    private Integer quantity;
     @Basic
     @Column(name = "EstimatePrice")
     private BigDecimal estimatePrice;

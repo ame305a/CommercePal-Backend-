@@ -1,15 +1,27 @@
 package com.commerce.pal.backend.controller.portal;
 
 import com.commerce.pal.backend.common.ResponseCodes;
+import com.commerce.pal.backend.models.product.Product;
 import com.commerce.pal.backend.module.MultiUserService;
 import lombok.extern.java.Log;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 
 @Log
@@ -93,20 +105,14 @@ public class PortalController {
         return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
     }
 
-    @RequestMapping(value = "/user-update", method = RequestMethod.POST)
-    public ResponseEntity<?> userUpdate(@RequestBody String payload) {
-        JSONObject responseMap = new JSONObject();
-        try {
-            JSONObject request = new JSONObject(payload);
-            request.put("ownerType", "WAREHOUSE");
-            request.put("ownerId", "0");
-            responseMap = multiUserService.updateUser(request);
-        } catch (Exception e) {
-            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
-                    .put("statusDescription", "failed to process request")
-                    .put("statusMessage", "internal system error");
-        }
-        return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
+    @PostMapping(value = "/user-update", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> userUpdate(@RequestBody String payload) {
+        JSONObject request = new JSONObject(payload);
+        request.put("ownerType", "WAREHOUSE");
+        request.put("ownerId", "0");
+
+        JSONObject responseMap = multiUserService.updateUser(request);
+        return ResponseEntity.ok(responseMap.toString());
     }
 
     @RequestMapping(value = "/get-users", method = RequestMethod.GET)
@@ -119,6 +125,7 @@ public class PortalController {
             payload.put("ownerId", "0");
             responseMap = multiUserService.getAllUsers(payload);
         } catch (Exception e) {
+            e.printStackTrace();
             responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
                     .put("statusDescription", "failed to process request")
                     .put("statusMessage", "internal system error");
@@ -161,19 +168,45 @@ public class PortalController {
         return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
     }
 
+    @GetMapping(value = "/get-all-users", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> getAllUsers(@RequestParam("userType") String userType) {
+        JSONObject payload = new JSONObject();
+        payload.put("userType", userType);
+        JSONObject responseMap = multiUserService.getAllUsers(payload);
 
-    @RequestMapping(value = "/get-all-users", method = RequestMethod.GET)
-    public ResponseEntity<?> getAllUsers(@RequestParam("userType") String userType) {
-        JSONObject responseMap = new JSONObject();
-        try {
-            JSONObject payload = new JSONObject();
-            payload.put("userType", userType);
-            responseMap = multiUserService.getAllUsers(payload);
-        } catch (Exception e) {
-            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
-                    .put("statusDescription", "failed to process request")
-                    .put("statusMessage", "internal system error");
-        }
-        return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
+        return ResponseEntity.ok(responseMap.toString());
     }
+
+    @GetMapping(value = "/get-all-users1", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> getAllUsers1(
+            @RequestParam String userType,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "asc") String sortDirection,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String fullName,
+            @RequestParam(required = false) Long id,
+            @RequestParam(required = false) Integer status) {
+
+        //Adjust page and size to default values
+        if (page < 0) page = 0;
+        if (size < 0) size = 20;
+
+        if (fullName != null && id != null)
+            throw new IllegalArgumentException("fullName and id cannot be provided at the same time.");
+
+        JSONObject payload = new JSONObject();
+        payload.put("userType", userType);
+        payload.put("page", page);
+        payload.put("size", size);
+        payload.put("sortDirection", sortDirection);
+        payload.put("sortBy", sortBy != null ? sortBy : "");
+        payload.put("fullName", fullName != null ? fullName : "");
+        payload.put("status", status != null ? status : -1);
+        payload.put("id", id != null ? id : -1);
+
+        JSONObject responseMap = multiUserService.getAllUsers1(payload);
+        return ResponseEntity.ok(responseMap.toString());
+    }
+
 }

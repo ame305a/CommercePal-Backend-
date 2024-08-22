@@ -255,12 +255,13 @@ public class BusinessService {
             int size,
             Sort sort,
             Integer status,
+            Integer city,
             String searchKeyword,
             Timestamp startDate,
             Timestamp endDate
     ) {
         Pageable pageable = PageRequest.of(page, size, sort);
-        Page<Business> businessPage = businessRepository.findByFilterAndDateAndStatus(searchKeyword, startDate, endDate, status, pageable);
+        Page<Business> businessPage = businessRepository.findByFilterAndDateAndStatus(searchKeyword, startDate, endDate, status, city, pageable);
 
         List<JSONObject> businesses = new ArrayList<>();
         businessPage.getContent().stream()

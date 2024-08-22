@@ -77,9 +77,9 @@ public class ProductDatabaseService {
             query.setParameter("SoldQuantity", regHm.getString("soldQuantity"));
             query.setParameter("CountryOfOrigin", regHm.getString("countryOfOrigin"));
             query.setParameter("Manufucturer", regHm.getString("manufucturer"));
-            query.setParameter("ProductType", regHm.getString("productType"));
+            query.setParameter("ProductType", regHm.getString("productType").toUpperCase());
             query.setParameter("IsDiscounted", regHm.getString("isDiscounted"));
-            query.setParameter("DiscountType", regHm.getString("discountType"));
+            query.setParameter("DiscountType", regHm.getString("discountType").toUpperCase());
             query.setParameter("DiscountValue", regHm.getString("discountValue"));
             query.setParameter("IsPromoted", regHm.getString("isPromoted"));
             query.setParameter("IsPrioritized", regHm.getString("isPrioritized"));
@@ -92,6 +92,7 @@ public class ProductDatabaseService {
             retDet.put("productId", productId);
             retDet.put("subProductId", subProductId);
         } catch (Exception e) {
+            e.printStackTrace();
             log.log(Level.WARNING, "Error at DoProductRegistration - " + e.getMessage());
             retDet.put("productId", 0);
         }

@@ -12,6 +12,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -63,6 +64,7 @@ public class DistributorController {
                         .put("statusMessage", "The User is not a distributor");
             }
         } catch (Exception e) {
+            e.printStackTrace();
             log.log(Level.SEVERE, "Error in User Registration : " + e.getMessage());
             responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
                     .put("statusDescription", "failed to process request")
@@ -311,13 +313,14 @@ public class DistributorController {
         return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
     }
 
-    @RequestMapping(value = {"/report"}, method = {RequestMethod.GET}, produces = {"application/json"})
-    public ResponseEntity<?> getAllDistributors(
+    @GetMapping(value = "/report", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> getAllDistributors(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String sortBy,
             @RequestParam(defaultValue = "asc") String sortDirection,
             @RequestParam(required = false) Integer status,
+            @RequestParam(required = false) String city,
             @RequestParam(required = false) String searchKeyword,
             @RequestParam(required = false) Timestamp requestStartDate,
             @RequestParam(required = false) Timestamp requestEndDate
@@ -338,10 +341,11 @@ public class DistributorController {
 
             Sort sort = Sort.by(direction, sortBy);
 
-            JSONObject response = distributorService.getAllDistributors(page, size, sort, status, searchKeyword, requestStartDate, requestEndDate);
+            JSONObject response = distributorService.getAllDistributors(page, size, sort, status, city, searchKeyword, requestStartDate, requestEndDate);
             return ResponseEntity.status(HttpStatus.OK).body(response.toString());
         } catch (Exception e) {
             log.log(Level.WARNING, "DISTRIBUTOR REPORT: " + e.getMessage());
+            e.printStackTrace();
             JSONObject responseMap = new JSONObject();
             responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
                     .put("statusDescription", "failed to process request")

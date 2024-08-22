@@ -244,11 +244,12 @@ public class MessengerService {
             int size,
             Sort sort,
             Integer status,
+            String city,
             Timestamp startDate,
             Timestamp endDate
     ) {
         Pageable pageable = PageRequest.of(page, size, sort);
-        Page<Messenger> messengerPage = messengerRepository.findByStartDateBetweenAndStatus(startDate, endDate, status, pageable);
+        Page<Messenger> messengerPage = messengerRepository.findByStartDateBetweenAndStatus(startDate, endDate, status, city, pageable);
 
         List<JSONObject> messengers = new ArrayList<>();
         messengerPage.getContent().stream()

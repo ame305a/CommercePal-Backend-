@@ -10,7 +10,9 @@ import com.commerce.pal.backend.utils.GlobalMethods;
 import lombok.extern.java.Log;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,7 +33,6 @@ public class AgentController {
     private EmailClient emailClient;
     @Autowired
     private UploadService uploadService;
-
     private final GlobalMethods globalMethods;
     private final AgentService agentService;
     private final AgentRepository agentRepository;
@@ -202,4 +203,50 @@ public class AgentController {
         }
         return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
     }
+
+
+    @GetMapping(value = "/report", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> getAllAgents(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDirection,
+            @RequestParam(required = false) Integer status,
+            @RequestParam(required = false) Integer city,
+            @RequestParam(required = false) Integer regionId,
+            @RequestParam(required = false) String searchKeyword,
+            @RequestParam(required = false) Timestamp requestStartDate,
+            @RequestParam(required = false) Timestamp requestEndDate
+    ) {
+        try {
+            // If requestEndDate is not provided, set it to the current timestamp
+            if (requestEndDate == null)
+                requestEndDate = Timestamp.from(Instant.now());
+
+            // Default to sorting by agent name in ascending order if sortBy is not provided
+            if (sortBy == null || sortBy.isEmpty())
+                sortBy = "AgentName";
+
+            // Default to ascending order if sortDirection is not provided or is invalid
+            Sort.Direction direction = Sort.Direction.ASC;
+            if (sortDirection != null && sortDirection.equalsIgnoreCase("desc"))
+                direction = Sort.Direction.DESC;
+
+            Sort sort = Sort.by(direction, sortBy);
+
+            JSONObject response = agentService.getAllAgents(page, size, sort, status, city, regionId, searchKeyword, requestStartDate, requestEndDate);
+            return ResponseEntity.status(HttpStatus.OK).body(response.toString());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.log(Level.WARNING, "AGENT REPORT: " + e.getMessage());
+            JSONObject responseMap = new JSONObject();
+            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
+                    .put("statusDescription", "failed to process request")
+                    .put("statusMessage", "internal system error");
+
+            return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
+        }
+    }
+
 }

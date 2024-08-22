@@ -108,13 +108,7 @@ public class AppDashboardController {
                     insideCatalogue.put("catalogueType", targetSection.getCatalogueType());
                     insideCatalogue.put("template", targetSection.getTemplate());
                     insideCatalogue.put("key", targetSection.getSectionKey());
-                    List<JSONObject> items = new ArrayList<>();
-
-                    targetSectionChildrenRepository.findTargetSectionChildrenByTargetSectionId(targetSection.getId())
-                            .forEach(targetSectionChildren -> {
-                                JSONObject item = new JSONObject();
-                                item.put("sectionType", targetSectionChildren.getType());
-                                item.put("sectionDescription", targetSectionChildren.getDescription());
+                    List<JSONObject> items;
                                 /*
                                 Brand
                                 Product
@@ -122,24 +116,37 @@ public class AppDashboardController {
                                 Category
                                 SubCategory
                                  */
-                                if (targetSectionChildren.getType().equals("Brand")) {
-                                    JSONObject response = categoryService.getBrandInfo(targetSectionChildren.getItemId());
-                                    items.add(globalMethods.mergeJSONObjects(response, item));
-                                } else if (targetSectionChildren.getType().equals("Product")) {
-                                    JSONObject response = productService.getProductListDetails(Long.valueOf(targetSectionChildren.getItemId()));
-                                    items.add(globalMethods.mergeJSONObjects(response, item));
-                                } else if (targetSectionChildren.getType().equals("ParentCategory")) {
-                                    JSONObject response = categoryService.getParentCatInfo(Long.valueOf(targetSectionChildren.getItemId()));
-                                    items.add(globalMethods.mergeJSONObjects(response, item));
-                                } else if (targetSectionChildren.getType().equals("Category")) {
-                                    JSONObject response = categoryService.getCategoryInfo(Long.valueOf(targetSectionChildren.getItemId()));
-                                    items.add(globalMethods.mergeJSONObjects(response, item));
-                                } else if (targetSectionChildren.getType().equals("SubCategory")) {
-                                    JSONObject response = categoryService.getSubCategoryInfo(Long.valueOf(targetSectionChildren.getItemId()));
-                                    items.add(globalMethods.mergeJSONObjects(response, item));
-                                }
+                    if (targetSection.getSectionKey().equals("under_1000")) {
+                        items = productService.getRandomProductsUnder1000();
+                    } else {
+                        items = new ArrayList<>();
+                        targetSectionChildrenRepository.findTargetSectionChildrenByTargetSectionId(targetSection.getId())
+                                .forEach(targetSectionChildren -> {
+                                    JSONObject item = new JSONObject();
+                                    item.put("sectionType", targetSectionChildren.getType());
+                                    item.put("sectionDescription", targetSectionChildren.getDescription());
+                                    if (targetSectionChildren.getType().equals("Brand")) {
+                                        JSONObject response = categoryService.getBrandInfo(targetSectionChildren.getItemId());
+                                        items.add(globalMethods.mergeJSONObjects(response, item));
+                                    }
+//                                    else if (targetSectionChildren.getType().equals("Product")) {
+//                                        JSONObject response = productService.getProductListDetails(Long.valueOf(targetSectionChildren.getItemId()));
+//                                        items.add(globalMethods.mergeJSONObjects(response, item));
+//                                    }
+                                    else if (targetSectionChildren.getType().equals("ParentCategory")) {
+                                        JSONObject response = categoryService.getParentCatInfo(Long.valueOf(targetSectionChildren.getItemId()));
+                                        items.add(globalMethods.mergeJSONObjects(response, item));
+                                    } else if (targetSectionChildren.getType().equals("Category")) {
+                                        JSONObject response = categoryService.getCategoryInfo(Long.valueOf(targetSectionChildren.getItemId()));
+                                        items.add(globalMethods.mergeJSONObjects(response, item));
+                                    } else if (targetSectionChildren.getType().equals("SubCategory")) {
+                                        JSONObject response = categoryService.getSubCategoryInfo(Long.valueOf(targetSectionChildren.getItemId()));
+                                        items.add(globalMethods.mergeJSONObjects(response, item));
+                                    }
 
-                            });
+                                });
+                    }
+
                     insideCatalogue.put("items", items);
                     catalogues.add(insideCatalogue);
                 });

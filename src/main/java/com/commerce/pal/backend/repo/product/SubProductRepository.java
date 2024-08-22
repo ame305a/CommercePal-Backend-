@@ -9,6 +9,5 @@ import java.util.Optional;
 public interface SubProductRepository extends JpaRepository<SubProduct, Long> {
     List<SubProduct> findSubProductsByProductId(Long product);
 
-
     Optional<SubProduct> findSubProductsByProductIdAndSubProductId(Long aLong, Long sub);
 }

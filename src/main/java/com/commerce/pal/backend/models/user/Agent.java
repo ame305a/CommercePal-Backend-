@@ -141,4 +141,8 @@ public class Agent {
     @Column(name = "ActivatedDate")
     private Timestamp activatedDate;
 
+    //ReferralCode
+    @Column(name = "ReferralCode")
+    private String referralCode;
+
 }

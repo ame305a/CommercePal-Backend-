@@ -1,5 +1,6 @@
 package com.commerce.pal.backend.module.product;
 
+import com.commerce.pal.backend.models.product.categories.ProductCategory;
 import com.commerce.pal.backend.repo.product.categories.BrandImageRepository;
 import com.commerce.pal.backend.repo.product.categories.ProductCategoryRepository;
 import com.commerce.pal.backend.repo.product.categories.ProductParentCategoryRepository;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Log
 @Service
@@ -136,4 +138,11 @@ public class CategoryService {
                 });
         return detail;
     }
+
+    public String getCategoryName(Long id) {
+        return productCategoryRepository.findById(id)
+                .map(ProductCategory::getCategoryName)
+                .orElse("");
+    }
+
 }

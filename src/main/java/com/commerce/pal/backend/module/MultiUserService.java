@@ -1,12 +1,12 @@
 package com.commerce.pal.backend.module;
 
 import com.commerce.pal.backend.common.ResponseCodes;
-import com.commerce.pal.backend.module.database.RegistrationStoreService;
 import com.commerce.pal.backend.integ.notification.email.EmailClient;
+import com.commerce.pal.backend.module.database.RegistrationStoreService;
 import com.commerce.pal.backend.module.users.AgentService;
-import com.commerce.pal.backend.module.users.business.BusinessService;
 import com.commerce.pal.backend.module.users.MerchantService;
 import com.commerce.pal.backend.module.users.MessengerService;
+import com.commerce.pal.backend.module.users.business.BusinessService;
 import com.commerce.pal.backend.repo.user.MerchantRepository;
 import com.commerce.pal.backend.service.amazon.UploadService;
 import com.commerce.pal.backend.utils.GlobalMethods;
@@ -15,6 +15,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.logging.Level;
@@ -76,6 +77,11 @@ public class MultiUserService {
                     request.put("msisdn", request.getString("ownerPhoneNumber"));
                     responseMap = registrationStoreService.doMerchantRegistration(request);
 
+                    System.out.println("============================================================");
+
+                    System.out.println(responseMap.toString());
+                    System.out.println("============================================================");
+
                     if (!Integer.valueOf(responseMap.getInt("exists")).equals(1)) {
                         JSONObject slackBody = new JSONObject();
                         slackBody.put("TemplateId", "5");
@@ -104,12 +110,13 @@ public class MultiUserService {
             }
 
             int exists = responseMap.getInt("exists");
-            String userId = globalMethods.getUserId(request.getString("userType"), request.getString("email").trim());
+            String userId = globalMethods.getUserId(request.getString("userType"), request.getString("email").trim(), request.getString("ownerPhoneNumber").trim());
 
             if (exists == 1) {
                 responseMap.put("statusCode", ResponseCodes.REGISTERED)
-                        .put("statusDescription", "email address already registered")
-                        .put("statusMessage", "registration exists");
+                        .put("statusDescription", "Registration exists")
+                        .put("statusMessage", "The provided Email address or Owner PhoneNumber is already registered.");
+
             } else if (exists == -1) {
 
                 responseMap.put("statusCode", ResponseCodes.SUCCESS)
@@ -151,6 +158,7 @@ public class MultiUserService {
             }
 
         } catch (Exception e) {
+            e.printStackTrace();
             log.log(Level.SEVERE, "Error in User Registration : " + e.getMessage());
             responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
                     .put("statusDescription", "failed to process request")
@@ -230,35 +238,27 @@ public class MultiUserService {
         return responseMap;
     }
 
+    @Transactional
     public JSONObject updateUser(JSONObject payload) {
-        JSONObject responseMap = new JSONObject();
-        try {
-            switch (payload.getString("userType")) {
-                case "MERCHANT":
-                    responseMap = merchantService.updateMerchant(payload.getString("userId"), payload);
-                    break;
-                case "BUSINESS":
-                    responseMap = businessService.updateBusiness(payload.getString("userId"), payload);
-                    break;
-                case "AGENT":
-                    responseMap = agentService.updateAgent(payload.getString("userId"), payload);
-                    break;
-                case "MESSENGER":
-                    responseMap = messengerService.updateMessenger(payload.getString("userId"), payload);
-                    break;
-                case "DISTRIBUTOR":
-                    responseMap = distributorService.updateDistributor(payload.getString("userId"), payload);
-                    break;
-                default:
-                    responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
-                            .put("statusDescription", "failed to process request")
-                            .put("statusMessage", "internal system error");
-                    break;
-            }
-        } catch (Exception e) {
-            responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
-                    .put("statusDescription", "failed to process request")
-                    .put("statusMessage", "internal system error");
+        JSONObject responseMap;
+        switch (payload.getString("userType")) {
+            case "MERCHANT":
+                responseMap = merchantService.updateMerchant(payload.getString("userId"), payload);
+                break;
+            case "BUSINESS":
+                responseMap = businessService.updateBusiness(payload.getString("userId"), payload);
+                break;
+            case "AGENT":
+                responseMap = agentService.updateAgent(payload.getString("userId"), payload);
+                break;
+            case "MESSENGER":
+                responseMap = messengerService.updateMessenger(payload.getString("userId"), payload);
+                break;
+            case "DISTRIBUTOR":
+                responseMap = distributorService.updateDistributor(payload.getString("userId"), payload);
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid user type");
         }
         return responseMap;
     }
@@ -323,10 +323,37 @@ public class MultiUserService {
                     break;
             }
         } catch (Exception e) {
+            e.printStackTrace();
             responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
                     .put("statusDescription", "failed to process request")
                     .put("statusMessage", "internal system error");
         }
+        return responseMap;
+    }
+
+    public JSONObject getAllUsers1(JSONObject payload) {
+        JSONObject responseMap;
+
+        switch (payload.getString("userType")) {
+            case "MERCHANT":
+                responseMap = merchantService.getAllUsers1(payload);
+                break;
+            case "BUSINESS":
+                responseMap = businessService.getAllUsers(payload);
+                break;
+            case "AGENT":
+                responseMap = agentService.getAllUsers(payload);
+                break;
+            case "MESSENGER":
+                responseMap = messengerService.getAllUsers(payload);
+                break;
+            case "DISTRIBUTOR":
+                responseMap = distributorService.getAllUsers1(payload);
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid user type");
+        }
+
         return responseMap;
     }
 

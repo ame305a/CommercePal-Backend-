@@ -3,6 +3,7 @@ package com.commerce.pal.backend.controller.merchant;
 import com.commerce.pal.backend.common.ResponseCodes;
 import com.commerce.pal.backend.integ.notification.email.EmailClient;
 import com.commerce.pal.backend.models.LoginValidation;
+import com.commerce.pal.backend.models.user.Merchant;
 import com.commerce.pal.backend.module.product.ProductService;
 import com.commerce.pal.backend.module.users.MerchantService;
 import com.commerce.pal.backend.repo.user.MerchantRepository;
@@ -14,6 +15,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -209,13 +211,15 @@ public class MerchantController {
         return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
     }
 
-    @RequestMapping(value = {"/report"}, method = {RequestMethod.GET}, produces = {"application/json"})
-    public ResponseEntity<?> getAllMerchants(
+    @GetMapping(value = "/report", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> getAllMerchants(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String sortBy,
             @RequestParam(defaultValue = "asc") String sortDirection,
             @RequestParam(required = false) Integer status,
+            @RequestParam(required = false) Integer city,
+            @RequestParam(required = false) Integer regionId,
             @RequestParam(required = false) String searchKeyword,
             @RequestParam(required = false) Timestamp requestStartDate,
             @RequestParam(required = false) Timestamp requestEndDate
@@ -236,7 +240,7 @@ public class MerchantController {
 
             Sort sort = Sort.by(direction, sortBy);
 
-            JSONObject response = merchantService.getAllMerchants(page, size, sort, status, searchKeyword, requestStartDate, requestEndDate);
+            JSONObject response = merchantService.getAllMerchants(page, size, sort, status, city, regionId, searchKeyword, requestStartDate, requestEndDate);
             return ResponseEntity.status(HttpStatus.OK).body(response.toString());
 
         } catch (Exception e) {
@@ -250,8 +254,8 @@ public class MerchantController {
         }
     }
 
-    @GetMapping(produces = {"application/json"})
-    public ResponseEntity<?> getAllMerchants(@RequestParam(defaultValue = "asc") String sortDirection) {
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> getAllMerchants(@RequestParam(defaultValue = "asc") String sortDirection) {
         try {
             // Default to ascending order if sortDirection is not provided or is invalid
             Sort.Direction direction = Sort.Direction.ASC;
@@ -270,7 +274,24 @@ public class MerchantController {
                     .put("statusDescription", "failed to process request")
                     .put("statusMessage", "internal system error");
 
-            return ResponseEntity.status(HttpStatus.OK).body(responseMap.toString());
+            return ResponseEntity.ok(responseMap.toString());
         }
+    }
+
+    @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> searchMerchants(
+            @RequestParam String name,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        JSONObject response = merchantService.searchMerchants(name, page, size);
+
+        return ResponseEntity.ok(response.toString());
+    }
+
+    @GetMapping(value = "/{merchantId}/products", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> getMerchantAboutWithProducts(@PathVariable Long merchantId) {
+        JSONObject response = merchantService.getMerchantAboutWithProducts(merchantId);
+        return ResponseEntity.ok(response.toString());
     }
 }
