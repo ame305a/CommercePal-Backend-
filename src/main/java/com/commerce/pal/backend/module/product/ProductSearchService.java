@@ -64,7 +64,7 @@ public class ProductSearchService {
 
 
     public JSONObject getRandomProductsUnder1000(BigDecimal priceThreshold, int count) {
-        List<Product> products = productRepository.findRandomProductsUnder1000(priceThreshold, count);
+        List<Product> products = productRepository.findRandomProductsUnderPrice(priceThreshold, count);
 
         List<JSONObject> details = new ArrayList<>();
         products.forEach(pro -> {

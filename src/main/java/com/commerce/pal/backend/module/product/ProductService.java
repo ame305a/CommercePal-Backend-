@@ -79,8 +79,6 @@ public class ProductService {
         try {
             retDet = productDatabaseService.doAddProduct(request);
         } catch (Exception ex) {
-            ex.printStackTrace();
-            System.out.println(ex.getMessage());
             retDet.put("productId", 0);
             log.log(Level.WARNING, "Error ProductDatabaseService doAddProduct : " + ex.getMessage());
         }
@@ -857,7 +855,19 @@ public class ProductService {
     }
 
     public List<JSONObject> getRandomProductsUnder1000() {
-        List<Product> products = productRepository.findRandomProductsUnder1000(BigDecimal.valueOf(1000), 24);
+        List<Product> products = productRepository.findRandomProductsUnderPrice(BigDecimal.valueOf(1000), 24);
+
+        List<JSONObject> details = new ArrayList<>();
+        products.forEach(pro -> {
+            JSONObject detail = getProductListDetailsAlready(pro);
+            details.add(detail);
+        });
+
+        return details;
+    }
+
+    public List<JSONObject> getRandomProductsAbove1000() {
+        List<Product> products = productRepository.findRandomProductsAbovePrice(BigDecimal.valueOf(1000), 24);
 
         List<JSONObject> details = new ArrayList<>();
         products.forEach(pro -> {

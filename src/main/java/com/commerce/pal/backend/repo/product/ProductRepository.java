@@ -85,8 +85,10 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
             Pageable pageable);
 
     @Query(value = "SELECT * FROM (SELECT *, ROW_NUMBER() OVER (ORDER BY NEWID()) AS rn FROM Product WHERE UnitPrice < :priceThreshold AND Quantity > 0 AND Status = 1) AS sub WHERE rn <= :count", nativeQuery = true)
-    List<Product> findRandomProductsUnder1000(@Param("priceThreshold") BigDecimal priceThreshold, @Param("count") int count);
+    List<Product> findRandomProductsUnderPrice(@Param("priceThreshold") BigDecimal priceThreshold, @Param("count") int count);
 
+    @Query(value = "SELECT * FROM (SELECT *, ROW_NUMBER() OVER (ORDER BY NEWID()) AS rn FROM Product WHERE UnitPrice > :priceThreshold AND Quantity > 0 AND Status = 1) AS sub WHERE rn <= :count", nativeQuery = true)
+    List<Product> findRandomProductsAbovePrice(@Param("priceThreshold") BigDecimal priceThreshold, @Param("count") int count);
 
     @Query(value = "SELECT * FROM Product p " +
             "WHERE p.IsProductOnFlashSale = 1 " +

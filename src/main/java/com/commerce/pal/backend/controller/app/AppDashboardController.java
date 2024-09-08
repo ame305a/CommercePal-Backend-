@@ -111,13 +111,16 @@ public class AppDashboardController {
                     List<JSONObject> items;
                                 /*
                                 Brand
-                                Product
+                                Product above 1000
+                                Product under 1000
                                 ParentCategory
                                 Category
                                 SubCategory
                                  */
                     if (targetSection.getSectionKey().equals("under_1000")) {
                         items = productService.getRandomProductsUnder1000();
+                    } else if (targetSection.getSectionKey().equals("above_1000")) {
+                        items = productService.getRandomProductsAbove1000();
                     } else {
                         items = new ArrayList<>();
                         targetSectionChildrenRepository.findTargetSectionChildrenByTargetSectionId(targetSection.getId())

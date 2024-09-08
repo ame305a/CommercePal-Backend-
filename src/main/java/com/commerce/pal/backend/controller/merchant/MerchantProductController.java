@@ -77,7 +77,7 @@ public class MerchantProductController {
 
     @RequestMapping(value = "/add-product", method = RequestMethod.POST)
     public ResponseEntity<?> addProduct(@RequestBody String req) {
-        log.log(Level.INFO, req.toString());
+        log.log(Level.INFO, req);
         JSONObject responseMap = new JSONObject();
         try {
             JSONObject request = new JSONObject(req);
@@ -90,13 +90,14 @@ public class MerchantProductController {
                         request.put("isPrioritized", "0");
                         request.put("ownerType", "MERCHANT");
 
-                        if (subProductService.validateFeature(Long.valueOf(request.getString("productSubCategoryId")), request.getJSONArray("productFeature")).equals(1)) {
+                        if (subProductService.validateFeature(Long.valueOf(request.getString("productSubCategoryId")),
+                                request.getJSONArray("productFeature")).equals(1)) {
                             JSONObject retDet = productService.doAddProduct(request);
                             int returnValue = retDet.getInt("productId");
                             if (returnValue == 0) {
                                 responseMap.put("statusCode", ResponseCodes.SYSTEM_ERROR)
-                                        .put("statusDescription", "failed to process request")
-                                        .put("statusMessage", "internal system error");
+                                        .put("statusDescription", "Failed to process request")
+                                        .put("statusMessage", "Internal system error");
                             } else {
                                 JSONObject slackBody = new JSONObject();
                                 slackBody.put("TemplateId", "7");
@@ -411,7 +412,7 @@ public class MerchantProductController {
                     List<SearchCriteria> params = new ArrayList<SearchCriteria>();
                     params.add(new SearchCriteria("merchantId", ":", merchant.getMerchantId()));
                     AtomicReference<JSONObject> detail = new AtomicReference<>(new JSONObject());
-                    detail.set(subProductService.getSubProductInfo(Long.valueOf(subProduct),"ETB"));
+                    detail.set(subProductService.getSubProductInfo(Long.valueOf(subProduct), "ETB"));
                     responseMap.put("statusCode", ResponseCodes.SUCCESS)
                             .put("statusDescription", "success")
                             .put("detail", detail.get())
