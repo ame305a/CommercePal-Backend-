@@ -313,7 +313,10 @@ public class ProductManagementController {
             @RequestParam(required = false) String subCat,
             @RequestParam(required = false) Long productId,
             @RequestParam(required = false) String productName,
-            @RequestParam(required = false) Integer status) {
+            @RequestParam(required = false) Integer status,
+            @RequestParam(required = false) String productImage,
+            @RequestParam(required = false) Boolean productMobileImageNull
+    ) {
 
         if (productId != null && productName != null)
             throw new IllegalArgumentException("productId and productName cannot be provided at the same time");
@@ -336,9 +339,6 @@ public class ProductManagementController {
                 predicates.add(criteriaBuilder.equal(root.get("productSubCategoryId"), subCat));
             if (productId != null)
                 predicates.add(criteriaBuilder.equal(root.get("productId"), productId));
-//            if (productName != null)
-//                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("productName")), "%" + productName.toLowerCase() + "%"));
-
             if (productName != null) {
                 String[] productNameParts = productName.split("\\s+");
                 List<Predicate> namePredicates = new ArrayList<>();
@@ -350,6 +350,20 @@ public class ProductManagementController {
 
             if (status != null)
                 predicates.add(criteriaBuilder.equal(root.get("status"), status));
+
+            // Add filter for productImage if it should be null/not null
+            if (productImage != null && productImage.equalsIgnoreCase("defaultImage")) {
+                predicates.add(criteriaBuilder.equal(root.get("productImage"), "defaultImage.png"));
+            }
+
+            // Add filter for productMobileImage if it should be null/not null
+            if (productMobileImageNull != null) {
+                if (productMobileImageNull) {
+                    predicates.add(criteriaBuilder.isNull(root.get("productMobileImage")));
+                } else {
+                    predicates.add(criteriaBuilder.isNotNull(root.get("productMobileImage")));
+                }
+            }
 
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         }, pageable);
