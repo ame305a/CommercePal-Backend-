@@ -6,6 +6,7 @@ package com.commerce.pal.backend.common;
 public class ResponseCodes {
 
     public static final String SUCCESS = "000";
+    public static final String INTERNAL_SERVER_ERROR = "501";
     public static final String REGISTERED = "11";
     public static final String NOT_REGISTERED = "002";
     public static final String REGISTERED_PIN_SENT = "003";
@@ -80,5 +81,4 @@ public class ResponseCodes {
     public static final String MERCHANT_TO_BUSINESS = "M2B";
     public static final String COMMERCE_PAL_TO_BUSINESS = "CP2B";
     public static final String COMMERCE_PAL_TO_CUSTOMER = "CP2C";
-
 }
