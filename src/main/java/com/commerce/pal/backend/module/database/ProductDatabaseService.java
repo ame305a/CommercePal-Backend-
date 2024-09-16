@@ -1,5 +1,6 @@
 package com.commerce.pal.backend.module.database;
 
+import com.commerce.pal.backend.common.ResponseCodes;
 import lombok.extern.java.Log;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
@@ -157,4 +158,44 @@ public class ProductDatabaseService {
         }
         return transResponse;
     }
+
+    public JSONObject callProductReportService(String startDate, String endDate, String reportType) {
+        JSONObject report = new JSONObject();
+        try {
+            StoredProcedureQuery query = entityManager.createStoredProcedureQuery("GetProductReportByDateRange");
+            //Input Parameters
+            query.registerStoredProcedureParameter("StartDate", String.class, ParameterMode.IN);
+            query.registerStoredProcedureParameter("EndDate", String.class, ParameterMode.IN);
+            query.setParameter("StartDate", startDate);
+            query.setParameter("EndDate", endDate);
+
+            //Output Parameters
+            query.registerStoredProcedureParameter("WarehouseProductCount", Integer.class, ParameterMode.OUT);
+            query.registerStoredProcedureParameter("MerchantProductCount", Integer.class, ParameterMode.OUT);
+            query.registerStoredProcedureParameter("PendingProductCount", Integer.class, ParameterMode.OUT);
+            query.registerStoredProcedureParameter("ApprovedProductCount", Integer.class, ParameterMode.OUT);
+
+            //Execute Stored Procedure
+            query.execute();
+            Integer warehouseProductCount = (Integer) query.getOutputParameterValue("WarehouseProductCount");
+            Integer merchantProductCount = (Integer) query.getOutputParameterValue("MerchantProductCount");
+            Integer approvedProductCount = (Integer) query.getOutputParameterValue("ApprovedProductCount");
+            Integer PendingProductCount = (Integer) query.getOutputParameterValue("PendingProductCount");
+
+            //Set Output Parameters
+            report.put("statusCode", ResponseCodes.SUCCESS);
+            report.put("warehouseProductCount", warehouseProductCount);
+            report.put("merchantProductCount", merchantProductCount);
+            report.put("approvedProductCount", approvedProductCount);
+            report.put("pendingProductCount", PendingProductCount);
+
+            log.info(reportType + " generated successfully: " + report.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.log(Level.WARNING, "Error at GetProductReportByDateRange - " + e.getMessage());
+            report.put("statusCode", ResponseCodes.INTERNAL_SERVER_ERROR);
+        }
+        return report;
+    }
+
 }
